@@ -1,0 +1,1102 @@
+<!doctype html>
+<html lang="zh-CN" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Noto Sans SC"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-400.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Sans SC"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-700.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Sans SC"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-900.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Serif SC"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/noto-serif-sc-700.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Serif SC"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/noto-serif-sc-900.woff2") format("woff2"); }
+      @font-face { font-family: "Ma Shan Zheng"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/ma-shan-zheng-400.woff2") format("woff2"); }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #fbf5ec; }
+
+      :root {
+        --ink: #22253a;
+        --muted: #646a84;
+        --paper: #fbf5ec;
+        --card: #fffdf9;
+        --coral: #e8553f;
+        --peach: #ffb38a;
+        --mint: #17977f;
+        --sky: #3470e0;
+        --lav: #6b5be6;
+        --sun: #f2b01e;
+        --line: rgba(34, 37, 58, 0.12);
+        --code-bg: #1f2233;
+        --mono: Consolas, "Noto Sans SC", monospace;
+        --n-coral: #ff7a63;
+        --n-sky: #62a8ff;
+        --n-mint: #3ad6ab;
+        --n-lav: #a294ff;
+        --n-sun: #ffc94a;
+        --n-cyan: #6fd3ff;
+        --n-muted: #a3abcf;
+      }
+
+      #root {
+        position: relative; width: 100%; height: 100%; overflow: hidden;
+        background: var(--paper); color: var(--ink);
+        font-family: "Noto Sans SC", sans-serif; font-weight: 400;
+      }
+
+      /* ---------- persistent layers ---------- */
+      .bg { position: absolute; inset: 0; }
+      .paper { position: absolute; inset: 0; }
+      .dots { position: absolute; inset: 0; background-image: radial-gradient(rgba(34, 37, 58, 0.08) 2px, transparent 2.5px); background-size: 40px 40px; }
+      .glow { position: absolute; display: block; border-radius: 50%; }
+      .glow.g1 { width: 900px; height: 900px; left: -320px; top: -360px; background: radial-gradient(circle, rgba(255, 179, 138, 0.55) 0%, rgba(255, 179, 138, 0) 68%); }
+      .glow.g2 { width: 820px; height: 820px; right: -300px; top: 160px; background: radial-gradient(circle, rgba(140, 200, 255, 0.45) 0%, rgba(140, 200, 255, 0) 68%); }
+      .glow.g3 { width: 780px; height: 780px; left: 520px; bottom: -480px; background: radial-gradient(circle, rgba(200, 190, 255, 0.5) 0%, rgba(200, 190, 255, 0) 68%); }
+
+      .night { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse 120% 90% at 50% 38%, #1b2252 0%, #0e1229 55%, #080a17 100%); }
+      .night .grid {
+        position: absolute; inset: 0;
+        background-image: linear-gradient(rgba(120, 150, 255, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(120, 150, 255, 0.07) 1px, transparent 1px);
+        background-size: 60px 60px;
+      }
+      .nglow { position: absolute; display: block; border-radius: 50%; }
+      .nglow.a { width: 1100px; height: 1100px; left: -420px; top: -520px; background: radial-gradient(circle, rgba(70, 140, 255, 0.28) 0%, rgba(70, 140, 255, 0) 65%); }
+      .nglow.b { width: 1000px; height: 1000px; right: -380px; bottom: -520px; background: radial-gradient(circle, rgba(160, 110, 255, 0.26) 0%, rgba(160, 110, 255, 0) 65%); }
+      .night svg.traces { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+      .trace { fill: none; stroke: rgba(110, 150, 255, 0.2); stroke-width: 2; }
+      .trace-p { fill: none; stroke: #6fd3ff; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 60 940; }
+      .tnode { fill: #0e1229; stroke: rgba(111, 211, 255, 0.7); stroke-width: 2; }
+
+      .brand { position: absolute; top: 44px; right: 64px; font-size: 24px; font-weight: 700; letter-spacing: 0.12em; }
+      .brand-l { color: rgba(34, 37, 58, 0.62); }
+      .brand-d { opacity: 0; color: rgba(220, 228, 255, 0.72); }
+      .brand-d b { color: var(--n-sun); font-weight: 900; }
+      .progress { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: rgba(120, 130, 170, 0.12); }
+      .progress-fill { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, var(--sky), var(--lav), var(--coral)); transform-origin: 0 50%; }
+
+      /* ---------- scene scaffold ---------- */
+      .scene { position: absolute; inset: 0; }
+      .inner { position: absolute; inset: 0; padding: 96px 150px 210px; display: flex; flex-direction: column; }
+      .center { align-items: center; justify-content: center; text-align: center; }
+      .tag {
+        align-self: flex-start; display: inline-flex; align-items: center; gap: 14px;
+        padding: 10px 26px; border-radius: 999px; background: var(--ink); color: #fff;
+        font-size: 26px; font-weight: 700; letter-spacing: 0.08em;
+      }
+      .tag b { color: var(--peach); font-weight: 900; }
+      .title { margin-top: 24px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 72px; line-height: 1.22; }
+      .title em { font-style: normal; color: var(--coral); }
+      .card { background: var(--card); border: 2px solid var(--line); border-radius: 28px; box-shadow: 0 18px 40px rgba(34, 37, 58, 0.08); }
+      svg.ico { display: block; fill: none; stroke: currentColor; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+      .mono { font-family: var(--mono); }
+
+      /* dark ("inside the chip") variant */
+      .dk { color: #eef1ff; }
+      .dk .tag { background: rgba(98, 130, 255, 0.16); border: 1.5px solid rgba(140, 170, 255, 0.45); color: #e4e9ff; }
+      .dk .tag b { color: var(--n-sun); }
+      .dk .title em { color: var(--n-coral); }
+      .gcard {
+        background: rgba(17, 22, 50, 0.86); border: 1.5px solid rgba(130, 160, 255, 0.3); border-radius: 24px;
+        box-shadow: 0 22px 50px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+      }
+      .npill {
+        display: inline-flex; align-items: center; gap: 10px; padding: 10px 24px; border-radius: 999px;
+        border: 2px solid currentColor; background: rgba(10, 13, 32, 0.7); font-size: 28px; font-weight: 700;
+      }
+      .npill.m { font-family: var(--mono); }
+      .fill { color: #0b0e1d !important; border-color: transparent; font-weight: 900; }
+      .nmuted { color: var(--n-muted); }
+      .code {
+        background: #0a0d1f; color: #e9ecf8; border-radius: 22px; border: 1.5px solid rgba(130, 160, 255, 0.28);
+        box-shadow: 0 22px 50px rgba(0, 0, 0, 0.4); font-family: var(--mono); text-align: left; position: relative;
+      }
+      .code .bar { display: flex; align-items: center; gap: 10px; padding: 14px 22px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-family: "Noto Sans SC", sans-serif; font-size: 24px; font-weight: 700; color: #b9c1e4; }
+      .code .bar i { display: block; width: 13px; height: 13px; border-radius: 50%; }
+      .code .bar span { margin-left: 10px; }
+      .code .body { position: relative; padding: 20px 30px 24px; font-size: 30px; line-height: 48px; white-space: pre; }
+      .k { color: #ff9b7a; }
+      .ty { color: #8cc8ff; }
+      .n { color: #ffd479; }
+      .cm { color: #8b93b8; }
+      .op { color: #c3b6ff; }
+      .hl { position: absolute; left: 10px; right: 10px; height: 48px; border-radius: 10px; }
+      .hl.c { background: rgba(255, 201, 74, 0.16); border-left: 5px solid var(--n-sun); }
+      .hl.f { background: rgba(58, 214, 171, 0.16); border-left: 5px solid var(--n-mint); }
+
+      /* ---------- captions ---------- */
+      .caption { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 54px; pointer-events: none; }
+      .caption span {
+        display: block; max-width: 1500px; padding: 12px 34px; border-radius: 18px;
+        background: rgba(24, 27, 46, 0.88); color: #fff; border: 1px solid rgba(255, 255, 255, 0.08);
+        font-size: 40px; line-height: 1.4; font-weight: 400; letter-spacing: 0.04em;
+      }
+
+      /* ---------- s01 ---------- */
+      .s01-kicker { font-size: 30px; letter-spacing: 0.32em; color: #c9432f; font-weight: 900; }
+      .s01-title { margin-top: 18px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 80px; line-height: 1.2; }
+      .s01-title em { font-style: normal; color: var(--sky); }
+      .books { display: flex; align-items: center; gap: 70px; margin-top: 44px; }
+      .book {
+        position: relative; flex: none; border-radius: 8px 22px 22px 8px; color: #fff; text-align: left; overflow: hidden;
+        background: linear-gradient(150deg, #2b3050 0%, #1a1d2e 100%);
+        box-shadow: 0 26px 50px rgba(20, 22, 40, 0.28), inset 12px 0 0 rgba(255, 255, 255, 0.06);
+      }
+      .book.old { width: 230px; height: 310px; padding: 28px 26px; }
+      .book.new { width: 280px; height: 380px; padding: 34px 30px; background: linear-gradient(150deg, #1c2a6b 0%, #121636 100%); box-shadow: 0 0 0 4px rgba(98, 168, 255, 0.55), 0 0 60px rgba(98, 168, 255, 0.45), 0 26px 50px rgba(20, 22, 40, 0.3); }
+      .book .chip { width: 84px; height: 84px; border-radius: 16px; border: 3px solid rgba(140, 200, 255, 0.85); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 700; font-size: 26px; color: #8cc8ff; }
+      .book.new .chip { width: 104px; height: 104px; font-size: 32px; }
+      .book .bt { margin-top: 30px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 32px; line-height: 1.25; }
+      .book.new .bt { font-size: 40px; }
+      .book .bt b { color: var(--peach); font-weight: 900; }
+      .book .plus { position: absolute; right: 22px; top: 30px; padding: 6px 14px; border-radius: 10px; background: var(--n-sun); color: #1a1d2e; font-family: var(--mono); font-weight: 700; font-size: 24px; }
+      .book .ba { position: absolute; left: 28px; bottom: 24px; font-size: 20px; color: #b9bfd8; }
+      .books .arrow { width: 90px; height: 90px; color: var(--muted); }
+      .books .meta { margin-top: 14px; font-size: 26px; font-weight: 700; color: var(--muted); }
+      .bk { display: flex; flex-direction: column; align-items: center; }
+      .tiles { display: flex; gap: 14px; margin-top: 40px; }
+      .tile { position: relative; padding: 12px 22px; border-radius: 16px; background: var(--card); border: 2px solid var(--line); font-size: 26px; font-weight: 700; }
+      .tile .no { color: var(--muted); margin-right: 8px; font-family: var(--mono); }
+      .tile.nw { border-color: var(--coral); color: #c9432f; }
+      .tile .nb { position: absolute; right: -10px; top: -16px; padding: 2px 10px; border-radius: 8px; background: var(--coral); color: #fff; font-size: 20px; font-weight: 900; }
+      .zoom { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+      .die {
+        position: absolute; left: -130px; top: -130px; width: 260px; height: 260px; border-radius: 26px;
+        background: #0e1229; border: 4px solid rgba(98, 168, 255, 0.9);
+        box-shadow: 0 0 0 10px rgba(98, 168, 255, 0.15), 0 0 80px rgba(98, 168, 255, 0.55);
+      }
+      .die .core { position: absolute; width: 62px; height: 62px; border-radius: 10px; border: 2px solid rgba(111, 211, 255, 0.7); background: rgba(111, 211, 255, 0.08); }
+      .die .pin { position: absolute; background: rgba(140, 200, 255, 0.85); border-radius: 2px; }
+      .die .lbl { position: absolute; left: 0; right: 0; top: 112px; text-align: center; font-family: var(--mono); font-weight: 700; font-size: 30px; color: #8cc8ff; letter-spacing: 0.1em; }
+
+      /* ---------- s02 ---------- */
+      .s02-body { display: flex; gap: 60px; margin-top: 34px; align-items: flex-start; }
+      .sysmap { position: relative; flex: none; width: 1000px; height: 500px; }
+      .sysmap svg { position: absolute; left: 0; top: 0; width: 1000px; height: 500px; overflow: visible; }
+      .bus { fill: none; stroke: rgba(130, 160, 255, 0.35); stroke-width: 14; stroke-linecap: round; }
+      .bus-p { fill: none; stroke: var(--n-cyan); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 16 34; }
+      .unit { position: absolute; padding: 24px 28px; }
+      .unit h3 { font-size: 40px; font-weight: 900; display: flex; align-items: center; gap: 14px; }
+      .unit h3 .ico { width: 44px; height: 44px; }
+      .u-cpu { left: 0; top: 30px; width: 330px; height: 250px; color: var(--n-sky); }
+      .u-ram { left: 670px; top: 30px; width: 330px; height: 250px; color: var(--n-mint); }
+      .u-io { left: 320px; top: 360px; width: 360px; height: 130px; color: var(--n-lav); }
+      .cores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+      .cores span { display: block; padding: 10px 0; text-align: center; border-radius: 12px; border: 1.5px solid rgba(98, 168, 255, 0.5); background: rgba(98, 168, 255, 0.1); color: #dbe8ff; font-size: 24px; font-weight: 700; }
+      .rows { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+      .rows span { display: flex; justify-content: space-between; padding: 6px 16px; border-radius: 10px; background: rgba(58, 214, 171, 0.1); border: 1.5px solid rgba(58, 214, 171, 0.4); color: #d6fff1; font-family: var(--mono); font-size: 22px; font-weight: 700; }
+      .u-io p { margin-top: 10px; font-size: 26px; color: #ddd8ff; font-weight: 700; }
+      .buslbl { position: absolute; left: 445px; top: 98px; padding: 6px 18px; border-radius: 999px; background: #0e1229; border: 1.5px solid rgba(111, 211, 255, 0.6); color: var(--n-cyan); font-size: 24px; font-weight: 900; }
+      .s02-right { flex: 1; display: flex; flex-direction: column; gap: 18px; padding-top: 30px; }
+      .course { padding: 18px 28px; font-size: 34px; font-weight: 900; display: flex; align-items: center; gap: 18px; }
+      .course i { display: block; width: 16px; height: 16px; border-radius: 50%; }
+      .glue { margin-top: 6px; padding: 18px 28px; border-radius: 20px; background: linear-gradient(90deg, rgba(98, 168, 255, 0.22), rgba(162, 148, 255, 0.22)); border: 1.5px solid rgba(162, 148, 255, 0.6); font-size: 32px; font-weight: 900; color: #fff; }
+      .gh { display: flex; align-items: center; gap: 18px; padding: 18px 28px; font-size: 30px; font-weight: 900; color: #fff; }
+      .gh .ico { width: 48px; height: 48px; color: var(--n-sun); }
+      .gh small { display: block; font-size: 24px; font-weight: 400; color: var(--n-muted); }
+
+      /* ---------- s03 ---------- */
+      .s03-chips { display: flex; gap: 16px; margin-top: 30px; }
+      .s03-chips .npill { color: var(--n-muted); }
+      .s03-body { display: flex; gap: 50px; margin-top: 30px; align-items: flex-start; }
+      .s03-body .code { width: 640px; flex: none; }
+      .mem { position: relative; flex: none; width: 820px; }
+      .mem .cap { font-size: 24px; font-weight: 700; color: var(--n-muted); letter-spacing: 0.1em; margin-bottom: 12px; }
+      .cells { position: relative; width: 600px; }
+      .cell { display: flex; align-items: center; height: 70px; margin-bottom: 10px; border-radius: 14px; border: 1.5px solid rgba(130, 160, 255, 0.3); background: rgba(17, 22, 50, 0.86); }
+      .cell .ad { width: 150px; padding-left: 22px; font-family: var(--mono); font-size: 24px; color: var(--n-muted); font-weight: 700; }
+      .cell .nm { width: 100px; font-family: var(--mono); font-size: 30px; font-weight: 700; }
+      .cell .vl { flex: 1; font-family: var(--mono); font-size: 30px; font-weight: 700; color: var(--n-sun); }
+      .mem svg { position: absolute; left: 0; top: 40px; width: 820px; height: 320px; overflow: visible; }
+      .arc { fill: none; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 400; }
+      .s03-msg { position: relative; margin-top: 18px; height: 70px; }
+      .s03-msg div { position: absolute; left: 0; top: 0; font-size: 44px; font-weight: 900; white-space: nowrap; }
+      .s03-msg .m1 { color: var(--n-muted); }
+      .s03-msg em { font-style: normal; color: var(--n-cyan); }
+
+      /* ---------- s04 ---------- */
+      .s04-chips { display: flex; gap: 16px; margin-top: 30px; flex-wrap: wrap; }
+      .s04-row { display: flex; align-items: center; gap: 30px; margin-top: 34px; }
+      .s04-row .lam { width: 560px; flex: none; }
+      .s04-row .stc { flex: 1; }
+      .s04-mid { flex: none; width: 120px; display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--n-muted); font-size: 22px; font-weight: 700; text-align: center; }
+      .s04-mid .ico { width: 70px; height: 70px; color: var(--n-cyan); }
+
+      /* ---------- s05 ---------- */
+      .s05-chips { display: flex; gap: 16px; margin-top: 30px; }
+      .race { margin-top: 28px; padding: 22px 28px; display: flex; gap: 26px; align-items: center; }
+      .lanes { flex: 1; display: flex; flex-direction: column; gap: 14px; }
+      .lane { display: flex; align-items: center; gap: 12px; }
+      .lane .who { flex: none; width: 120px; font-size: 28px; font-weight: 900; }
+      .slots { flex: 1; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+      .rop { height: 86px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1.5px solid currentColor; background: rgba(10, 13, 32, 0.7); }
+      .rop b { font-size: 28px; font-weight: 900; }
+      .rop small { font-family: var(--mono); font-size: 20px; font-weight: 700; opacity: 0.85; }
+      .slot-empty { height: 86px; }
+      .counter { flex: none; width: 250px; padding: 18px; text-align: center; border-radius: 18px; border: 1.5px solid rgba(255, 201, 74, 0.6); background: rgba(255, 201, 74, 0.08); }
+      .counter .lb { font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--n-sun); }
+      .counter .vv { position: relative; height: 96px; margin-top: 4px; }
+      .counter .vv span { position: absolute; left: 0; right: 0; top: 0; font-family: var(--mono); font-size: 84px; font-weight: 700; line-height: 96px; color: #fff; }
+      .counter .ex { margin-top: 6px; font-size: 24px; font-weight: 900; color: var(--n-coral); }
+      .fixrow { display: flex; align-items: center; gap: 28px; margin-top: 26px; padding: 20px 30px; }
+      .fixrow .ico { width: 58px; height: 58px; color: var(--n-mint); flex: none; }
+      .fixrow .t { font-size: 36px; font-weight: 900; }
+      .fixrow .npill { color: var(--n-mint); }
+
+      /* ---------- s06 ---------- */
+      .ooo { margin-top: 30px; padding: 22px 30px; }
+      .orow { display: flex; align-items: center; gap: 20px; }
+      .orow + .orow { margin-top: 20px; }
+      .orow .lb { flex: none; width: 150px; font-size: 26px; font-weight: 900; color: var(--n-muted); }
+      .ins { flex: none; width: 300px; height: 92px; border-radius: 14px; padding: 0 18px; display: flex; flex-direction: column; justify-content: center; border: 1.5px solid currentColor; background: rgba(10, 13, 32, 0.7); }
+      .ins b { font-family: var(--mono); font-size: 26px; font-weight: 700; color: #fff; }
+      .ins small { font-size: 22px; font-weight: 700; }
+      .orow.prog .ins { opacity: 0.55; }
+      .commit { margin-top: 16px; margin-left: 170px; font-size: 26px; font-weight: 700; color: var(--n-muted); }
+      .commit em { font-style: normal; color: var(--n-mint); }
+      .cores2 { display: flex; gap: 30px; margin-top: 26px; }
+      .cores2 .code { flex: 1; }
+      .cores2 .body { font-size: 30px; }
+      .barrier {
+        position: absolute; left: 14px; right: 14px; top: 88px; height: 8px; border-radius: 4px;
+        background: linear-gradient(90deg, var(--n-coral), var(--n-sun)); box-shadow: 0 0 22px rgba(255, 140, 90, 0.9);
+        transform-origin: 50% 50%;
+      }
+      .barrier span { position: absolute; right: 0; top: -40px; padding: 2px 14px; border-radius: 8px; background: var(--n-coral); color: #1a0f0c; font-family: "Noto Sans SC", sans-serif; font-size: 22px; font-weight: 900; }
+      .huh { color: var(--n-coral); font-weight: 700; }
+
+      /* ---------- s07 ---------- */
+      .s07-body { display: flex; gap: 50px; margin-top: 30px; }
+      .lat { flex: 1; padding: 26px 30px; display: flex; flex-direction: column; gap: 16px; }
+      .lat .cap, .grids .cap { font-size: 24px; font-weight: 700; color: var(--n-muted); letter-spacing: 0.08em; }
+      .lrow { display: flex; align-items: center; gap: 18px; }
+      .lrow .nm { flex: none; width: 150px; font-size: 28px; font-weight: 900; }
+      .lrow .track { flex: 1; height: 34px; border-radius: 10px; background: rgba(255, 255, 255, 0.05); overflow: hidden; }
+      .lrow .barf { display: block; height: 100%; border-radius: 10px; transform-origin: 0 50%; }
+      .lrow .cy { flex: none; width: 160px; text-align: right; font-family: var(--mono); font-size: 26px; font-weight: 700; color: #fff; }
+      .grids { flex: none; width: 640px; display: flex; flex-direction: column; gap: 16px; }
+      .gpair { display: flex; gap: 40px; }
+      .gbox { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+      .gbox .gl { font-size: 26px; font-weight: 900; }
+      .gbox .gl small { display: block; font-size: 22px; font-weight: 700; text-align: center; }
+      .gg { position: relative; display: grid; grid-template-columns: repeat(6, 40px); gap: 6px; }
+      .gg span { display: block; width: 40px; height: 40px; border-radius: 8px; background: rgba(255, 255, 255, 0.07); }
+      .lineout { position: absolute; left: -6px; top: -6px; width: 282px; height: 52px; border-radius: 12px; border: 3px solid var(--n-sun); }
+      .linenote { font-size: 24px; font-weight: 700; color: var(--n-sun); text-align: center; }
+      .s07-hit { margin-top: 26px; font-size: 40px; font-weight: 900; align-self: center; }
+      .s07-hit em { font-style: normal; color: var(--n-mint); }
+
+      /* ---------- s08 ---------- */
+      .s08-body { display: flex; gap: 40px; margin-top: 26px; }
+      .fork { position: relative; flex: none; width: 1000px; height: 380px; }
+      .fork svg { position: absolute; left: 0; top: 0; width: 1000px; height: 380px; overflow: visible; }
+      .road { fill: none; stroke: rgba(130, 160, 255, 0.22); stroke-width: 26; stroke-linecap: round; }
+      .flow { fill: none; stroke-width: 8; stroke-linecap: round; stroke-dasharray: 18 26; }
+      .fnode { position: absolute; left: 360px; top: 150px; width: 120px; height: 80px; border-radius: 18px; background: #0e1229; border: 2px solid var(--n-cyan); color: var(--n-cyan); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 34px; font-weight: 700; box-shadow: 0 0 30px rgba(111, 211, 255, 0.45); }
+      .pred { position: absolute; left: 300px; top: 40px; padding: 8px 20px; border-radius: 12px; background: var(--n-cyan); color: #0b0e1d; font-size: 26px; font-weight: 900; }
+      .flab { position: absolute; padding: 6px 18px; border-radius: 12px; font-size: 24px; font-weight: 900; }
+      .fl-up { left: 760px; top: 4px; color: var(--n-muted); }
+      .fl-dn { left: 760px; top: 328px; color: var(--n-muted); }
+      .verdict { position: absolute; left: 900px; width: 76px; height: 76px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+      .verdict .ico { width: 46px; height: 46px; color: #0b0e1d; }
+      .v-ok { top: 32px; background: var(--n-mint); }
+      .v-no { top: 32px; background: var(--n-coral); }
+      .s08-right { flex: 1; display: flex; flex-direction: column; gap: 22px; justify-content: center; }
+      .res { padding: 24px 28px; }
+      .res .h { font-size: 34px; font-weight: 900; }
+      .res p { margin-top: 6px; font-size: 26px; color: var(--n-muted); }
+      .risk { margin-top: 28px; display: flex; align-items: center; gap: 24px; padding: 20px 30px; border-color: rgba(255, 122, 99, 0.55); }
+      .risk .ico { width: 60px; height: 60px; color: var(--n-coral); flex: none; }
+      .risk .t { flex: 1; font-size: 32px; font-weight: 900; }
+      .risk .npill { color: var(--n-coral); }
+
+      /* ---------- s09 ---------- */
+      .routes { display: flex; gap: 40px; margin-top: 34px; }
+      .route { flex: 1; padding: 28px 32px; }
+      .route .who { font-size: 30px; font-weight: 900; color: var(--n-muted); }
+      .route .jump { display: flex; gap: 16px; margin-top: 22px; flex-wrap: wrap; }
+      .rail { position: relative; display: flex; justify-content: space-between; margin-top: 30px; }
+      .rail .ln { position: absolute; left: 30px; right: 30px; top: 28px; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.08); }
+      .rail .ln b { display: block; width: 100%; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--n-sky), var(--n-lav), var(--n-coral)); transform-origin: 0 50%; }
+      .rail .st { position: relative; width: 62px; height: 62px; border-radius: 50%; background: #0e1229; border: 3px solid var(--n-sky); color: #fff; font-family: var(--mono); font-size: 28px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+      .rail .st.nw { border-color: var(--n-coral); box-shadow: 0 0 20px rgba(255, 122, 99, 0.6); }
+      .steps { display: flex; align-items: center; gap: 18px; margin-top: 34px; }
+      .steps .lb { font-size: 28px; font-weight: 700; color: var(--n-muted); }
+      .steps .ico { width: 40px; height: 40px; color: var(--n-muted); }
+      .steps .npill { color: var(--n-cyan); }
+      .quote { margin-top: 34px; align-self: center; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 54px; color: #fff; }
+      .quote em { font-style: normal; color: var(--n-sun); }
+
+      /* ---------- s10 ---------- */
+      .chain { display: flex; align-items: center; gap: 18px; }
+      .chain .c { padding: 14px 30px; border-radius: 999px; color: #fff; font-size: 36px; font-weight: 900; }
+      .chain .ico { width: 46px; height: 46px; color: var(--muted); }
+      .end-big { margin-top: 64px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 64px; line-height: 1.35; }
+      .end-big em { font-style: normal; color: var(--sky); }
+      .end-motto { margin-top: 36px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 110px; color: var(--coral); letter-spacing: 0.06em; }
+      .ref { margin-top: 30px; font-size: 28px; color: var(--muted); letter-spacing: 0.06em; }
+      .credit { position: absolute; left: 0; right: 0; bottom: 140px; text-align: center; font-size: 24px; color: rgba(34, 37, 58, 0.62); letter-spacing: 0.1em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="207.152" data-width="1920" data-height="1080">
+      <div id="bg" class="clip bg" data-start="0" data-duration="207.152" data-track-index="0">
+        <div class="paper">
+          <div class="dots"></div>
+          <div class="glow g1"></div>
+          <div class="glow g2"></div>
+          <div class="glow g3"></div>
+        </div>
+        <div class="night">
+          <div class="grid"></div>
+          <div class="nglow a"></div>
+          <div class="nglow b"></div>
+          <svg class="traces" viewBox="0 0 1920 1080">
+            <path class="trace" d="M0 210 H260 L320 270 H560" />
+            <path class="trace" d="M1920 150 H1660 L1600 210 H1420" />
+            <path class="trace" d="M0 880 H200 L260 820 H460" />
+            <path class="trace" d="M1920 930 H1700 L1640 870 H1460" />
+            <path class="trace" d="M110 0 V130 L170 190 V330" />
+            <path class="trace" d="M1810 1080 V960 L1750 900 V760" />
+            <path class="trace-p" d="M0 210 H260 L320 270 H560" />
+            <path class="trace-p" d="M1920 150 H1660 L1600 210 H1420" />
+            <path class="trace-p" d="M0 880 H200 L260 820 H460" />
+            <path class="trace-p" d="M1920 930 H1700 L1640 870 H1460" />
+            <path class="trace-p" d="M110 0 V130 L170 190 V330" />
+            <path class="trace-p" d="M1810 1080 V960 L1750 900 V760" />
+            <circle class="tnode" cx="560" cy="270" r="7" />
+            <circle class="tnode" cx="1420" cy="210" r="7" />
+            <circle class="tnode" cx="460" cy="820" r="7" />
+            <circle class="tnode" cx="1460" cy="870" r="7" />
+            <circle class="tnode" cx="170" cy="330" r="7" />
+            <circle class="tnode" cx="1750" cy="760" r="7" />
+          </svg>
+        </div>
+        <div class="brand brand-l">读书 · CPU眼里的C/C++ Plus版</div>
+        <div class="brand brand-d">读书 · CPU眼里的C/C++ <b>Plus</b>版</div>
+        <div class="progress"><div class="progress-fill"></div></div>
+      </div>
+
+      <!-- s01 · plus edition + dive -->
+      <section id="s01" class="clip scene" data-start="0.000" data-duration="19.008" data-track-index="1">
+        <div class="inner center s01-a">
+          <div class="s01-kicker">续集 · 读书</div>
+          <div class="s01-title">《CPU眼里的C/C++》<em>Plus 版</em>来了</div>
+          <div class="books">
+            <div class="bk bk-old">
+              <div class="book old"><div class="chip">CPU</div><div class="bt">CPU眼里的<br /><b>C/C++</b></div><div class="ba">阿布编程 著</div></div>
+              <div class="meta">2023 · 6 章</div>
+            </div>
+            <svg class="ico arrow" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="bk bk-new">
+              <div class="book new"><div class="chip">CPU</div><div class="plus">PLUS</div><div class="bt">CPU眼里的<br /><b>C/C++</b></div><div class="ba">杨晓涛 著</div></div>
+              <div class="meta" style="color: var(--sky)">2026 · 7 章</div>
+            </div>
+          </div>
+          <div class="tiles">
+            <div class="tile t1"><span class="no">1</span>预备知识</div>
+            <div class="tile t2"><span class="no">2</span>基础语法</div>
+            <div class="tile t3"><span class="no">3</span>函数原理</div>
+            <div class="tile t4 nw"><span class="no">4</span>高级指针<span class="nb">新</span></div>
+            <div class="tile t5"><span class="no">5</span>C++ 特性</div>
+            <div class="tile t6"><span class="no">6</span>高级编程</div>
+            <div class="tile t7 nw"><span class="no">7</span>现代CPU的高级功能及风险<span class="nb">新</span></div>
+          </div>
+        </div>
+        <div class="zoom">
+          <div class="die">
+            <div class="core" style="left: 22px; top: 22px"></div>
+            <div class="core" style="right: 22px; top: 22px"></div>
+            <div class="core" style="left: 22px; bottom: 22px"></div>
+            <div class="core" style="right: 22px; bottom: 22px"></div>
+            <div class="lbl">CPU</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s02 · minimal computer -->
+      <section id="s02" class="clip scene dk" data-start="19.008" data-duration="21.406" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>新增 1.1</b> 预备知识</div>
+          <div class="title">先把整台机器，<em>画在一张图上</em></div>
+          <div class="s02-body">
+            <div class="sysmap">
+              <svg viewBox="0 0 1000 500">
+                <path class="bus" d="M330 155 H670" />
+                <path class="bus" d="M500 155 V360" />
+                <path class="bus-p bp1" d="M330 155 H670" />
+                <path class="bus-p bp2" d="M670 155 H330" />
+                <path class="bus-p bp3" d="M500 155 V360" />
+              </svg>
+              <div class="gcard unit u-cpu">
+                <h3><svg class="ico" viewBox="0 0 48 48"><rect x="12" y="12" width="24" height="24" rx="3" /><path d="M18 6v6M24 6v6M30 6v6M18 36v6M24 36v6M30 36v6M6 18h6M6 24h6M6 30h6M36 18h6M36 24h6M36 30h6" /></svg>CPU</h3>
+                <div class="cores"><span>核心 0</span><span>核心 1</span><span>寄存器</span><span>缓存</span></div>
+              </div>
+              <div class="gcard unit u-ram">
+                <h3><svg class="ico" viewBox="0 0 48 48"><rect x="6" y="14" width="36" height="20" rx="3" /><path d="M12 34v6M20 34v6M28 34v6M36 34v6M13 20v8M21 20v8M29 20v8M37 20v0" /></svg>内存</h3>
+                <div class="rows"><span>0x1000<b>42</b></span><span>0x1008<b>0x1000</b></span><span>0x1010<b>…</b></span></div>
+              </div>
+              <div class="gcard unit u-io">
+                <h3><svg class="ico" viewBox="0 0 48 48"><rect x="6" y="12" width="36" height="24" rx="4" /><path d="M12 20h.1M18 20h.1M24 20h.1M30 20h.1M36 20h.1M14 28h20" stroke-width="4" /></svg>外设</h3>
+                <p>键盘 · 硬盘 · 网卡</p>
+              </div>
+              <div class="buslbl" data-layout-allow-overlap>总线</div>
+            </div>
+            <div class="s02-right">
+              <div class="gcard course c1" style="color: var(--n-sky)"><i style="background: var(--n-sky)"></i>计算机组成原理</div>
+              <div class="gcard course c2" style="color: var(--n-mint)"><i style="background: var(--n-mint)"></i>汇编语言</div>
+              <div class="gcard course c3" style="color: var(--n-lav)"><i style="background: var(--n-lav)"></i>程序设计</div>
+              <div class="glue">三门课，粘成一本书</div>
+              <div class="gcard gh">
+                <svg class="ico" viewBox="0 0 48 48"><path d="M17 15L7 24l10 9M31 15l10 9-10 9M27 9l-6 30" /></svg>
+                <div>代码全部开源<small>托管在 GitHub，读到哪跑到哪</small></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s03 · advanced pointers -->
+      <section id="s03" class="clip scene dk" data-start="40.414" data-duration="22.438" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>新章 · 第 4 章</b> 高级指针</div>
+          <div class="title">指针难，是因为<em>看不见内存</em></div>
+          <div class="s03-chips">
+            <span class="npill ch1">数组与指针</span>
+            <span class="npill ch2">字符串与字符数组</span>
+            <span class="npill ch3 m">int**</span>
+            <span class="npill ch4 m">void*</span>
+            <span class="npill ch5">回调函数</span>
+          </div>
+          <div class="s03-body">
+            <div class="code pcode">
+              <div class="bar"><i style="background:#ff6b5a"></i><i style="background:#f2b01e"></i><i style="background:#22a88e"></i><span>pointer.c</span></div>
+              <div class="body"><span class="ty">int</span>   x  = <span class="n">42</span>;
+<span class="ty">int</span><span class="op">*</span>  p  = <span class="op">&amp;</span>x;
+<span class="ty">int</span><span class="op">**</span> pp = <span class="op">&amp;</span>p;
+<span class="ty">void</span><span class="op">*</span> v  = p;</div>
+            </div>
+            <div class="mem">
+              <div class="cap">内存（每格 8 字节）</div>
+              <div class="cells">
+                <div class="cell e1"><span class="ad">0x1000</span><span class="nm" style="color: var(--n-sun)">x</span><span class="vl">42</span></div>
+                <div class="cell e2"><span class="ad">0x1008</span><span class="nm" style="color: var(--n-sky)">p</span><span class="vl">0x1000</span></div>
+                <div class="cell e3"><span class="ad">0x1010</span><span class="nm" style="color: var(--n-lav)">pp</span><span class="vl">0x1008</span></div>
+                <div class="cell e4"><span class="ad">0x1018</span><span class="nm" style="color: var(--n-mint)">v</span><span class="vl">0x1000</span></div>
+              </div>
+              <svg viewBox="0 0 820 320">
+                <path class="arc a1" d="M600 115 C 700 115, 700 35, 612 35" stroke="#62a8ff" />
+                <path class="arc a2" d="M600 195 C 700 195, 700 115, 612 115" stroke="#a294ff" />
+                <path class="arc a3" d="M600 275 C 790 275, 790 35, 612 35" stroke="#3ad6ab" />
+                <path class="ah h1" d="M604 35 l16 -9 v18 z" fill="#62a8ff" />
+                <path class="ah h2" d="M604 115 l16 -9 v18 z" fill="#a294ff" />
+                <path class="ah h3" d="M604 35 l16 -9 v18 z" fill="#3ad6ab" />
+              </svg>
+            </div>
+          </div>
+          <div class="s03-msg">
+            <div class="m1">指针为什么这么难？</div>
+            <div class="m2">把内存画出来，指针就只是<em>一支箭头</em></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s04 · C++ features / lambda -->
+      <section id="s04" class="clip scene dk" data-start="62.852" data-duration="21.694" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>扩充 · 第 5 章</b> C++ 特性</div>
+          <div class="title">Lambda，是编译器替你写的<em>小类</em></div>
+          <div class="s04-chips">
+            <span class="npill f1" style="color: var(--n-sky)">析构函数</span>
+            <span class="npill m f2" style="color: var(--n-sky)">class / struct</span>
+            <span class="npill m f3" style="color: var(--n-mint)">auto</span>
+            <span class="npill m f4" style="color: var(--n-mint)">thread_local</span>
+            <span class="npill m f5" style="color: var(--n-sun)">Lambda</span>
+            <span class="npill f6" style="color: var(--n-lav)">运算符重载 · 函数对象</span>
+          </div>
+          <div class="s04-row">
+            <div class="code lam">
+              <div class="bar"><i style="background:#ff6b5a"></i><i style="background:#f2b01e"></i><i style="background:#22a88e"></i><span>你写的</span></div>
+              <div class="body"><div class="hl c hc1" style="top: 68px"></div><div class="hl f hf1" style="top: 212px"></div><span class="ty">int</span> x = <span class="n">10</span>;
+<span class="k">auto</span> add = [x](<span class="ty">int</span> y) {
+    <span class="k">return</span> x + y;
+};
+add(<span class="n">5</span>);   <span class="cm">// 调用</span></div>
+            </div>
+            <div class="s04-mid"><svg class="ico" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>编译器<br />眼里</div>
+            <div class="code stc">
+              <div class="bar"><i style="background:#ff6b5a"></i><i style="background:#f2b01e"></i><i style="background:#22a88e"></i><span>编译器生成的</span></div>
+              <div class="body"><div class="hl c hc2" style="top: 68px"></div><div class="hl f hf2" style="top: 116px"></div><span class="k">struct</span> <span class="ty">__lambda</span> {
+    <span class="ty">int</span> x;            <span class="cm">// 捕获 → 成员</span>
+    <span class="ty">int</span> <span class="k">operator</span>()(<span class="ty">int</span> y) <span class="k">const</span> {
+        <span class="k">return</span> x + y;
+    }
+};</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s05 · race & atomic -->
+      <section id="s05" class="clip scene dk" data-start="84.546" data-duration="23.734" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>扩充 · 第 6 章</b> 高级编程</div>
+          <div class="title">一句加一，其实是<em>三条指令</em></div>
+          <div class="s05-chips">
+            <span class="npill k1" style="color: var(--n-sky)">右值</span>
+            <span class="npill m k2" style="color: var(--n-lav)">setjmp / longjmp</span>
+            <span class="npill k3" style="color: var(--n-mint)">原子操作 Atomic</span>
+            <span class="npill k4 fill" style="background: #62a8ff">Windows 蓝屏</span>
+          </div>
+          <div class="gcard race">
+            <div class="lanes">
+              <div class="lane">
+                <div class="who" style="color: var(--n-sky)">线程 A</div>
+                <div class="slots">
+                  <div class="rop oa1" style="color: var(--n-sky)"><b>读</b><small>eax = 0</small></div>
+                  <div class="slot-empty"></div>
+                  <div class="rop oa2" style="color: var(--n-sky)"><b>改</b><small>eax + 1</small></div>
+                  <div class="slot-empty"></div>
+                  <div class="rop oa3" style="color: var(--n-sky)"><b>写</b><small>count = 1</small></div>
+                  <div class="slot-empty"></div>
+                </div>
+              </div>
+              <div class="lane">
+                <div class="who" style="color: var(--n-lav)">线程 B</div>
+                <div class="slots">
+                  <div class="slot-empty"></div>
+                  <div class="rop ob1" style="color: var(--n-lav)"><b>读</b><small>eax = 0</small></div>
+                  <div class="slot-empty"></div>
+                  <div class="rop ob2" style="color: var(--n-lav)"><b>改</b><small>eax + 1</small></div>
+                  <div class="slot-empty"></div>
+                  <div class="rop ob3" style="color: var(--n-lav)"><b>写</b><small>count = 1</small></div>
+                </div>
+              </div>
+            </div>
+            <div class="counter">
+              <div class="lb">count</div>
+              <div class="vv" data-layout-allow-overlap><span class="cv0">0</span><span class="cv1" data-layout-allow-overlap>1</span></div>
+              <div class="ex">加了两次，只多了 1</div>
+            </div>
+          </div>
+          <div class="gcard fixrow">
+            <svg class="ico" viewBox="0 0 48 48"><rect x="10" y="21" width="28" height="20" rx="4" /><path d="M16 21v-6a8 8 0 0 1 16 0v6M24 29v5" /></svg>
+            <div class="t">锁 / 原子操作：把三步捆成不可分割的一步</div>
+            <span class="npill m">lock xadd</span>
+            <span class="npill m">std::atomic</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- s06 · out-of-order & barrier -->
+      <section id="s06" class="clip scene dk" data-start="108.280" data-duration="21.862" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>新章 · 第 7 章</b> 现代 CPU</div>
+          <div class="title">CPU 不再<em>老老实实</em>排队</div>
+          <div class="gcard ooo">
+            <div class="orow prog">
+              <div class="lb">程序顺序</div>
+              <div class="ins pi1" style="color: var(--n-coral)"><b>① mov r1, [a]</b><small>读内存 · 很慢</small></div>
+              <div class="ins pi2" style="color: var(--n-sun)"><b>② add r2, r1, 1</b><small>依赖 ①</small></div>
+              <div class="ins pi3" style="color: var(--n-mint)"><b>③ mov r3, 5</b><small>无依赖</small></div>
+              <div class="ins pi4" style="color: var(--n-mint)"><b>④ imul r4, r3, 2</b><small>无依赖</small></div>
+            </div>
+            <div class="orow exec">
+              <div class="lb" style="color: var(--n-cyan)">实际执行</div>
+              <div class="ins xi1" style="color: var(--n-coral)"><b>① mov r1, [a]</b><small>等内存…</small></div>
+              <div class="ins xi3" style="color: var(--n-mint)"><b>③ mov r3, 5</b><small>抢先执行</small></div>
+              <div class="ins xi4" style="color: var(--n-mint)"><b>④ imul r4, r3, 2</b><small>抢先执行</small></div>
+              <div class="ins xi2" style="color: var(--n-sun)"><b>② add r2, r1, 1</b><small>等 ① 完成</small></div>
+            </div>
+            <div class="commit">结果仍按程序顺序提交 —— <em>单线程里你察觉不到</em></div>
+          </div>
+          <div class="cores2">
+            <div class="code k0">
+              <div class="bar"><i style="background:#ff6b5a"></i><i style="background:#f2b01e"></i><i style="background:#22a88e"></i><span>核心 0 · 写</span></div>
+              <div class="body">data = <span class="n">1</span>;
+
+flag = <span class="n">1</span>;<div class="barrier" data-layout-allow-overlap><span>内存屏障 fence</span></div></div>
+            </div>
+            <div class="code k1">
+              <div class="bar"><i style="background:#ff6b5a"></i><i style="background:#f2b01e"></i><i style="background:#22a88e"></i><span>核心 1 · 读</span></div>
+              <div class="body"><span class="k">if</span> (flag == <span class="n">1</span>)
+    use(data);
+<span class="huh">// data 竟然还是 0 ?!</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s07 · cache -->
+      <section id="s07" class="clip scene dk" data-start="130.142" data-duration="22.510" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>新章 · 第 7 章</b> 缓存</div>
+          <div class="title">快与慢之间，隔着<em>三级缓存</em></div>
+          <div class="s07-body">
+            <div class="gcard lat">
+              <div class="cap">访问延迟（数量级示意）</div>
+              <div class="lrow l1"><span class="nm" style="color: var(--n-cyan)">寄存器</span><span class="track"><b class="barf" style="background: var(--n-cyan)"></b></span><span class="cy">~1 周期</span></div>
+              <div class="lrow l2"><span class="nm" style="color: var(--n-sky)">L1 缓存</span><span class="track"><b class="barf" style="background: var(--n-sky)"></b></span><span class="cy">~4</span></div>
+              <div class="lrow l3"><span class="nm" style="color: var(--n-lav)">L2 缓存</span><span class="track"><b class="barf" style="background: var(--n-lav)"></b></span><span class="cy">~12</span></div>
+              <div class="lrow l4"><span class="nm" style="color: var(--n-sun)">L3 缓存</span><span class="track"><b class="barf" style="background: var(--n-sun)"></b></span><span class="cy">~40</span></div>
+              <div class="lrow l5"><span class="nm" style="color: var(--n-coral)">内存</span><span class="track"><b class="barf" style="background: var(--n-coral)"></b></span><span class="cy">~200+</span></div>
+            </div>
+            <div class="grids">
+              <div class="cap">同一个 6×6 数组，两种遍历</div>
+              <div class="gpair">
+                <div class="gbox">
+                  <div class="gl" style="color: var(--n-mint)">按行遍历<small>连续命中</small></div>
+                  <div class="gg ga"><div class="lineout" data-layout-allow-overlap></div></div>
+                </div>
+                <div class="gbox">
+                  <div class="gl" style="color: var(--n-coral)">按列遍历<small>频繁未命中</small></div>
+                  <div class="gg gb"></div>
+                </div>
+              </div>
+              <div class="linenote">一次搬一整行：64 字节缓存行</div>
+            </div>
+          </div>
+          <div class="s07-hit">速度差几倍，差在<em>缓存命中率</em></div>
+        </div>
+      </section>
+
+      <!-- s08 · branch prediction -->
+      <section id="s08" class="clip scene dk" data-start="152.652" data-duration="22.966" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>新章 · 第 7 章</b> 分支预测</div>
+          <div class="title">遇到 if，CPU 先<em>猜</em>再跑</div>
+          <div class="s08-body">
+            <div class="fork">
+              <svg viewBox="0 0 1000 380">
+                <path class="road" d="M20 190 H420" />
+                <path class="road" d="M420 190 C 520 190, 560 70, 700 70 H980" />
+                <path class="road" d="M420 190 C 520 190, 560 310, 700 310 H980" />
+                <path class="flow fm" d="M20 190 H420" stroke="#6fd3ff" />
+                <path class="flow fu-c" d="M420 190 C 520 190, 560 70, 700 70 H980" stroke="#6fd3ff" />
+                <path class="flow fu-g" d="M420 190 C 520 190, 560 70, 700 70 H980" stroke="#3ad6ab" />
+                <path class="flow fu-r" d="M420 190 C 520 190, 560 70, 700 70 H980" stroke="#ff7a63" />
+                <path class="flow fd" d="M420 190 C 520 190, 560 310, 700 310 H980" stroke="#6fd3ff" />
+              </svg>
+              <div class="fnode" data-layout-allow-overlap>if</div>
+              <div class="pred" data-layout-allow-overlap>预测器：走上面</div>
+              <div class="flab fl-up" data-layout-allow-overlap>分支 A</div>
+              <div class="flab fl-dn" data-layout-allow-overlap>分支 B</div>
+              <div class="verdict v-ok" data-layout-allow-overlap><svg class="ico" viewBox="0 0 48 48"><path d="M12 25l8 8 16-18" stroke-width="5" /></svg></div>
+              <div class="verdict v-no" data-layout-allow-overlap><svg class="ico" viewBox="0 0 48 48"><path d="M14 14l20 20M34 14L14 34" stroke-width="5" /></svg></div>
+            </div>
+            <div class="s08-right">
+              <div class="gcard res r-ok"><div class="h" style="color: var(--n-mint)">猜对了</div><p>不用等结果，白赚时间</p></div>
+              <div class="gcard res r-no"><div class="h" style="color: var(--n-coral)">猜错了</div><p>清空流水线，从正确分支重来</p></div>
+            </div>
+          </div>
+          <div class="gcard risk">
+            <svg class="ico" viewBox="0 0 48 48"><path d="M24 7L44 41H4z" /><path d="M24 19v10M24 35h.1" stroke-width="4.5" /></svg>
+            <div class="t">风险：推测执行留下的痕迹，可能被攻击者读到</div>
+            <span class="npill m v1">Spectre 幽灵</span>
+            <span class="npill m v2">Meltdown 熔断</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- s09 · how to read -->
+      <section id="s09" class="clip scene dk" data-start="175.618" data-duration="16.702" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>行动</b> 怎么读 Plus 版</div>
+          <div class="title">两种读者，<em>两条路线</em></div>
+          <div class="routes">
+            <div class="gcard route ro">
+              <div class="who">读过旧版</div>
+              <div class="jump">
+                <span class="npill j1" style="color: var(--n-coral)">第 4 章 · 高级指针</span>
+                <span class="npill j2" style="color: var(--n-coral)">第 7 章 · 现代 CPU</span>
+              </div>
+            </div>
+            <div class="gcard route rn">
+              <div class="who">第一次读</div>
+              <div class="rail">
+                <div class="ln"><b></b></div>
+                <div class="st">1</div><div class="st">2</div><div class="st">3</div><div class="st nw">4</div><div class="st">5</div><div class="st">6</div><div class="st nw">7</div>
+              </div>
+            </div>
+          </div>
+          <div class="steps">
+            <span class="lb">每一节：</span>
+            <span class="npill sp1">跑一遍代码</span>
+            <svg class="ico sa1" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <span class="npill sp2">看反汇编</span>
+            <svg class="ico sa2" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <span class="npill sp3">调试器里亲眼看</span>
+          </div>
+          <div class="quote">“不投喂知识，<em>激发思考</em>。”</div>
+        </div>
+      </section>
+
+      <!-- s10 · closing -->
+      <section id="s10" class="clip scene" data-start="192.320" data-duration="14.832" data-track-index="1">
+        <div class="inner center">
+          <div class="chain">
+            <span class="c c1" style="background: var(--sky)">代码</span>
+            <svg class="ico ca1" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <span class="c c2" style="background: var(--lav)">指令</span>
+            <svg class="ico ca2" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <span class="c c3" style="background: var(--mint)">流水线 · 缓存 · 预测</span>
+          </div>
+          <div class="end-big">Plus 版把这张图，一直画到了<em>芯片内部</em></div>
+          <div class="end-motto">看得越深，写得越稳</div>
+          <div class="ref">参考：《CPU眼里的C/C++[Plus版]》 杨晓涛 著 · 清华大学出版社 2026</div>
+        </div>
+        <div class="credit">Made with Claude Opus 5.5 × HyperFrames in Cursor</div>
+      </section>
+
+      <div id="cap-000" class="clip caption" data-start="0.897" data-duration="0.790" data-track-index="20"><span>上一期</span></div>
+      <div id="cap-001" class="clip caption" data-start="1.687" data-duration="3.122" data-track-index="20"><span>我们聊了《CPU眼里的C/C++》</span></div>
+      <div id="cap-002" class="clip caption" data-start="4.809" data-duration="0.732" data-track-index="20"><span>今年三月</span></div>
+      <div id="cap-003" class="clip caption" data-start="5.541" data-duration="1.120" data-track-index="20"><span>它出了Plus版</span></div>
+      <div id="cap-004" class="clip caption" data-start="6.661" data-duration="1.533" data-track-index="20"><span>从六章扩成七章</span></div>
+      <div id="cap-005" class="clip caption" data-start="8.194" data-duration="2.111" data-track-index="20"><span>新增了整整一章高级指针</span></div>
+      <div id="cap-006" class="clip caption" data-start="10.305" data-duration="3.655" data-track-index="20"><span>还多了一章现代CPU的高级功能及风险</span></div>
+      <div id="cap-007" class="clip caption" data-start="13.960" data-duration="0.555" data-track-index="20"><span>这一次</span></div>
+      <div id="cap-008" class="clip caption" data-start="14.515" data-duration="3.143" data-track-index="20"><span>我们直接钻进CPU内部去看看</span></div>
+      <div id="cap-009" class="clip caption" data-start="19.555" data-duration="1.415" data-track-index="20"><span>新书开篇第一节</span></div>
+      <div id="cap-010" class="clip caption" data-start="20.970" data-duration="2.497" data-track-index="20"><span>叫极简现代计算机系统</span></div>
+      <div id="cap-011" class="clip caption" data-start="23.467" data-duration="2.618" data-track-index="20"><span>CPU、内存、总线和外设</span></div>
+      <div id="cap-012" class="clip caption" data-start="26.085" data-duration="2.724" data-track-index="20"><span>先把整台机器画在一张图上</span></div>
+      <div id="cap-013" class="clip caption" data-start="28.809" data-duration="0.802" data-track-index="20"><span>它想做的</span></div>
+      <div id="cap-014" class="clip caption" data-start="29.611" data-duration="2.996" data-track-index="20"><span>是把计算机组成原理、汇编语言和</span></div>
+      <div id="cap-015" class="clip caption" data-start="32.607" data-duration="2.464" data-track-index="20"><span>程序设计三门课粘在一起</span></div>
+      <div id="cap-016" class="clip caption" data-start="35.071" data-duration="2.583" data-track-index="20"><span>书里所有代码都开源在GitHub上</span></div>
+      <div id="cap-017" class="clip caption" data-start="37.654" data-duration="0.743" data-track-index="20"><span>读到哪</span></div>
+      <div id="cap-018" class="clip caption" data-start="38.397" data-duration="1.567" data-track-index="20"><span>就能跑到哪</span></div>
+      <div id="cap-019" class="clip caption" data-start="40.961" data-duration="2.486" data-track-index="20"><span>最大的新章是高级指针</span></div>
+      <div id="cap-020" class="clip caption" data-start="43.447" data-duration="2.535" data-track-index="20"><span>数组名和指针是不是一回事？</span></div>
+      <div id="cap-021" class="clip caption" data-start="45.982" data-duration="2.641" data-track-index="20"><span>字符串和字符数组差在哪？</span></div>
+      <div id="cap-022" class="clip caption" data-start="48.623" data-duration="2.772" data-track-index="20"><span>双重指针、void指针、回调函数</span></div>
+      <div id="cap-023" class="clip caption" data-start="51.395" data-duration="1.851" data-track-index="20"><span>书里一个个拆开</span></div>
+      <div id="cap-024" class="clip caption" data-start="53.246" data-duration="1.285" data-track-index="20"><span>最后还专门回答</span></div>
+      <div id="cap-025" class="clip caption" data-start="54.531" data-duration="1.746" data-track-index="20"><span>指针为什么这么难？</span></div>
+      <div id="cap-026" class="clip caption" data-start="56.277" data-duration="2.088" data-track-index="20"><span>因为你看不见内存</span></div>
+      <div id="cap-027" class="clip caption" data-start="58.365" data-duration="1.486" data-track-index="20"><span>只要把内存画出来</span></div>
+      <div id="cap-028" class="clip caption" data-start="59.851" data-duration="2.551" data-track-index="20"><span>指针就只是一支箭头</span></div>
+      <div id="cap-029" class="clip caption" data-start="63.399" data-duration="1.934" data-track-index="20"><span>C++这一章也厚了一倍</span></div>
+      <div id="cap-030" class="clip caption" data-start="65.333" data-duration="2.712" data-track-index="20"><span>析构函数、class和struct、</span></div>
+      <div id="cap-031" class="clip caption" data-start="68.045" data-duration="2.500" data-track-index="20"><span>auto、thread_local、</span></div>
+      <div id="cap-032" class="clip caption" data-start="70.545" data-duration="0.767" data-track-index="20"><span>Lambda</span></div>
+      <div id="cap-033" class="clip caption" data-start="71.312" data-duration="2.603" data-track-index="20"><span>还有运算符重载和函数对象</span></div>
+      <div id="cap-034" class="clip caption" data-start="73.915" data-duration="1.274" data-track-index="20"><span>比如Lambda</span></div>
+      <div id="cap-035" class="clip caption" data-start="75.189" data-duration="1.486" data-track-index="20"><span>在CPU眼里</span></div>
+      <div id="cap-036" class="clip caption" data-start="76.675" data-duration="2.087" data-track-index="20"><span>就是编译器替你写的一个小类</span></div>
+      <div id="cap-037" class="clip caption" data-start="78.762" data-duration="0.932" data-track-index="20"><span>捕获的变量</span></div>
+      <div id="cap-038" class="clip caption" data-start="79.694" data-duration="1.108" data-track-index="20"><span>是它的成员</span></div>
+      <div id="cap-039" class="clip caption" data-start="80.802" data-duration="0.731" data-track-index="20"><span>调用它</span></div>
+      <div id="cap-040" class="clip caption" data-start="81.533" data-duration="2.563" data-track-index="20"><span>就是调用它的括号运算符</span></div>
+      <div id="cap-041" class="clip caption" data-start="85.093" data-duration="1.262" data-track-index="20"><span>高级编程一章</span></div>
+      <div id="cap-042" class="clip caption" data-start="86.355" data-duration="2.229" data-track-index="20"><span>新增了右值、setjmp和</span></div>
+      <div id="cap-043" class="clip caption" data-start="88.584" data-duration="1.674" data-track-index="20"><span>longjmp、原子操作</span></div>
+      <div id="cap-044" class="clip caption" data-start="90.258" data-duration="2.674" data-track-index="20"><span>甚至还有Windows蓝屏的故事</span></div>
+      <div id="cap-045" class="clip caption" data-start="92.932" data-duration="2.441" data-track-index="20"><span>两个线程同时给一个计数器加一</span></div>
+      <div id="cap-046" class="clip caption" data-start="95.373" data-duration="3.632" data-track-index="20"><span>在CPU眼里是读、改、写三条指令</span></div>
+      <div id="cap-047" class="clip caption" data-start="99.005" data-duration="1.640" data-track-index="20"><span>中间随时可能被打断</span></div>
+      <div id="cap-048" class="clip caption" data-start="100.645" data-duration="1.250" data-track-index="20"><span>结果加了两次</span></div>
+      <div id="cap-049" class="clip caption" data-start="101.895" data-duration="1.309" data-track-index="20"><span>只多了一</span></div>
+      <div id="cap-050" class="clip caption" data-start="103.204" data-duration="1.202" data-track-index="20"><span>锁和原子操作</span></div>
+      <div id="cap-051" class="clip caption" data-start="104.406" data-duration="3.424" data-track-index="20"><span>就是把这三步捆成不可分割的一步</span></div>
+      <div id="cap-052" class="clip caption" data-start="108.827" data-duration="0.590" data-track-index="20"><span>第七章</span></div>
+      <div id="cap-053" class="clip caption" data-start="109.417" data-duration="2.414" data-track-index="20"><span>是Plus版真正的重头戏</span></div>
+      <div id="cap-054" class="clip caption" data-start="111.831" data-duration="1.875" data-track-index="20"><span>现代CPU为了快</span></div>
+      <div id="cap-055" class="clip caption" data-start="113.706" data-duration="1.899" data-track-index="20"><span>不再老老实实一条一条执行</span></div>
+      <div id="cap-056" class="clip caption" data-start="115.605" data-duration="1.910" data-track-index="20"><span>没有依赖的指令会抢先跑</span></div>
+      <div id="cap-057" class="clip caption" data-start="117.515" data-duration="1.698" data-track-index="20"><span>这叫乱序执行</span></div>
+      <div id="cap-058" class="clip caption" data-start="119.213" data-duration="1.628" data-track-index="20"><span>单线程里你察觉不到</span></div>
+      <div id="cap-059" class="clip caption" data-start="120.841" data-duration="1.132" data-track-index="20"><span>可一到多核</span></div>
+      <div id="cap-060" class="clip caption" data-start="121.973" data-duration="2.724" data-track-index="20"><span>别的核看到的顺序就可能被打乱</span></div>
+      <div id="cap-061" class="clip caption" data-start="124.697" data-duration="0.884" data-track-index="20"><span>内存屏障</span></div>
+      <div id="cap-062" class="clip caption" data-start="125.581" data-duration="1.628" data-track-index="20"><span>就是在这里立一道墙</span></div>
+      <div id="cap-063" class="clip caption" data-start="127.209" data-duration="2.483" data-track-index="20"><span>规定谁必须先完成</span></div>
+      <div id="cap-064" class="clip caption" data-start="130.689" data-duration="1.436" data-track-index="20"><span>再看缓存</span></div>
+      <div id="cap-065" class="clip caption" data-start="132.125" data-duration="2.453" data-track-index="20"><span>CPU读寄存器只要一个周期</span></div>
+      <div id="cap-066" class="clip caption" data-start="134.578" data-duration="2.759" data-track-index="20"><span>读内存却要等上几百个周期</span></div>
+      <div id="cap-067" class="clip caption" data-start="137.337" data-duration="4.022" data-track-index="20"><span>所以芯片里藏着一级、二级、三级缓存</span></div>
+      <div id="cap-068" class="clip caption" data-start="141.359" data-duration="3.266" data-track-index="20"><span>每次按六十四字节一行来搬运数据</span></div>
+      <div id="cap-069" class="clip caption" data-start="144.625" data-duration="0.967" data-track-index="20"><span>同样的算法</span></div>
+      <div id="cap-070" class="clip caption" data-start="145.592" data-duration="2.311" data-track-index="20"><span>按行遍历数组和按列遍历</span></div>
+      <div id="cap-071" class="clip caption" data-start="147.903" data-duration="1.757" data-track-index="20"><span>速度可能差出好几倍</span></div>
+      <div id="cap-072" class="clip caption" data-start="149.660" data-duration="2.542" data-track-index="20"><span>差别就在缓存命中率</span></div>
+      <div id="cap-073" class="clip caption" data-start="153.199" data-duration="1.589" data-track-index="20"><span>还有分支预测</span></div>
+      <div id="cap-074" class="clip caption" data-start="154.788" data-duration="0.897" data-track-index="20"><span>遇到if</span></div>
+      <div id="cap-075" class="clip caption" data-start="155.685" data-duration="1.875" data-track-index="20"><span>CPU不会停下来等结果</span></div>
+      <div id="cap-076" class="clip caption" data-start="157.560" data-duration="2.276" data-track-index="20"><span>而是先猜一个方向往下跑</span></div>
+      <div id="cap-077" class="clip caption" data-start="159.836" data-duration="1.709" data-track-index="20"><span>猜对了，白赚时间</span></div>
+      <div id="cap-078" class="clip caption" data-start="161.545" data-duration="0.743" data-track-index="20"><span>猜错了</span></div>
+      <div id="cap-079" class="clip caption" data-start="162.288" data-duration="2.182" data-track-index="20"><span>就清空流水线重来</span></div>
+      <div id="cap-080" class="clip caption" data-start="164.470" data-duration="2.123" data-track-index="20"><span>章名里的风险二字也在提醒你</span></div>
+      <div id="cap-081" class="clip caption" data-start="166.593" data-duration="1.367" data-track-index="20"><span>这些提速的魔法</span></div>
+      <div id="cap-082" class="clip caption" data-start="167.960" data-duration="1.817" data-track-index="20"><span>也留下了被攻击的缝隙</span></div>
+      <div id="cap-083" class="clip caption" data-start="169.777" data-duration="2.016" data-track-index="20"><span>著名的幽灵和熔断漏洞</span></div>
+      <div id="cap-084" class="clip caption" data-start="171.793" data-duration="3.375" data-track-index="20"><span>就出自推测执行和乱序执行</span></div>
+      <div id="cap-085" class="clip caption" data-start="176.165" data-duration="2.026" data-track-index="20"><span>这本Plus版怎么读？</span></div>
+      <div id="cap-086" class="clip caption" data-start="178.191" data-duration="0.931" data-track-index="20"><span>读过旧版的</span></div>
+      <div id="cap-087" class="clip caption" data-start="179.122" data-duration="2.205" data-track-index="20"><span>直接跳到第四章和第七章</span></div>
+      <div id="cap-088" class="clip caption" data-start="181.327" data-duration="0.850" data-track-index="20"><span>第一次读的</span></div>
+      <div id="cap-089" class="clip caption" data-start="182.177" data-duration="1.179" data-track-index="20"><span>就从头开始</span></div>
+      <div id="cap-090" class="clip caption" data-start="183.356" data-duration="1.875" data-track-index="20"><span>每一节都把代码跑一遍</span></div>
+      <div id="cap-091" class="clip caption" data-start="185.231" data-duration="2.252" data-track-index="20"><span>在调试器里亲眼看一看</span></div>
+      <div id="cap-092" class="clip caption" data-start="187.483" data-duration="1.050" data-track-index="20"><span>用作者的话说</span></div>
+      <div id="cap-093" class="clip caption" data-start="188.533" data-duration="1.462" data-track-index="20"><span>这本书不投喂知识</span></div>
+      <div id="cap-094" class="clip caption" data-start="189.995" data-duration="1.875" data-track-index="20"><span>而是激发思考</span></div>
+      <div id="cap-095" class="clip caption" data-start="193.217" data-duration="1.321" data-track-index="20"><span>从代码到指令</span></div>
+      <div id="cap-096" class="clip caption" data-start="194.538" data-duration="2.842" data-track-index="20"><span>从指令到流水线、缓存和预测</span></div>
+      <div id="cap-097" class="clip caption" data-start="197.380" data-duration="3.511" data-track-index="20"><span>Plus版把这张图一直画到了芯片内部</span></div>
+      <div id="cap-098" class="clip caption" data-start="200.891" data-duration="0.873" data-track-index="20"><span>看得越深</span></div>
+      <div id="cap-099" class="clip caption" data-start="201.764" data-duration="1.638" data-track-index="20"><span>写得越稳</span></div>
+
+      <audio id="narration" src="assets/narration.mp3" data-start="0" data-duration="207.152" data-track-index="30" data-volume="1"></audio>
+      <audio id="bgm" src="assets/bgm.mp3" data-start="0" data-duration="207.152" data-track-index="31" data-volume="0.12"></audio>
+    </div>
+
+    <script>
+      const T = {"s01": {"start": 0.0, "dur": 19.008, "end": 19.008, "vo": 0.8, "speech": 16.608, "cues": {"plus": 4.809, "ch": 6.661, "ptr": 9.373, "cpu": 10.305, "dive": 13.96}}, "s02": {"start": 19.008, "dur": 21.406, "end": 40.414, "vo": 19.458, "speech": 20.256, "cues": {"sys": 21.289, "cpu": 23.467, "glue": 28.809, "c1": 29.965, "c2": 31.439, "c3": 32.607, "gh": 35.071}}, "s03": {"start": 40.414, "dur": 22.438, "end": 62.852, "vo": 40.864, "speech": 21.288, "cues": {"arr": 43.447, "str": 45.982, "pp": 48.623, "vp": 49.531, "cb": 50.439, "why": 54.531, "see": 56.277, "draw": 58.365, "arrow": 60.876}}, "s04": {"start": 62.852, "dur": 21.694, "end": 84.546, "vo": 63.302, "speech": 20.544, "cues": {"list": 65.333, "lam": 73.915, "cls": 76.958, "cap": 78.762, "call": 80.802}}, "s05": {"start": 84.546, "dur": 23.734, "end": 108.28, "vo": 84.996, "speech": 22.584, "cues": {"list": 86.897, "race": 92.932, "rmw": 96.836, "lost": 100.645, "fix": 103.204}}, "s06": {"start": 108.28, "dur": 21.862, "end": 130.142, "vo": 108.73, "speech": 20.712, "cues": {"fast": 111.831, "ooo": 115.605, "single": 119.213, "multi": 120.841, "wall": 124.697}}, "s07": {"start": 130.142, "dur": 22.51, "end": 152.652, "vo": 130.592, "speech": 21.36, "cues": {"reg": 132.125, "mem": 134.578, "lv": 138.941, "line": 141.96, "row": 145.592, "col": 147.007, "hit": 150.533}}, "s08": {"start": 152.652, "dur": 22.966, "end": 175.618, "vo": 153.102, "speech": 21.816, "cues": {"if": 154.788, "guess": 157.854, "right": 159.836, "wrong": 161.545, "risk": 164.47, "vuln": 169.777}}, "s09": {"start": 175.618, "dur": 16.702, "end": 192.32, "vo": 176.068, "speech": 15.552, "cues": {"old": 178.191, "new": 181.327, "run": 183.356, "quote": 189.099}}, "s10": {"start": 192.32, "dur": 14.832, "end": 207.152, "vo": 193.12, "speech": 10.032, "cues": {"l1": 193.217, "l2": 194.538, "l3": 197.38, "l4": 200.891}}};
+      const TOTAL = Number(document.getElementById("root").dataset.duration);
+      const tl = gsap.timeline({ paused: true });
+      const C = (s, k) => T[s].cues[k];
+
+      for (const sel of [".ga", ".gb"]) {
+        const g = document.querySelector(sel);
+        for (let i = 0; i < 36; i++) g.appendChild(document.createElement("span"));
+      }
+
+      function reveal(sel, at, from, opts) {
+        tl.fromTo(sel, Object.assign({ opacity: 0 }, from || { y: 34 }), Object.assign({ opacity: 1, x: 0, y: 0, scale: 1, rotation: 0, duration: 0.6, ease: "power3.out" }, opts || {}), at);
+      }
+      function pop(sel, at) { reveal(sel, at, { scale: 0.6, y: 0 }, { ease: "back.out(2)" }); }
+      function sceneIn(id) {
+        tl.fromTo(`#${id} .inner`, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, T[id].start + 0.02);
+      }
+      function sceneOut(id) {
+        tl.to(`#${id} .inner`, { opacity: 0, y: -18, duration: 0.42, ease: "power2.in" }, T[id].end - 0.44);
+      }
+      function flowLoop(sel, from, at, until, period) {
+        const n = Math.max(1, Math.ceil((until - at) / period));
+        tl.fromTo(sel, { strokeDashoffset: 0 }, { strokeDashoffset: from, duration: period, ease: "none", repeat: n - 1 }, at);
+      }
+
+      // persistent layers: light paper -> night inside the chip -> paper again
+      const darkIn = T.s01.end - 0.7, darkOut = T.s10.start;
+      tl.fromTo(".glow.g1", { x: 0, y: 0 }, { x: 160, y: 90, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".glow.g2", { x: 0, y: 0 }, { x: -140, y: -120, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".glow.g3", { x: 0, y: 0 }, { x: 220, y: -60, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".night", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power1.in" }, darkIn);
+      tl.to(".night", { opacity: 0, duration: 0.9, ease: "power1.inOut" }, darkOut);
+      tl.fromTo(".brand-d", { opacity: 0 }, { opacity: 1, duration: 0.6 }, darkIn);
+      tl.fromTo(".brand-l", { opacity: 1 }, { opacity: 0, duration: 0.4 }, darkIn);
+      tl.to(".brand-d", { opacity: 0, duration: 0.6 }, darkOut);
+      tl.to(".brand-l", { opacity: 1, duration: 0.6 }, darkOut + 0.3);
+      tl.fromTo(".nglow.a", { x: 0, y: 0 }, { x: 260, y: 140, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".nglow.b", { x: 0, y: 0 }, { x: -240, y: -120, duration: TOTAL, ease: "sine.inOut" }, 0);
+      flowLoop(".trace-p", -1000, darkIn, darkOut + 1, 5);
+      tl.fromTo(".progress-fill", { scaleX: 0 }, { scaleX: 1, duration: TOTAL, ease: "none" }, 0);
+
+      // s01
+      {
+        const s = T.s01;
+        tl.fromTo("#s01 .s01-a", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s.start);
+        reveal("#s01 .s01-kicker", s.start + 0.2, { y: 20 });
+        reveal("#s01 .s01-title", s.start + 0.4, { y: 40 });
+        reveal("#s01 .bk-old", s.vo + 0.8, { x: -40 });
+        reveal("#s01 .books .arrow", C("s01", "plus") - 0.2, { x: -20 });
+        reveal("#s01 .bk-new", C("s01", "plus"), { scale: 0.6, y: 0, rotation: 8 }, { duration: 0.9, ease: "back.out(1.6)" });
+        tl.fromTo("#s01 .book.new", { boxShadow: "0 0 0 4px rgba(98,168,255,0.55), 0 0 30px rgba(98,168,255,0.3), 0 26px 50px rgba(20,22,40,0.3)" }, { boxShadow: "0 0 0 6px rgba(98,168,255,0.75), 0 0 90px rgba(98,168,255,0.7), 0 26px 50px rgba(20,22,40,0.3)", duration: 0.6, yoyo: true, repeat: 3, ease: "sine.inOut" }, C("s01", "plus") + 0.8);
+        ["t1", "t2", "t3", "t5", "t6"].forEach((k, i) => reveal(`#s01 .${k}`, C("s01", "ch") + i * 0.14, { y: 20 }, { duration: 0.45 }));
+        reveal("#s01 .t4", C("s01", "ptr") - 0.1, { scale: 0.4, y: -30 }, { ease: "back.out(2.2)" });
+        reveal("#s01 .t7", C("s01", "cpu") + 0.4, { scale: 0.4, y: -30 }, { ease: "back.out(2.2)" });
+        tl.to("#s01 .s01-a", { opacity: 0, scale: 0.92, duration: 0.5, ease: "power2.in" }, C("s01", "dive") - 0.1);
+        reveal("#s01 .zoom", C("s01", "dive") + 0.2, { scale: 0.2, rotation: -40 }, { duration: 0.9, ease: "back.out(1.5)" });
+        tl.to("#s01 .zoom", { scale: 46, rotation: 12, duration: 1.4, ease: "power3.in" }, s.end - 1.5);
+      }
+
+      // s02
+      {
+        sceneIn("s02");
+        reveal("#s02 .u-cpu", C("s02", "cpu") - 0.2, { x: -40 });
+        reveal("#s02 .u-ram", C("s02", "cpu") + 0.5, { x: 40 });
+        reveal("#s02 .bus", C("s02", "cpu") + 1.0, { y: 0 }, { stagger: 0.2 });
+        reveal("#s02 .buslbl", C("s02", "cpu") + 1.2, { scale: 0.6, y: 0 });
+        reveal("#s02 .u-io", C("s02", "cpu") + 1.6, { y: 40 });
+        tl.fromTo("#s02 .bus-p", { opacity: 0 }, { opacity: 1, duration: 0.4 }, C("s02", "cpu") + 1.4);
+        flowLoop("#s02 .bus-p", -100, C("s02", "cpu") + 1.4, T.s02.end, 0.8);
+        reveal("#s02 .c1", C("s02", "c1") - 0.1, { x: 40 });
+        reveal("#s02 .c2", C("s02", "c2") - 0.1, { x: 40 });
+        reveal("#s02 .c3", C("s02", "c3") - 0.1, { x: 40 });
+        pop("#s02 .glue", C("s02", "c3") + 0.9);
+        reveal("#s02 .gh", C("s02", "gh"), { y: 30 });
+        sceneOut("s02");
+      }
+
+      // s03
+      {
+        sceneIn("s03");
+        const chips = [["ch1", "arr", "var(--n-sky)"], ["ch2", "str", "var(--n-mint)"], ["ch3", "pp", "var(--n-lav)"], ["ch4", "vp", "var(--n-sun)"], ["ch5", "cb", "var(--n-coral)"]];
+        chips.forEach(([c, k, col]) => {
+          reveal(`#s03 .${c}`, C("s03", k) - 0.15, { y: 20 }, { duration: 0.45 });
+          tl.to(`#s03 .${c}`, { color: col, duration: 0.3 }, C("s03", k) + 0.1);
+        });
+        reveal("#s03 .pcode", C("s03", "arr") + 0.6, { x: -40 });
+        reveal("#s03 .m1", C("s03", "why") - 0.1, { y: 20 });
+        reveal("#s03 .mem .cap", C("s03", "see") - 0.2, { y: 10 });
+        reveal("#s03 .cell", C("s03", "see"), { x: 40 }, { stagger: 0.18, duration: 0.5 });
+        const d = C("s03", "draw");
+        [["a1", "h1"], ["a2", "h2"], ["a3", "h3"]].forEach(([a, h], i) => {
+          tl.fromTo(`#s03 .${a}`, { strokeDashoffset: 400 }, { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut" }, d + 0.2 + i * 0.6);
+          reveal(`#s03 .${h}`, d + 0.8 + i * 0.6, { x: 10 }, { duration: 0.25 });
+        });
+        tl.to("#s03 .m1", { opacity: 0, y: -20, duration: 0.3 }, C("s03", "arrow") - 1.2);
+        reveal("#s03 .m2", C("s03", "arrow") - 1.0, { y: 20 });
+        sceneOut("s03");
+      }
+
+      // s04
+      {
+        sceneIn("s04");
+        ["f1", "f2", "f3", "f4", "f5", "f6"].forEach((c, i) => pop(`#s04 .${c}`, C("s04", "list") + i * 1.05));
+        tl.fromTo("#s04 .f5", { boxShadow: "0 0 0 rgba(255,201,74,0)" }, { boxShadow: "0 0 30px rgba(255,201,74,0.8)", duration: 0.4, yoyo: true, repeat: 1 }, C("s04", "lam"));
+        reveal("#s04 .lam", C("s04", "lam") + 0.2, { x: -40 });
+        reveal("#s04 .s04-mid", C("s04", "cls") - 0.3, { x: -20 });
+        reveal("#s04 .stc", C("s04", "cls"), { x: 40 });
+        reveal("#s04 .hc1, #s04 .hc2", C("s04", "cap"), { scaleX: 0, y: 0, transformOrigin: "0 50%" }, { scaleX: 1, duration: 0.5 });
+        reveal("#s04 .hf1, #s04 .hf2", C("s04", "call"), { scaleX: 0, y: 0, transformOrigin: "0 50%" }, { scaleX: 1, duration: 0.5 });
+        sceneOut("s04");
+      }
+
+      // s05
+      {
+        sceneIn("s05");
+        ["k1", "k2", "k3", "k4"].forEach((c, i) => pop(`#s05 .${c}`, C("s05", "list") + i * 0.9));
+        reveal("#s05 .race", C("s05", "race") - 0.2, { y: 30 });
+        const r = C("s05", "rmw");
+        const order = [".oa1", ".ob1", ".oa2", ".ob2", ".oa3", ".ob3"];
+        order.forEach((c, i) => reveal(`#s05 ${c}`, r + i * 0.55, { y: -20, scale: 0.8 }, { duration: 0.4, ease: "back.out(2)" }));
+        tl.to("#s05 .cv0", { opacity: 0, y: -30, duration: 0.3 }, r + 4 * 0.55 + 0.2);
+        tl.fromTo("#s05 .cv1", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3 }, r + 4 * 0.55 + 0.2);
+        tl.fromTo("#s05 .cv1", { scale: 1 }, { scale: 1.25, duration: 0.2, yoyo: true, repeat: 1, immediateRender: false }, r + 5 * 0.55 + 0.2);
+        reveal("#s05 .counter .ex", C("s05", "lost"), { y: 14 });
+        tl.fromTo("#s05 .counter", { x: 0 }, { x: 10, duration: 0.06, yoyo: true, repeat: 5, ease: "none" }, C("s05", "lost") + 0.3);
+        reveal("#s05 .fixrow", C("s05", "fix"), { y: 30 });
+        sceneOut("s05");
+      }
+
+      // s06
+      {
+        sceneIn("s06");
+        reveal("#s06 .ooo", C("s06", "fast") - 0.2, { y: 30 });
+        reveal("#s06 .orow.prog .ins", C("s06", "fast") + 0.4, { x: -30 }, { stagger: 0.2, duration: 0.45 });
+        const o = C("s06", "ooo");
+        tl.fromTo("#s06 .exec .lb", { opacity: 0 }, { opacity: 1, duration: 0.4 }, o - 0.3);
+        const w = 320;
+        [["xi1", 0, 0], ["xi3", 2, 1], ["xi4", 3, 2], ["xi2", 1, 3]].forEach(([c, progSlot, execSlot], i) => {
+          tl.fromTo(`#s06 .${c}`, { opacity: 0, x: (progSlot - execSlot) * w, y: -112 }, { opacity: 1, x: 0, y: 0, duration: 0.8, ease: "power3.inOut" }, o + 0.2 + i * 0.45);
+        });
+        tl.fromTo("#s06 .xi1", { scaleX: 1 }, { scaleX: 1.03, duration: 0.5, yoyo: true, repeat: 3, ease: "sine.inOut" }, o + 2.2);
+        reveal("#s06 .commit", C("s06", "single") - 0.1, { y: 14 });
+        reveal("#s06 .k0", C("s06", "multi") - 0.1, { x: -40 });
+        reveal("#s06 .k1", C("s06", "multi") + 0.6, { x: 40 });
+        tl.fromTo("#s06 .k1 .huh", { opacity: 0 }, { opacity: 1, duration: 0.4 }, C("s06", "multi") + 1.8);
+        tl.fromTo("#s06 .barrier", { opacity: 0, scaleX: 0.1, y: -60 }, { opacity: 1, scaleX: 1, y: 0, duration: 0.5, ease: "power4.in" }, C("s06", "wall") + 0.3);
+        tl.fromTo("#s06 .k0", { y: 0 }, { y: 6, duration: 0.08, yoyo: true, repeat: 3, ease: "none" }, C("s06", "wall") + 0.8);
+        sceneOut("s06");
+      }
+
+      // s07
+      {
+        sceneIn("s07");
+        reveal("#s07 .lat", C("s07", "reg") - 0.3, { x: -40 });
+        const widths = [0.03, 0.1, 0.22, 0.42, 1];
+        const at = [C("s07", "reg"), C("s07", "lv"), C("s07", "lv") + 0.7, C("s07", "lv") + 1.4, C("s07", "mem")];
+        widths.forEach((wv, i) => {
+          reveal(`#s07 .l${i + 1}`, at[i] - 0.1, { x: -20 }, { duration: 0.4 });
+          tl.fromTo(`#s07 .l${i + 1} .barf`, { scaleX: 0 }, { scaleX: wv, duration: i === 4 ? 1.6 : 0.6, ease: "power2.out" }, at[i]);
+        });
+        reveal("#s07 .grids .cap", C("s07", "line") - 0.6, { y: 14 });
+        reveal("#s07 .gbox", C("s07", "line") - 0.4, { y: 30 }, { stagger: 0.2 });
+        reveal("#s07 .lineout", C("s07", "line"), { scaleX: 0, y: 0, transformOrigin: "0 50%" }, { scaleX: 1, duration: 0.5 });
+        reveal("#s07 .linenote", C("s07", "line") + 0.3, { y: 10 });
+        const rowCells = gsap.utils.toArray("#s07 .ga span");
+        const colCells = gsap.utils.toArray("#s07 .gb span");
+        const colOrder = [];
+        for (let c = 0; c < 6; c++) for (let r = 0; r < 6; r++) colOrder.push(colCells[r * 6 + c]);
+        tl.to(rowCells, { backgroundColor: "#3ad6ab", duration: 0.12, stagger: 0.05 }, C("s07", "row"));
+        tl.to(colOrder, { backgroundColor: "#ff7a63", duration: 0.12, stagger: 0.08 }, C("s07", "col"));
+        reveal("#s07 .s07-hit", C("s07", "hit") - 0.4, { y: 24 });
+        sceneOut("s07");
+      }
+
+      // s08
+      {
+        sceneIn("s08");
+        const end = T.s08.end;
+        reveal("#s08 .road", C("s08", "if") - 0.2, { y: 0 }, { stagger: 0.15 });
+        pop("#s08 .fnode", C("s08", "if"));
+        reveal("#s08 .flab", C("s08", "if") + 0.4, { y: 10 });
+        tl.set("#s08 .flow", { opacity: 0 }, T.s08.start);
+        tl.to("#s08 .fm", { opacity: 1, duration: 0.3 }, C("s08", "if"));
+        flowLoop("#s08 .flow", -88, C("s08", "if"), end, 0.9);
+        const g = C("s08", "guess");
+        pop("#s08 .pred", g);
+        tl.to("#s08 .fu-c", { opacity: 1, duration: 0.3 }, g + 0.6);
+        const ok = C("s08", "right");
+        tl.to("#s08 .fu-c", { opacity: 0, duration: 0.3 }, ok);
+        tl.to("#s08 .fu-g", { opacity: 1, duration: 0.3 }, ok);
+        pop("#s08 .v-ok", ok + 0.1);
+        reveal("#s08 .r-ok", ok, { x: 40 });
+        const no = C("s08", "wrong");
+        tl.to("#s08 .fu-g", { opacity: 0, duration: 0.2 }, no);
+        tl.to("#s08 .v-ok", { opacity: 0, duration: 0.2 }, no);
+        tl.to("#s08 .fu-r", { opacity: 1, duration: 0.2 }, no);
+        pop("#s08 .v-no", no + 0.1);
+        tl.to("#s08 .fu-r", { opacity: 0, duration: 0.5 }, no + 1.2);
+        tl.to("#s08 .fd", { opacity: 1, duration: 0.4 }, no + 1.5);
+        tl.to("#s08 .pred", { opacity: 0.35, duration: 0.3 }, no + 1.2);
+        reveal("#s08 .r-no", no, { x: 40 });
+        reveal("#s08 .risk", C("s08", "risk"), { y: 30 });
+        pop("#s08 .v1", C("s08", "vuln") + 0.4);
+        pop("#s08 .v2", C("s08", "vuln") + 1.1);
+        sceneOut("s08");
+      }
+
+      // s09
+      {
+        sceneIn("s09");
+        reveal("#s09 .ro", C("s09", "old") - 0.2, { x: -40 });
+        pop("#s09 .j1", C("s09", "old") + 1.0);
+        pop("#s09 .j2", C("s09", "old") + 1.6);
+        reveal("#s09 .rn", C("s09", "new") - 0.2, { x: 40 });
+        reveal("#s09 .rail .st", C("s09", "new") + 0.3, { scale: 0.4, y: 0 }, { stagger: 0.16, duration: 0.4, ease: "back.out(2)" });
+        tl.fromTo("#s09 .rail .ln b", { scaleX: 0 }, { scaleX: 1, duration: 1.4, ease: "power2.inOut" }, C("s09", "new") + 0.4);
+        const r = C("s09", "run");
+        reveal("#s09 .steps .lb", r - 0.2, { x: -20 });
+        reveal("#s09 .sp1", r, { y: 20 });
+        reveal("#s09 .sa1", r + 0.8, { x: -14 });
+        reveal("#s09 .sp2", r + 1.0, { y: 20 });
+        reveal("#s09 .sa2", r + 1.8, { x: -14 });
+        reveal("#s09 .sp3", r + 2.0, { y: 20 });
+        reveal("#s09 .quote", C("s09", "quote") - 0.3, { y: 30, scale: 0.94 }, { duration: 0.8 });
+        sceneOut("s09");
+      }
+
+      // s10
+      {
+        const s = T.s10;
+        tl.fromTo("#s10 .inner", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s.start + 0.3);
+        reveal("#s10 .c1", C("s10", "l1") - 0.1, { y: 20 });
+        reveal("#s10 .ca1", C("s10", "l1") + 0.5, { x: -14 });
+        reveal("#s10 .c2", C("s10", "l1") + 0.7, { y: 20 });
+        reveal("#s10 .ca2", C("s10", "l2") + 0.4, { x: -14 });
+        reveal("#s10 .c3", C("s10", "l2") + 0.6, { y: 20 });
+        reveal("#s10 .end-big", C("s10", "l3") - 0.1, { y: 30 }, { duration: 0.8 });
+        reveal("#s10 .end-motto", C("s10", "l4") - 0.1, { scale: 0.8, y: 20 }, { duration: 0.9, ease: "back.out(1.6)" });
+        reveal("#s10 .ref", C("s10", "l4") + 1.6, { y: 10 });
+        reveal("#s10 .credit", C("s10", "l4") + 2.2, { y: 10 });
+      }
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

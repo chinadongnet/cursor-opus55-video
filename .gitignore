@@ -1,0 +1,10 @@
+node_modules/
+tools/.font-cache/
+tools/.azure-speech.local.json
+__pycache__/
+videos/*/snapshots/
+videos/*/renders/
+videos/*/assets/vo/
+videos/*/assets/narration.mp3
+videos/*/assets/bgm.mp3
+output/

@@ -1,0 +1,1065 @@
+<!doctype html>
+<html lang="zh-CN" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Noto Sans SC"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-400.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Sans SC"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-700.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Sans SC"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-900.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Serif SC"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/noto-serif-sc-700.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Serif SC"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/noto-serif-sc-900.woff2") format("woff2"); }
+      @font-face { font-family: "Ma Shan Zheng"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/ma-shan-zheng-400.woff2") format("woff2"); }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #10132a; }
+
+      :root {
+        --bg: #10132a;
+        --panel: #1b2044;
+        --panel2: #232a55;
+        --ink: #f1f3ff;
+        --muted: #a9afd6;
+        --line: rgba(255, 255, 255, 0.12);
+        --lime: #9be15d;
+        --cyan: #4cc9f0;
+        --pink: #ff6b9a;
+        --gold: #ffd166;
+        --violet: #a78bfa;
+      }
+
+      #root {
+        position: relative; width: 100%; height: 100%; overflow: hidden;
+        background: var(--bg); color: var(--ink);
+        font-family: "Noto Sans SC", sans-serif; font-weight: 400;
+      }
+
+      /* ---------- persistent layers ---------- */
+      .bg { position: absolute; inset: 0; }
+      .grid {
+        position: absolute; inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.045) 2px, transparent 2px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.045) 2px, transparent 2px);
+        background-size: 64px 64px;
+      }
+      .blob { position: absolute; display: block; border-radius: 50%; filter: blur(90px); opacity: 0.32; }
+      .blob.b1 { width: 640px; height: 640px; left: -200px; top: -220px; background: #3b5bdb; }
+      .blob.b2 { width: 560px; height: 560px; right: -160px; top: 300px; background: #7b3fe4; }
+      .blob.b3 { width: 520px; height: 520px; left: 700px; bottom: -320px; background: #1f9e7a; }
+      .brand {
+        position: absolute; top: 44px; right: 64px;
+        display: flex; align-items: center; gap: 12px;
+        font-size: 24px; font-weight: 700; letter-spacing: 0.12em; color: var(--muted);
+      }
+      .brand i { display: block; width: 14px; height: 14px; background: var(--lime); border-radius: 3px; }
+      .xp { position: absolute; left: 0; right: 0; bottom: 0; height: 10px; background: rgba(255, 255, 255, 0.06); }
+      .xp-fill { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, var(--lime), var(--cyan), var(--violet)); transform-origin: 0 50%; }
+
+      /* ---------- scene scaffold ---------- */
+      .scene { position: absolute; inset: 0; }
+      .inner { position: absolute; inset: 0; padding: 92px 150px 210px; display: flex; flex-direction: column; }
+      .center { align-items: center; justify-content: center; text-align: center; }
+      .tag {
+        align-self: flex-start; display: inline-flex; align-items: center; gap: 14px;
+        padding: 9px 24px; border-radius: 12px; border: 2px solid rgba(155, 225, 93, 0.5);
+        background: rgba(155, 225, 93, 0.08); color: var(--ink);
+        font-size: 26px; font-weight: 700; letter-spacing: 0.08em;
+      }
+      .tag b { color: var(--lime); font-weight: 900; }
+      .title { margin-top: 22px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 74px; line-height: 1.22; }
+      .title em { font-style: normal; color: var(--lime); }
+      .card { background: var(--panel); border: 2px solid var(--line); border-radius: 26px; box-shadow: 0 20px 44px rgba(0, 0, 0, 0.28); }
+      .muted { color: var(--muted); }
+      svg.ico { display: block; fill: none; stroke: currentColor; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+      .strike { position: absolute; left: -8px; right: -8px; top: 52%; height: 6px; border-radius: 3px; background: var(--pink); display: block; transform-origin: 0 50%; }
+      .banner {
+        align-self: center; display: flex; align-items: center; gap: 18px;
+        padding: 18px 40px; border-radius: 18px; background: var(--gold); color: #1a1530;
+        font-size: 38px; font-weight: 900;
+      }
+      .banner .ico { width: 46px; height: 46px; }
+
+      /* ---------- captions ---------- */
+      .caption { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 54px; pointer-events: none; }
+      .caption span {
+        display: block; max-width: 1500px; padding: 12px 34px; border-radius: 16px;
+        background: rgba(6, 8, 22, 0.9); border: 2px solid rgba(255, 255, 255, 0.1); color: #fff;
+        font-size: 40px; line-height: 1.4; font-weight: 400; letter-spacing: 0.04em;
+      }
+
+      /* ---------- s01 ---------- */
+      .s01-lead { font-size: 40px; color: var(--muted); font-weight: 700; }
+      .s01-row { display: flex; align-items: center; gap: 50px; margin-top: 46px; }
+      .side { width: 440px; padding: 36px 30px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+      .side .ico { width: 110px; height: 110px; }
+      .side .t { font-size: 48px; font-weight: 900; }
+      .vs { width: 120px; height: 120px; border-radius: 50%; background: var(--pink); color: #1a1530; display: flex; align-items: center; justify-content: center; font-size: 52px; font-weight: 900; font-style: italic; }
+      .s01-parent { margin-top: 40px; display: flex; align-items: center; gap: 18px; }
+      .s01-parent .who { font-size: 30px; color: var(--muted); font-weight: 700; }
+      .s01-parent .say { padding: 14px 32px; border-radius: 22px 22px 22px 6px; background: var(--panel2); font-size: 38px; font-weight: 700; }
+      .s01-q { margin-top: 34px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 64px; color: var(--gold); }
+      .hero-kicker { font-size: 34px; letter-spacing: 0.36em; color: var(--lime); font-weight: 900; }
+      .hero { margin-top: 26px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 124px; line-height: 1.18; }
+      .hero .hl { color: var(--lime); }
+      .hero-rule { display: block; width: 200px; height: 8px; border-radius: 4px; margin: 40px auto 0; background: linear-gradient(90deg, var(--lime), var(--cyan)); transform-origin: 50% 50%; }
+      .hero-sub { margin-top: 34px; font-size: 44px; color: var(--muted); font-weight: 700; letter-spacing: 0.06em; }
+
+      /* ---------- s02 ---------- */
+      .s02-row { display: flex; align-items: center; gap: 30px; margin-top: 40px; }
+      .s02-row .lbl { font-size: 38px; font-weight: 700; color: var(--muted); }
+      .s02-not { padding: 20px 36px; font-size: 42px; font-weight: 900; color: var(--muted); }
+      .s02-not .txt { position: relative; }
+      .s02-arrow { width: 64px; height: 64px; color: var(--muted); }
+      .s02-real { padding: 20px 36px; border-radius: 22px; background: var(--pink); color: #1a1530; font-size: 46px; font-weight: 900; }
+      .bugs { display: flex; gap: 36px; margin-top: 44px; }
+      .bug { flex: 1; padding: 28px 30px; display: flex; align-items: center; gap: 22px; border-color: rgba(255, 107, 154, 0.4); }
+      .bug .ico { width: 62px; height: 62px; color: var(--pink); flex: none; }
+      .bug .t { font-size: 40px; font-weight: 900; }
+      .s02-ans { margin-top: 48px; align-self: center; display: flex; align-items: center; gap: 26px; font-size: 40px; font-weight: 900; }
+      .s02-ans s { color: var(--muted); font-weight: 700; text-decoration-thickness: 4px; text-decoration-color: var(--pink); }
+      .shields { display: flex; gap: 14px; }
+      .shield { padding: 10px 22px; border-radius: 14px; background: var(--lime); color: #1a1530; font-size: 32px; font-weight: 900; }
+
+      /* ---------- s03 ---------- */
+      .s03-body { display: flex; gap: 56px; margin-top: 34px; align-items: stretch; }
+      .chart { width: 820px; flex: none; padding: 26px 30px 20px; }
+      .chart-head { font-size: 26px; color: var(--muted); font-weight: 700; }
+      .chart svg { display: block; width: 760px; height: 360px; margin-top: 8px; }
+      .rules3 { flex: 1; display: flex; flex-direction: column; gap: 24px; justify-content: center; }
+      .r3 { padding: 24px 30px; display: flex; align-items: center; gap: 22px; }
+      .r3 .ico { width: 58px; height: 58px; flex: none; }
+      .r3 .t { font-size: 38px; font-weight: 900; line-height: 1.3; }
+      .r3 .t small { display: block; font-size: 28px; font-weight: 400; color: var(--muted); }
+      .r3.ok { border-color: rgba(155, 225, 93, 0.5); }
+      .r3.ok .ico { color: var(--lime); }
+      .r3.bad { border-color: rgba(255, 107, 154, 0.5); }
+      .r3.bad .ico { color: var(--pink); }
+      .r3.ex .ico { color: var(--cyan); }
+      .s03-rule { margin-top: 36px; }
+
+      /* ---------- s04 ---------- */
+      .bar { display: flex; margin-top: 46px; width: 1620px; height: 96px; border-radius: 18px; overflow: hidden; }
+      .seg { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 900; color: #fff; transform-origin: 0 50%; }
+      .seg.sleep { width: 540px; background: #5141b8; }
+      .seg.school { width: 531px; background: #2a5fc0; }
+      .seg.hw { width: 203px; background: #0f7561; }
+      .seg.life { width: 202px; background: #555b80; }
+      .seg.left { width: 144px; background: var(--gold); color: #1a1530; }
+      .bar-lbl { display: flex; width: 1620px; margin-top: 12px; }
+      .bar-lbl div { font-size: 26px; color: var(--muted); font-weight: 700; text-align: center; }
+      .s04-total { position: absolute; right: 150px; top: 112px; font-size: 30px; color: var(--muted); font-weight: 700; }
+      .s04-total b { font-size: 54px; color: var(--ink); font-weight: 900; margin: 0 6px; }
+      .week { margin-top: 40px; padding: 28px 40px; display: flex; align-items: center; gap: 40px; }
+      .week-head { width: 250px; flex: none; }
+      .week-head .k { font-size: 28px; color: var(--muted); font-weight: 700; }
+      .week-head .v { font-family: "Noto Serif SC", serif; font-size: 72px; font-weight: 900; color: var(--gold); line-height: 1.1; }
+      .days { flex: 1; display: flex; gap: 18px; }
+      .day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+      .day .d { font-size: 30px; font-weight: 900; color: var(--muted); }
+      .day .blk { width: 100%; height: 86px; border-radius: 14px; border: 2px dashed var(--line); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; color: #1a1530; }
+      .day .blk.on { border: none; background: var(--lime); }
+      .day .blk.big { border: none; background: var(--cyan); }
+
+      .s04-rest { margin-top: 30px; align-self: center; font-size: 34px; font-weight: 700; color: var(--muted); }
+      .s04-rest b { color: var(--gold); font-weight: 900; }
+
+      /* ---------- s05 ---------- */
+      .flow { display: flex; align-items: center; gap: 22px; margin-top: 40px; }
+      .step { flex: 1; padding: 30px 32px; display: flex; flex-direction: column; gap: 14px; min-height: 230px; }
+      .step .top { display: flex; align-items: center; gap: 16px; }
+      .step .ico { width: 56px; height: 56px; flex: none; }
+      .step .k { font-size: 30px; font-weight: 900; }
+      .step .t { font-size: 36px; font-weight: 700; line-height: 1.4; }
+      .flow .arr { width: 50px; height: 50px; color: var(--muted); flex: none; }
+      .devlog { margin-top: 34px; align-self: center; width: 1100px; padding: 24px 40px; }
+      .devlog .h { display: flex; align-items: center; gap: 14px; font-size: 26px; color: var(--muted); font-weight: 700; padding-bottom: 12px; border-bottom: 2px dashed var(--line); }
+      .devlog .h .ico { width: 34px; height: 34px; color: var(--lime); }
+      .devlog .ln { margin-top: 10px; padding: 6px 16px; border-radius: 10px; font-size: 32px; font-weight: 700; }
+      .devlog .ln b { display: inline-block; width: 100px; color: var(--cyan); font-weight: 900; }
+      .devlog .ln.hl { background: rgba(155, 225, 93, 0.16); }
+
+      /* ---------- s06 ---------- */
+      .race { margin-top: 44px; display: flex; flex-direction: column; gap: 26px; }
+      .lane { display: flex; align-items: center; gap: 28px; }
+      .lane .who { width: 110px; flex: none; font-size: 36px; font-weight: 900; }
+      .lane .run { height: 84px; border-radius: 16px; display: flex; align-items: center; padding: 0 30px; font-size: 32px; font-weight: 900; transform-origin: 0 50%; }
+      .lane.old .run { width: 1240px; background: #3a4170; color: var(--ink); }
+      .lane.new .run { width: 380px; background: var(--lime); color: #1a1530; }
+      .tools { display: flex; gap: 14px; }
+      .tools span { padding: 10px 22px; border-radius: 999px; border: 2px solid rgba(76, 201, 240, 0.6); color: var(--cyan); font-size: 30px; font-weight: 700; }
+      .s06-trap { margin-top: 44px; align-self: center; display: flex; align-items: center; gap: 22px; padding: 22px 36px; border-color: rgba(255, 107, 154, 0.55); font-size: 38px; font-weight: 900; }
+      .s06-trap .ico { width: 56px; height: 56px; color: var(--pink); }
+      .s06-trap em { font-style: normal; color: var(--pink); }
+      .s06-rule { margin-top: 30px; }
+
+      /* ---------- s07 ---------- */
+      .s07-body { display: flex; gap: 50px; margin-top: 30px; align-items: flex-start; }
+      .game { width: 660px; flex: none; padding: 16px; }
+      .game svg { display: block; width: 624px; height: 420px; border-radius: 16px; background: #0b0e22; }
+      .maps { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+      .mrow { display: flex; align-items: center; gap: 20px; padding: 16px 24px; }
+      .mrow .sub { flex: none; width: 92px; padding: 6px 0; border-radius: 10px; text-align: center; font-size: 28px; font-weight: 900; color: #1a1530; }
+      .mrow .t { font-size: 32px; font-weight: 700; }
+      .mrow .t b { color: var(--gold); font-weight: 900; }
+      .s07-mem { margin-top: 28px; align-self: center; font-size: 38px; font-weight: 900; }
+      .s07-mem em { font-style: normal; color: var(--lime); }
+
+      /* ---------- s08 ---------- */
+      .s08-row { display: flex; gap: 34px; margin-top: 40px; }
+      .gcard { flex: 1; padding: 22px 22px 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; position: relative; }
+      .gcard svg.ill { width: 300px; height: 150px; border-radius: 14px; background: #0b0e22; display: block; }
+      .gcard .n { font-size: 38px; font-weight: 900; }
+      .gcard .w { font-size: 26px; font-weight: 900; padding: 4px 16px; border-radius: 999px; background: var(--lime); color: #1a1530; }
+      .gcard.big .w { background: var(--pink); }
+      .gcard.big .n { color: var(--muted); }
+      .gcard .x { position: absolute; left: 50%; top: 22px; margin-left: -75px; width: 150px; height: 150px; color: var(--pink); }
+      .s08-tool { margin-top: 36px; align-self: center; display: flex; align-items: center; gap: 22px; font-size: 36px; font-weight: 700; }
+      .s08-tool .chip { padding: 12px 30px; border-radius: 16px; background: var(--panel2); border: 2px solid rgba(76, 201, 240, 0.6); color: var(--cyan); font-weight: 900; }
+      .s08-done { margin-top: 30px; align-self: center; font-size: 42px; font-weight: 900; }
+      .s08-done em { font-style: normal; color: var(--lime); }
+      .s08-done s { color: var(--muted); text-decoration-color: var(--pink); text-decoration-thickness: 4px; font-weight: 700; }
+
+      /* ---------- s09 ---------- */
+      .lv { position: relative; margin-top: 70px; }
+      .lv-line { position: absolute; left: 190px; right: 190px; top: 34px; height: 8px; border-radius: 4px; background: var(--line); }
+      .lv-fill { display: block; width: 100%; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--lime), var(--cyan), var(--violet), var(--gold)); transform-origin: 0 50%; }
+      .lv-nodes { position: relative; display: flex; justify-content: space-between; }
+      .lvn { width: 380px; display: flex; flex-direction: column; align-items: center; }
+      .lvn .dot { width: 76px; height: 76px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900; color: #1a1530; }
+      .lvn .dot span { display: block; }
+      .lvn .k { margin-top: 26px; font-size: 26px; font-weight: 900; letter-spacing: 0.1em; color: var(--muted); }
+      .lvn .when { margin-top: 4px; font-family: "Noto Serif SC", serif; font-size: 52px; font-weight: 900; }
+      .lvn .card { margin-top: 18px; width: 100%; padding: 22px 24px; font-size: 32px; font-weight: 700; line-height: 1.45; text-align: center; min-height: 160px; display: flex; align-items: center; justify-content: center; }
+
+      /* ---------- s10 ---------- */
+      .alarms { display: flex; gap: 36px; margin-top: 44px; }
+      .alarm { flex: 1; padding: 32px 30px; display: flex; flex-direction: column; gap: 18px; border-color: rgba(255, 107, 154, 0.55); }
+      .alarm .ico { width: 72px; height: 72px; color: var(--pink); }
+      .alarm .t { font-size: 38px; font-weight: 900; line-height: 1.35; }
+      .alarm .t small { display: block; margin-top: 6px; font-size: 28px; font-weight: 400; color: var(--muted); }
+      .s10-vs { display: flex; gap: 40px; margin-top: 44px; justify-content: center; }
+      .s10-vs .card { width: 560px; padding: 24px 32px; display: flex; align-items: center; justify-content: center; gap: 20px; font-size: 44px; font-weight: 900; }
+      .s10-vs .make { border-color: rgba(155, 225, 93, 0.6); }
+      .s10-vs .make em { font-style: normal; color: var(--lime); }
+      .s10-vs .play { color: var(--muted); }
+
+      /* ---------- s11 ---------- */
+      .s11-body { display: flex; align-items: center; gap: 46px; margin-top: 40px; }
+      .weak { position: relative; padding: 26px 40px; border-radius: 30px 30px 30px 8px; background: var(--panel2); font-size: 44px; font-weight: 900; color: var(--muted); }
+      .weak .txt { position: relative; }
+      .s11-arrow { width: 70px; height: 70px; color: var(--muted); flex: none; }
+      .doc { flex: 1; padding: 30px 40px; }
+      .doc .h { display: flex; align-items: center; gap: 16px; font-size: 34px; font-weight: 900; padding-bottom: 16px; border-bottom: 2px dashed var(--line); }
+      .doc .h .ico { width: 44px; height: 44px; color: var(--gold); }
+      .doc .it { margin-top: 18px; display: flex; align-items: center; gap: 18px; font-size: 36px; font-weight: 700; }
+      .doc .it .n { width: 46px; height: 46px; border-radius: 12px; background: var(--cyan); color: #1a1530; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 28px; flex: none; }
+      .doc .it.demo .n { background: var(--lime); }
+      .s11-win { margin-top: 40px; align-self: center; display: flex; gap: 30px; }
+      .s11-win div { padding: 18px 36px; border-radius: 18px; font-size: 38px; font-weight: 900; color: #1a1530; }
+
+      /* ---------- s12 ---------- */
+      .skills { display: flex; gap: 36px; margin-top: 40px; }
+      .skill { flex: 1; padding: 30px 32px; }
+      .skill .top { display: flex; align-items: center; gap: 16px; }
+      .skill .ico { width: 60px; height: 60px; flex: none; }
+      .skill h3 { font-size: 46px; font-weight: 900; }
+      .skill p { margin-top: 12px; font-size: 32px; color: var(--muted); line-height: 1.45; }
+      .s12-rare { margin-top: 34px; align-self: center; }
+      .s12-port { margin-top: 34px; align-self: center; display: flex; align-items: center; gap: 30px; }
+      .s12-port .pf { display: flex; align-items: center; gap: 18px; padding: 20px 34px; border-color: rgba(76, 201, 240, 0.6); font-size: 40px; font-weight: 900; }
+      .s12-port .pf .ico { width: 54px; height: 54px; color: var(--cyan); }
+      .s12-port .gt { font-size: 56px; font-weight: 900; color: var(--gold); }
+      .s12-port .say { font-size: 38px; font-weight: 700; color: var(--muted); }
+
+      /* ---------- s13 ---------- */
+      .quests { margin-top: 40px; align-self: center; width: 1460px; padding: 18px 40px; }
+      .quest { display: flex; align-items: center; gap: 28px; padding: 26px 0; border-bottom: 2px dashed var(--line); }
+      .quest:last-child { border-bottom: none; }
+      .quest .q { flex: none; padding: 8px 18px; border-radius: 12px; background: var(--violet); color: #1a1530; font-size: 28px; font-weight: 900; }
+      .quest .what { flex: 1; font-size: 40px; font-weight: 700; }
+      .quest .xpv { flex: none; font-size: 30px; font-weight: 900; color: var(--gold); }
+      .qbox { flex: none; width: 54px; height: 54px; border-radius: 12px; border: 4px solid var(--muted); position: relative; }
+      .qbox svg { position: absolute; left: -4px; top: -12px; width: 66px; height: 66px; color: var(--lime); }
+      .tick { stroke-dasharray: 60; }
+
+      /* ---------- s14 ---------- */
+      .end-line { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 66px; line-height: 1.4; }
+      .end-line em { font-style: normal; color: var(--lime); }
+      .end-line.small { margin-top: 30px; font-size: 46px; font-weight: 700; color: var(--muted); }
+      .end-line.small em { color: var(--gold); }
+      .cheer { margin-top: 40px; font-family: "Ma Shan Zheng", cursive; font-size: 100px; color: var(--lime); }
+      .credit { position: absolute; left: 0; right: 0; bottom: 140px; text-align: center; font-size: 24px; color: var(--muted); letter-spacing: 0.1em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="266.752" data-width="1920" data-height="1080">
+      <div id="bg" class="clip bg" data-start="0" data-duration="266.752" data-track-index="0">
+        <div class="grid"></div>
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
+        <div class="blob b3"></div>
+        <div class="brand"><i></i>高一 × AI 游戏开发</div>
+        <div class="xp"><div class="xp-fill"></div></div>
+      </div>
+
+      <!-- s01 · hook + title -->
+      <section id="s01" class="clip scene" data-start="0.000" data-duration="16.544" data-track-index="1">
+        <div class="inner center s01-a">
+          <div class="s01-lead">你读高一，想用 AI 做一款自己的游戏</div>
+          <div class="s01-row">
+            <div class="card side sd-grade">
+              <svg class="ico" viewBox="0 0 48 48" style="color: var(--cyan)"><path d="M6 10c6-2 12-2 18 2v28c-6-4-12-4-18-2zM42 10c-6-2-12-2-18 2v28c6-4 12-4 18-2z" /></svg>
+              <div class="t">学习 · 成绩</div>
+            </div>
+            <div class="vs">VS</div>
+            <div class="card side sd-game">
+              <svg class="ico" viewBox="0 0 48 48" style="color: var(--lime)"><path d="M14 14h20a10 10 0 0 1 10 10v4a8 8 0 0 1-14 5l-2-2h-8l-2 2a8 8 0 0 1-14-5v-4a10 10 0 0 1 10-10z" /><path d="M14 21v8M10 25h8" /><path d="M32 23h.1M36 27h.1" stroke-width="5" /></svg>
+              <div class="t">AI 做游戏</div>
+            </div>
+          </div>
+          <div class="s01-parent"><span class="who">家长：</span><span class="say">先考上大学再说。</span></div>
+          <div class="s01-q">真的只能二选一吗？</div>
+        </div>
+        <div class="inner center s01-b">
+          <div class="hero-kicker">高一 × AI 游戏开发</div>
+          <div class="hero">学习和做游戏<br /><span class="hl">如何兼顾？</span></div>
+          <div class="hero-rule"></div>
+          <div class="hero-sub">用逻辑把它拆开，算清楚</div>
+        </div>
+      </section>
+
+      <!-- s02 · the real conflict -->
+      <section id="s02" class="clip scene" data-start="16.544" data-duration="15.598" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>00</b> 找到真正的矛盾</div>
+          <div class="title">伤成绩的，是<em>没有边界</em></div>
+          <div class="s02-row">
+            <span class="lbl">伤害成绩的</span>
+            <div class="card s02-not"><span class="txt">做游戏本身<span class="strike"></span></span></div>
+            <svg class="ico s02-arrow" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="s02-real">没有边界</div>
+          </div>
+          <div class="bugs">
+            <div class="card bug bg1"><svg class="ico" viewBox="0 0 48 48"><path d="M38 30A16 16 0 1 1 20 9a13 13 0 0 0 18 21z" /></svg><div class="t">熬夜调代码</div></div>
+            <div class="card bug bg2"><svg class="ico" viewBox="0 0 48 48"><rect x="15" y="14" width="18" height="24" rx="9" /><path d="M24 14v24M15 22H7M33 22h8M15 31H8M33 31h7M18 10l-3-4M30 10l3-4" /></svg><div class="t">上课想 bug</div></div>
+            <div class="card bug bg3"><svg class="ico" viewBox="0 0 48 48"><path d="M13 6h22M13 42h22M15 6c0 10 18 12 18 18S15 32 15 42M33 6c0 10-18 12-18 18s18 8 18 18" /></svg><div class="t">作业一拖再拖</div></div>
+          </div>
+          <div class="s02-ans">
+            <span class="muted">不是二选一</span>
+            <svg class="ico" viewBox="0 0 48 48" style="width: 54px; height: 54px; color: var(--muted)"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <span>划好三条边界</span>
+            <div class="shields"><span class="shield sh1">红线</span><span class="shield sh2">时间</span><span class="shield sh3">注意力</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s03 · red line -->
+      <section id="s03" class="clip scene" data-start="32.142" data-duration="18.142" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>边界 1</b> 成绩</div>
+          <div class="title">先画一条<em>成绩红线</em></div>
+          <div class="s03-body">
+            <div class="card chart">
+              <div class="chart-head">成绩走势 · 示意</div>
+              <svg viewBox="0 0 760 360">
+                <path d="M40 20V330H740" stroke="rgba(255,255,255,0.18)" stroke-width="3" fill="none" />
+                <path d="M40 230H740" stroke="#ff6b9a" stroke-width="4" stroke-dasharray="14 10" fill="none" />
+                <text x="56" y="218" fill="#ff6b9a" font-size="26" font-weight="900" font-family="Noto Sans SC">红线</text>
+                <path class="pk" pathLength="1" stroke-dasharray="1" d="M60 150L160 128L260 158L360 112L460 136L540 104" stroke="#9be15d" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                <path class="pb" pathLength="1" stroke-dasharray="1" d="M540 104L620 280" stroke="#ff6b9a" stroke-width="7" fill="none" stroke-linecap="round" />
+                <circle class="pdot" cx="620" cy="280" r="12" fill="#ff6b9a" />
+                <path class="pr" pathLength="1" d="M620 280L720 120" stroke="#9be15d" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="1" />
+              </svg>
+            </div>
+            <div class="rules3">
+              <div class="card r3 ex"><svg class="ico" viewBox="0 0 48 48"><path d="M10 6h20l8 8v28H10zM30 6v8h8M17 24h14M17 32h10" /></svg><div class="t">和家长约定底线<small>比如：各科不低于某个分数</small></div></div>
+              <div class="card r3 ok"><svg class="ico" viewBox="0 0 48 48"><path d="M24 5l16 6v12c0 10-7 17-16 20-9-3-16-10-16-20V11z" /><path d="M17 24l5 5 9-10" /></svg><div class="t">守住红线<small>开发时间，是你挣来的</small></div></div>
+              <div class="card r3 bad"><svg class="ico" viewBox="0 0 48 48"><rect x="12" y="10" width="8" height="28" rx="2" /><rect x="28" y="10" width="8" height="28" rx="2" /></svg><div class="t">一旦跌破<small>暂停开发两周，先补成绩</small></div></div>
+            </div>
+          </div>
+          <div class="banner s03-rule">
+            <svg class="ico" viewBox="0 0 48 48"><path d="M16 22l6 6 12-14M8 8h32v32H8z" /></svg>
+            规则提前定好，就不用每次都吵架
+          </div>
+        </div>
+      </section>
+
+      <!-- s04 · time budget -->
+      <section id="s04" class="clip scene" data-start="50.284" data-duration="20.590" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>边界 2</b> 时间</div>
+          <div class="title">算笔账：一周的<em>时间预算</em></div>
+          <div class="s04-total">一周 <b>168</b> 小时</div>
+          <div class="bar">
+            <div class="seg sleep">56</div>
+            <div class="seg school">≈55</div>
+            <div class="seg hw">21</div>
+            <div class="seg life">21</div>
+            <div class="seg left">≈15</div>
+          </div>
+          <div class="bar-lbl">
+            <div class="l-sleep" style="width: 540px">睡觉</div>
+            <div class="l-school" style="width: 531px">在校</div>
+            <div class="l-hw" style="width: 203px">作业复习</div>
+            <div class="l-life" style="width: 202px">吃饭通勤洗漱</div>
+            <div class="l-left" style="width: 144px; color: var(--gold)">剩下</div>
+          </div>
+          <div class="card week">
+            <div class="week-head"><div class="k">拿来做游戏</div><div class="v">6 小时</div></div>
+            <div class="days">
+              <div class="day"><div class="d">一</div><div class="blk on">40分</div></div>
+              <div class="day"><div class="d">二</div><div class="blk"></div></div>
+              <div class="day"><div class="d">三</div><div class="blk on">40分</div></div>
+              <div class="day"><div class="d">四</div><div class="blk"></div></div>
+              <div class="day"><div class="d">五</div><div class="blk on">40分</div></div>
+              <div class="day"><div class="d">六</div><div class="blk big">2小时</div></div>
+              <div class="day"><div class="d">日</div><div class="blk big">2小时</div></div>
+            </div>
+          </div>
+          <div class="s04-rest">另外 <b>9 小时</b> 留给运动、休息和发呆 —— 余量别用光</div>
+        </div>
+      </section>
+
+      <!-- s05 · attention -->
+      <section id="s05" class="clip scene" data-start="70.874" data-duration="18.310" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>边界 3</b> 注意力</div>
+          <div class="title">每次开发，只打<em>一个怪</em></div>
+          <div class="flow">
+            <div class="card step st1">
+              <div class="top"><svg class="ico" viewBox="0 0 48 48" style="color: var(--lime)"><circle cx="24" cy="24" r="18" /><circle cx="24" cy="24" r="10" /><circle cx="24" cy="24" r="2.5" fill="currentColor" /></svg><span class="k" style="color: var(--lime)">开始前</span></div>
+              <div class="t">写下今天唯一的功能</div>
+            </div>
+            <svg class="ico arr a1" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="card step st2">
+              <div class="top"><svg class="ico" viewBox="0 0 48 48" style="color: var(--gold)"><circle cx="24" cy="27" r="16" /><path d="M24 18v9l6 4M19 5h10M24 5v6" /></svg><span class="k" style="color: var(--gold)">卡住 20 分钟</span></div>
+              <div class="t">换个方法，或者先放下</div>
+            </div>
+            <svg class="ico arr a2" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="card step st3">
+              <div class="top"><svg class="ico" viewBox="0 0 48 48" style="color: var(--cyan)"><path d="M8 8h26l6 6v26H8zM15 8v10h16V8M15 40V28h18v12" /></svg><span class="k" style="color: var(--cyan)">结束前</span></div>
+              <div class="t">写三行日志，备份代码</div>
+            </div>
+          </div>
+          <div class="card devlog">
+            <div class="h"><svg class="ico" viewBox="0 0 48 48"><path d="M10 6h20l8 8v28H10zM30 6v8h8M17 24h14M17 32h10" /></svg>开发日志 · 第 12 天</div>
+            <div class="ln d1"><b>完成</b>角色可以跳跃了</div>
+            <div class="ln d2"><b>卡点</b>落地时会穿进地面</div>
+            <div class="ln d3"><b>下次</b>先加碰撞检测 —— 打开就能接着干</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s06 · AI as accelerator -->
+      <section id="s06" class="clip scene" data-start="89.184" data-duration="24.070" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>AI</b> 正确用法</div>
+          <div class="title">AI 是<em>加速器</em>，不是代写</div>
+          <div class="race">
+            <div class="lane old"><span class="who muted">以前</span><div class="run">先啃一年编程，才做出第一个东西……</div></div>
+            <div class="lane new"><span class="who" style="color: var(--lime)">现在</span><div class="run">一个周末出原型</div>
+              <div class="tools"><span>写代码</span><span>做素材</span><span>找 bug</span></div>
+            </div>
+          </div>
+          <div class="card s06-trap">
+            <svg class="ico" viewBox="0 0 48 48"><path d="M24 6l20 36H4z" /><path d="M24 19v11M24 36h.1" stroke-width="4.5" /></svg>
+            陷阱：只会复制粘贴 → <em>一出问题就彻底卡死</em>
+          </div>
+          <div class="banner s06-rule">
+            <svg class="ico" viewBox="0 0 48 48"><path d="M17 15L7 24l10 9M31 15l10 9-10 9" /></svg>
+            AI 写的每一行，你都要讲得出它在干什么
+          </div>
+        </div>
+      </section>
+
+      <!-- s07 · study feeds game -->
+      <section id="s07" class="clip scene" data-start="113.254" data-duration="22.294" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>互相喂养</b> 学科 × 游戏</div>
+          <div class="title">课本里的知识，都在<em>游戏里</em></div>
+          <div class="s07-body">
+            <div class="card game">
+              <svg viewBox="0 0 624 420">
+                <path d="M0 360H624" stroke="#4cc9f0" stroke-width="4" />
+                <path d="M0 360H624V420H0z" fill="rgba(76,201,240,0.1)" />
+                <path class="jump" pathLength="1" d="M90 340Q230 20 370 340" stroke="#9be15d" stroke-width="5" fill="none" stroke-dasharray="1" />
+                <text class="jump-l" x="180" y="120" fill="#ffd166" font-size="26" font-weight="900" font-family="Noto Sans SC">y = ax² + bx + c</text>
+                <rect class="hero-sq" x="66" y="312" width="48" height="48" rx="8" fill="#9be15d" />
+                <g class="shot">
+                  <path d="M114 320L520 120" stroke="#ff6b9a" stroke-width="4" stroke-dasharray="12 10" />
+                  <circle cx="540" cy="110" r="22" stroke="#ff6b9a" stroke-width="4" fill="none" />
+                  <path d="M540 80v60M510 110h60" stroke="#ff6b9a" stroke-width="3" />
+                  <path d="M170 320A56 56 0 0 0 164 296" stroke="#ffd166" stroke-width="4" fill="none" />
+                  <text x="186" y="306" fill="#ffd166" font-size="26" font-weight="900" font-family="Noto Sans SC">θ</text>
+                </g>
+                <g class="grav">
+                  <path d="M450 190v90M436 266l14 16 14-16" stroke="#a78bfa" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                  <text x="472" y="246" fill="#a78bfa" font-size="30" font-weight="900" font-family="Noto Sans SC">g</text>
+                </g>
+                <g class="err">
+                  <rect x="18" y="18" width="430" height="48" rx="10" fill="rgba(255,107,154,0.16)" />
+                  <text x="34" y="51" fill="#ff6b9a" font-size="24" font-weight="700" font-family="Noto Sans SC">TypeError: player is undefined</text>
+                </g>
+              </svg>
+            </div>
+            <div class="maps">
+              <div class="card mrow m1"><span class="sub" style="background: var(--cyan)">数学</span><span class="t">跳跃抛物线 → <b>二次函数</b></span></div>
+              <div class="card mrow m2"><span class="sub" style="background: var(--cyan)">数学</span><span class="t">子弹方向 → <b>向量 · 三角函数</b></span></div>
+              <div class="card mrow m3"><span class="sub" style="background: var(--violet)">物理</span><span class="t">重力 · 碰撞 → <b>运动学</b></span></div>
+              <div class="card mrow m4"><span class="sub" style="background: var(--pink)">英语</span><span class="t">读懂 <b>报错和文档</b></span></div>
+              <div class="card mrow m5"><span class="sub" style="background: var(--gold)">语文</span><span class="t">写 <b>剧情和关卡故事</b></span></div>
+            </div>
+          </div>
+          <div class="s07-mem">课上学的，回家用进游戏 —— <em>记得最牢</em></div>
+        </div>
+      </section>
+
+      <!-- s08 · keep it small -->
+      <section id="s08" class="clip scene" data-start="135.548" data-duration="22.150" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>第一个项目</b> 范围</div>
+          <div class="title">第一个游戏，一定要<em>小</em></div>
+          <div class="s08-row">
+            <div class="card gcard big g-open">
+              <svg class="ill" viewBox="0 0 300 150">
+                <path d="M0 120L50 70L90 100L150 40L210 95L250 60L300 110V150H0z" fill="rgba(167,139,250,0.35)" />
+                <path d="M0 135L70 105L130 125L200 98L300 128V150H0z" fill="rgba(76,201,240,0.3)" />
+                <circle cx="250" cy="30" r="14" fill="rgba(255,209,102,0.6)" />
+              </svg>
+              <svg class="ico x" viewBox="0 0 48 48"><path d="M12 12l24 24M36 12L12 36" stroke-width="5" /></svg>
+              <div class="n">开放世界</div>
+              <div class="w">几百人 × 好几年</div>
+            </div>
+            <div class="card gcard g-snake">
+              <svg class="ill" viewBox="0 0 300 150">
+                <path d="M60 110H140V60H220V90" stroke="#9be15d" stroke-width="18" fill="none" stroke-linejoin="round" stroke-linecap="square" />
+                <rect x="244" y="36" width="18" height="18" rx="4" fill="#ff6b9a" />
+              </svg>
+              <div class="n">贪吃蛇</div>
+              <div class="w">1 周</div>
+            </div>
+            <div class="card gcard g-brick">
+              <svg class="ill" viewBox="0 0 300 150">
+                <g fill="#4cc9f0"><rect x="30" y="20" width="50" height="18" rx="3" /><rect x="90" y="20" width="50" height="18" rx="3" /><rect x="150" y="20" width="50" height="18" rx="3" /><rect x="210" y="20" width="50" height="18" rx="3" /></g>
+                <g fill="#a78bfa"><rect x="60" y="46" width="50" height="18" rx="3" /><rect x="120" y="46" width="50" height="18" rx="3" /><rect x="180" y="46" width="50" height="18" rx="3" /></g>
+                <circle cx="170" cy="96" r="9" fill="#ffd166" />
+                <rect x="120" y="124" width="80" height="12" rx="6" fill="#9be15d" />
+              </svg>
+              <div class="n">打砖块</div>
+              <div class="w">1 周</div>
+            </div>
+            <div class="card gcard g-jump">
+              <svg class="ill" viewBox="0 0 300 150">
+                <g fill="#4cc9f0"><rect x="10" y="126" width="80" height="14" rx="4" /><rect x="120" y="96" width="70" height="14" rx="4" /><rect x="220" y="62" width="70" height="14" rx="4" /></g>
+                <rect x="140" y="64" width="26" height="30" rx="5" fill="#9be15d" />
+                <path d="M60 118Q100 50 145 88" stroke="#ffd166" stroke-width="3" stroke-dasharray="6 6" fill="none" />
+                <path d="M255 36l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z" fill="#ffd166" />
+              </svg>
+              <div class="n">跳跃闯关</div>
+              <div class="w">1 周</div>
+            </div>
+          </div>
+          <div class="s08-tool"><span>工具只选一个：</span><span class="chip">网页 HTML + JS</span><span class="muted">或</span><span class="chip">Python</span><span class="muted">+ AI 一步步做</span></div>
+          <div class="s08-done"><em>做完一个小的</em> ＞ <span class="muted">烂尾一个大的</span></div>
+        </div>
+      </section>
+
+      <!-- s09 · roadmap -->
+      <section id="s09" class="clip scene" data-start="157.698" data-duration="20.662" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>路线图</b> 高一这一年</div>
+          <div class="title">把一年排成<em>四关</em></div>
+          <div class="lv">
+            <div class="lv-line"><div class="lv-fill"></div></div>
+            <div class="lv-nodes">
+              <div class="lvn n1"><div class="dot" style="background: var(--lime)"><span>1</span></div><div class="k">第一关</div><div class="when">上学期</div><div class="card">做出 3 个小游戏<br />学会读懂代码</div></div>
+              <div class="lvn n2"><div class="dot" style="background: var(--cyan)"><span>2</span></div><div class="k">第二关</div><div class="when">寒假</div><div class="card">打磨一个完整作品<br />同学试玩、收集反馈</div></div>
+              <div class="lvn n3"><div class="dot" style="background: var(--violet)"><span>3</span></div><div class="k">第三关</div><div class="when">下学期</div><div class="card">补上编程基础<br />和简单算法</div></div>
+              <div class="lvn n4"><div class="dot" style="background: var(--gold)"><span>4</span></div><div class="k">第四关</div><div class="when">暑假</div><div class="card">挑战一次<br />48 小时游戏开发赛</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s10 · alarms -->
+      <section id="s10" class="clip scene" data-start="178.360" data-duration="16.870" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>报警器</b> 自我检查</div>
+          <div class="title">出现任一信号，<em>立刻降速</em></div>
+          <div class="alarms">
+            <div class="card alarm al1"><svg class="ico" viewBox="0 0 48 48"><path d="M38 30A16 16 0 1 1 20 9a13 13 0 0 0 18 21z" /></svg><div class="t">熬夜写代码<small>第二天上课犯困</small></div></div>
+            <div class="card alarm al2"><svg class="ico" viewBox="0 0 48 48"><path d="M6 12l12 12 8-8 16 18M32 34h10V24" /></svg><div class="t">成绩连续下滑<small>连着两次考试</small></div></div>
+            <div class="card alarm al3"><svg class="ico" viewBox="0 0 48 48"><path d="M14 14h20a10 10 0 0 1 10 10v4a8 8 0 0 1-14 5l-2-2h-8l-2 2a8 8 0 0 1-14-5v-4a10 10 0 0 1 10-10z" /><path d="M14 21v8M10 25h8" /></svg><div class="t">以研究为名<small>其实打了一晚上游戏</small></div></div>
+          </div>
+          <div class="s10-vs">
+            <div class="card make">做游戏 = <em>创造</em></div>
+            <div class="card play">玩游戏 = 消费</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s11 · parents -->
+      <section id="s11" class="clip scene" data-start="195.230" data-duration="16.558" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>沟通</b> 说服家长</div>
+          <div class="title">别只表态，<em>递一份方案</em></div>
+          <div class="s11-body">
+            <div class="weak"><span class="txt">“我想做游戏。”<span class="strike"></span></span></div>
+            <svg class="ico s11-arrow" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="card doc">
+              <div class="h"><svg class="ico" viewBox="0 0 48 48"><path d="M10 6h20l8 8v28H10zM30 6v8h8M17 24h14M17 32h10" /></svg>我的游戏开发计划书</div>
+              <div class="it i1"><span class="n">1</span>成绩红线是什么</div>
+              <div class="it i2"><span class="n">2</span>每周时间怎么排</div>
+              <div class="it i3"><span class="n">3</span>跌破红线怎么办</div>
+              <div class="it demo"><span class="n">+</span>每月一次：请爸妈试玩新作品</div>
+            </div>
+          </div>
+          <div class="s11-win">
+            <div class="w1" style="background: var(--cyan)">用成绩守住信任</div>
+            <div class="w2" style="background: var(--lime)">用作品赢得支持</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s12 · long-term value -->
+      <section id="s12" class="clip scene" data-start="211.788" data-duration="18.502" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>长期价值</b> 不只是游戏</div>
+          <div class="title">你真正在练的，是<em>三种能力</em></div>
+          <div class="skills">
+            <div class="card skill k1"><div class="top"><svg class="ico" viewBox="0 0 48 48" style="color: var(--cyan)"><rect x="6" y="6" width="14" height="14" rx="3" /><rect x="28" y="6" width="14" height="14" rx="3" /><rect x="6" y="28" width="14" height="14" rx="3" /><rect x="28" y="28" width="14" height="14" rx="3" /></svg><h3>拆解</h3></div><p>把模糊的想法，拆成一个个任务</p></div>
+            <div class="card skill k2"><div class="top"><svg class="ico" viewBox="0 0 48 48" style="color: var(--lime)"><circle cx="24" cy="26" r="16" /><path d="M24 17v9l6 4M19 5h10" /></svg><h3>交付</h3></div><p>在有限的时间里，把东西做完</p></div>
+            <div class="card skill k3"><div class="top"><svg class="ico" viewBox="0 0 48 48" style="color: var(--pink)"><path d="M24 5l16 6v12c0 10-7 17-16 20-9-3-16-10-16-20V11z" /></svg><h3>韧性</h3></div><p>面对 bug，不放弃、不甩锅</p></div>
+          </div>
+          <div class="banner s12-rare">
+            <svg class="ico" viewBox="0 0 48 48"><path d="M24 5l5.5 12 13 1.5-9.7 8.8 2.7 12.9L24 33.6l-11.5 6.6 2.7-12.9-9.7-8.8 13-1.5z" /></svg>
+            这正是 AI 时代最稀缺的能力
+          </div>
+          <div class="s12-port">
+            <div class="card pf"><svg class="ico" viewBox="0 0 48 48"><path d="M6 12h14l4 5h18v23H6z" /></svg>一份真实的作品集</div>
+            <span class="gt">＞</span>
+            <span class="say">一句“我喜欢编程”</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- s13 · quests -->
+      <section id="s13" class="clip scene" data-start="230.290" data-duration="17.974" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>本周任务</b> 新手村</div>
+          <div class="title">这周就能开始</div>
+          <div class="card quests">
+            <div class="quest q1"><span class="q">任务 1</span><span class="what">和家长定好红线和时间表</span><span class="xpv">+100 XP</span><span class="qbox"><svg class="ico" viewBox="0 0 48 48"><path class="tick" d="M10 26l10 10 20-24" stroke-width="5" /></svg></span></div>
+            <div class="quest q2"><span class="q">任务 2</span><span class="what">让 AI 带你做出一个能用键盘控制的小方块</span><span class="xpv">+200 XP</span><span class="qbox"><svg class="ico" viewBox="0 0 48 48"><path class="tick" d="M10 26l10 10 20-24" stroke-width="5" /></svg></span></div>
+            <div class="quest q3"><span class="q">任务 3</span><span class="what">准备开发日志，写下第一个游戏点子</span><span class="xpv">+100 XP</span><span class="qbox"><svg class="ico" viewBox="0 0 48 48"><path class="tick" d="M10 26l10 10 20-24" stroke-width="5" /></svg></span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s14 · closing -->
+      <section id="s14" class="clip scene" data-start="248.264" data-duration="18.488" data-track-index="1">
+        <div class="inner center">
+          <div class="end-line e1">学习，是在<em>打地基</em>；</div>
+          <div class="end-line e2">做游戏，让你看见自己能盖出怎样的房子。</div>
+          <div class="end-line small e3">不必二选一，<em>两样你都可以要</em>。</div>
+          <div class="cheer">去做那个创造游戏的人</div>
+        </div>
+        <div class="credit">Made with Claude Opus 5.5 × HyperFrames in Cursor</div>
+      </section>
+
+      <div id="cap-000" class="clip caption" data-start="0.897" data-duration="0.991" data-track-index="20"><span>你读高一</span></div>
+      <div id="cap-001" class="clip caption" data-start="1.888" data-duration="2.795" data-track-index="20"><span>想用AI做一款自己的游戏</span></div>
+      <div id="cap-002" class="clip caption" data-start="4.683" data-duration="1.132" data-track-index="20"><span>可一想到成绩</span></div>
+      <div id="cap-003" class="clip caption" data-start="5.815" data-duration="1.376" data-track-index="20"><span>又有点心虚</span></div>
+      <div id="cap-004" class="clip caption" data-start="7.191" data-duration="1.274" data-track-index="20"><span>家长还会说</span></div>
+      <div id="cap-005" class="clip caption" data-start="8.465" data-duration="1.863" data-track-index="20"><span>先考上大学再说</span></div>
+      <div id="cap-006" class="clip caption" data-start="10.328" data-duration="2.099" data-track-index="20"><span>但这真的是一道二选一吗？</span></div>
+      <div id="cap-007" class="clip caption" data-start="12.427" data-duration="0.967" data-track-index="20"><span>今天</span></div>
+      <div id="cap-008" class="clip caption" data-start="13.394" data-duration="2.200" data-track-index="20"><span>我们用逻辑把它拆开</span></div>
+      <div id="cap-009" class="clip caption" data-start="17.091" data-duration="1.920" data-track-index="20"><span>先找到真正的矛盾</span></div>
+      <div id="cap-010" class="clip caption" data-start="19.011" data-duration="1.167" data-track-index="20"><span>伤害成绩的</span></div>
+      <div id="cap-011" class="clip caption" data-start="20.178" data-duration="1.722" data-track-index="20"><span>从来不是做游戏本身</span></div>
+      <div id="cap-012" class="clip caption" data-start="21.900" data-duration="1.191" data-track-index="20"><span>而是没有边界</span></div>
+      <div id="cap-013" class="clip caption" data-start="23.091" data-duration="1.144" data-track-index="20"><span>熬夜调代码</span></div>
+      <div id="cap-014" class="clip caption" data-start="24.235" data-duration="1.132" data-track-index="20"><span>上课想bug</span></div>
+      <div id="cap-015" class="clip caption" data-start="25.367" data-duration="1.674" data-track-index="20"><span>作业一拖再拖</span></div>
+      <div id="cap-016" class="clip caption" data-start="27.041" data-duration="2.135" data-track-index="20"><span>所以答案不是二选一</span></div>
+      <div id="cap-017" class="clip caption" data-start="29.176" data-duration="2.516" data-track-index="20"><span>而是划好三条边界</span></div>
+      <div id="cap-018" class="clip caption" data-start="32.689" data-duration="2.096" data-track-index="20"><span>第一条，成绩红线</span></div>
+      <div id="cap-019" class="clip caption" data-start="34.785" data-duration="1.816" data-track-index="20"><span>和家长约定一条底线</span></div>
+      <div id="cap-020" class="clip caption" data-start="36.601" data-duration="2.618" data-track-index="20"><span>比如各科不低于某个分数</span></div>
+      <div id="cap-021" class="clip caption" data-start="39.219" data-duration="1.215" data-track-index="20"><span>守住红线</span></div>
+      <div id="cap-022" class="clip caption" data-start="40.434" data-duration="1.792" data-track-index="20"><span>开发时间就是你挣来的</span></div>
+      <div id="cap-023" class="clip caption" data-start="42.226" data-duration="1.109" data-track-index="20"><span>一旦跌破</span></div>
+      <div id="cap-024" class="clip caption" data-start="43.335" data-duration="1.262" data-track-index="20"><span>就暂停两周</span></div>
+      <div id="cap-025" class="clip caption" data-start="44.597" data-duration="1.568" data-track-index="20"><span>先把成绩补回来</span></div>
+      <div id="cap-026" class="clip caption" data-start="46.165" data-duration="1.368" data-track-index="20"><span>规则提前定好</span></div>
+      <div id="cap-027" class="clip caption" data-start="47.533" data-duration="2.301" data-track-index="20"><span>就不用每次都吵架</span></div>
+      <div id="cap-028" class="clip caption" data-start="50.831" data-duration="2.108" data-track-index="20"><span>第二条，时间预算</span></div>
+      <div id="cap-029" class="clip caption" data-start="52.939" data-duration="0.920" data-track-index="20"><span>算笔账</span></div>
+      <div id="cap-030" class="clip caption" data-start="53.859" data-duration="1.651" data-track-index="20"><span>一周一百六十八小时</span></div>
+      <div id="cap-031" class="clip caption" data-start="55.510" data-duration="1.049" data-track-index="20"><span>睡觉五十六</span></div>
+      <div id="cap-032" class="clip caption" data-start="56.559" data-duration="1.227" data-track-index="20"><span>在校约五十五</span></div>
+      <div id="cap-033" class="clip caption" data-start="57.786" data-duration="1.391" data-track-index="20"><span>作业复习二十一</span></div>
+      <div id="cap-034" class="clip caption" data-start="59.177" data-duration="2.158" data-track-index="20"><span>吃饭通勤洗漱再要二十一</span></div>
+      <div id="cap-035" class="clip caption" data-start="61.335" data-duration="2.064" data-track-index="20"><span>还剩大约十五小时</span></div>
+      <div id="cap-036" class="clip caption" data-start="63.399" data-duration="2.205" data-track-index="20"><span>拿出六小时做游戏就够了</span></div>
+      <div id="cap-037" class="clip caption" data-start="65.604" data-duration="2.170" data-track-index="20"><span>周中三个晚上各四十分钟</span></div>
+      <div id="cap-038" class="clip caption" data-start="67.774" data-duration="2.650" data-track-index="20"><span>周末两块各两小时</span></div>
+      <div id="cap-039" class="clip caption" data-start="71.421" data-duration="2.002" data-track-index="20"><span>第三条，注意力</span></div>
+      <div id="cap-040" class="clip caption" data-start="73.423" data-duration="1.851" data-track-index="20"><span>每次开发只做一件事</span></div>
+      <div id="cap-041" class="clip caption" data-start="75.274" data-duration="3.220" data-track-index="20"><span>开始前写下今天要完成的那一个功能</span></div>
+      <div id="cap-042" class="clip caption" data-start="78.494" data-duration="1.486" data-track-index="20"><span>卡住超过二十分钟</span></div>
+      <div id="cap-043" class="clip caption" data-start="79.980" data-duration="1.132" data-track-index="20"><span>就换个方法</span></div>
+      <div id="cap-044" class="clip caption" data-start="81.112" data-duration="1.403" data-track-index="20"><span>或者先放下</span></div>
+      <div id="cap-045" class="clip caption" data-start="82.515" data-duration="2.359" data-track-index="20"><span>结束前写三行开发日志</span></div>
+      <div id="cap-046" class="clip caption" data-start="84.874" data-duration="0.990" data-track-index="20"><span>备份代码</span></div>
+      <div id="cap-047" class="clip caption" data-start="85.864" data-duration="2.870" data-track-index="20"><span>下次打开马上就能接上</span></div>
+      <div id="cap-048" class="clip caption" data-start="89.731" data-duration="0.979" data-track-index="20"><span>边界划好</span></div>
+      <div id="cap-049" class="clip caption" data-start="90.710" data-duration="1.884" data-track-index="20"><span>再说AI</span></div>
+      <div id="cap-050" class="clip caption" data-start="92.594" data-duration="1.085" data-track-index="20"><span>以前做游戏</span></div>
+      <div id="cap-051" class="clip caption" data-start="93.679" data-duration="1.462" data-track-index="20"><span>要先啃一年编程</span></div>
+      <div id="cap-052" class="clip caption" data-start="95.141" data-duration="4.175" data-track-index="20"><span>现在AI能帮你写代码、做素材、找bug</span></div>
+      <div id="cap-053" class="clip caption" data-start="99.316" data-duration="2.594" data-track-index="20"><span>一个周末就能做出能玩的原型</span></div>
+      <div id="cap-054" class="clip caption" data-start="101.910" data-duration="1.132" data-track-index="20"><span>但陷阱是</span></div>
+      <div id="cap-055" class="clip caption" data-start="103.042" data-duration="1.474" data-track-index="20"><span>只会复制粘贴</span></div>
+      <div id="cap-056" class="clip caption" data-start="104.516" data-duration="2.465" data-track-index="20"><span>一出问题就彻底卡死</span></div>
+      <div id="cap-057" class="clip caption" data-start="106.981" data-duration="1.497" data-track-index="20"><span>给自己定条规矩</span></div>
+      <div id="cap-058" class="clip caption" data-start="108.478" data-duration="1.498" data-track-index="20"><span>AI写的每一行</span></div>
+      <div id="cap-059" class="clip caption" data-start="109.976" data-duration="2.828" data-track-index="20"><span>你都要讲得出它在干什么</span></div>
+      <div id="cap-060" class="clip caption" data-start="113.801" data-duration="1.062" data-track-index="20"><span>更妙的是</span></div>
+      <div id="cap-061" class="clip caption" data-start="114.863" data-duration="2.638" data-track-index="20"><span>学习和做游戏在互相喂养</span></div>
+      <div id="cap-062" class="clip caption" data-start="117.501" data-duration="1.451" data-track-index="20"><span>角色跳跃的抛物线</span></div>
+      <div id="cap-063" class="clip caption" data-start="118.952" data-duration="1.250" data-track-index="20"><span>是二次函数</span></div>
+      <div id="cap-064" class="clip caption" data-start="120.202" data-duration="1.462" data-track-index="20"><span>子弹朝鼠标飞</span></div>
+      <div id="cap-065" class="clip caption" data-start="121.664" data-duration="2.075" data-track-index="20"><span>要用向量和三角函数</span></div>
+      <div id="cap-066" class="clip caption" data-start="123.739" data-duration="1.168" data-track-index="20"><span>重力和碰撞</span></div>
+      <div id="cap-067" class="clip caption" data-start="124.907" data-duration="1.851" data-track-index="20"><span>就是物理课的运动学</span></div>
+      <div id="cap-068" class="clip caption" data-start="126.758" data-duration="2.253" data-track-index="20"><span>看懂英文报错靠英语</span></div>
+      <div id="cap-069" class="clip caption" data-start="129.011" data-duration="1.698" data-track-index="20"><span>写剧情靠语文</span></div>
+      <div id="cap-070" class="clip caption" data-start="130.709" data-duration="1.014" data-track-index="20"><span>课上学的</span></div>
+      <div id="cap-071" class="clip caption" data-start="131.723" data-duration="1.651" data-track-index="20"><span>回家马上用进游戏</span></div>
+      <div id="cap-072" class="clip caption" data-start="133.374" data-duration="1.724" data-track-index="20"><span>记得最牢</span></div>
+      <div id="cap-073" class="clip caption" data-start="136.095" data-duration="1.085" data-track-index="20"><span>第一个游戏</span></div>
+      <div id="cap-074" class="clip caption" data-start="137.180" data-duration="1.153" data-track-index="20"><span>一定要小</span></div>
+      <div id="cap-075" class="clip caption" data-start="138.333" data-duration="2.134" data-track-index="20"><span>别一上来就做开放世界</span></div>
+      <div id="cap-076" class="clip caption" data-start="140.467" data-duration="2.972" data-track-index="20"><span>那是几百人团队做好几年的东西</span></div>
+      <div id="cap-077" class="clip caption" data-start="143.439" data-duration="2.146" data-track-index="20"><span>从一周能做完的开始</span></div>
+      <div id="cap-078" class="clip caption" data-start="145.585" data-duration="3.314" data-track-index="20"><span>贪吃蛇、打砖块、跳跃闯关</span></div>
+      <div id="cap-079" class="clip caption" data-start="148.899" data-duration="1.415" data-track-index="20"><span>工具只选一个</span></div>
+      <div id="cap-080" class="clip caption" data-start="150.314" data-duration="1.392" data-track-index="20"><span>网页或者Python</span></div>
+      <div id="cap-081" class="clip caption" data-start="151.706" data-duration="2.051" data-track-index="20"><span>跟着AI一步步做</span></div>
+      <div id="cap-082" class="clip caption" data-start="153.757" data-duration="1.215" data-track-index="20"><span>做完一个小的</span></div>
+      <div id="cap-083" class="clip caption" data-start="154.972" data-duration="2.276" data-track-index="20"><span>胜过烂尾一个大的</span></div>
+      <div id="cap-084" class="clip caption" data-start="158.245" data-duration="2.368" data-track-index="20"><span>把高一排成一张路线图</span></div>
+      <div id="cap-085" class="clip caption" data-start="160.613" data-duration="0.990" data-track-index="20"><span>上学期</span></div>
+      <div id="cap-086" class="clip caption" data-start="161.603" data-duration="1.392" data-track-index="20"><span>做出三个小游戏</span></div>
+      <div id="cap-087" class="clip caption" data-start="162.995" data-duration="1.603" data-track-index="20"><span>学会读懂代码</span></div>
+      <div id="cap-088" class="clip caption" data-start="164.598" data-duration="1.003" data-track-index="20"><span>寒假</span></div>
+      <div id="cap-089" class="clip caption" data-start="165.601" data-duration="1.497" data-track-index="20"><span>打磨一个完整作品</span></div>
+      <div id="cap-090" class="clip caption" data-start="167.098" data-duration="1.109" data-track-index="20"><span>发给同学玩</span></div>
+      <div id="cap-091" class="clip caption" data-start="168.207" data-duration="2.465" data-track-index="20"><span>收集反馈。下学期</span></div>
+      <div id="cap-092" class="clip caption" data-start="170.672" data-duration="2.853" data-track-index="20"><span>补上编程基础和简单算法</span></div>
+      <div id="cap-093" class="clip caption" data-start="173.525" data-duration="0.849" data-track-index="20"><span>暑假</span></div>
+      <div id="cap-094" class="clip caption" data-start="174.374" data-duration="3.536" data-track-index="20"><span>参加一次四十八小时的游戏开发挑战</span></div>
+      <div id="cap-095" class="clip caption" data-start="178.907" data-duration="1.766" data-track-index="20"><span>还要装好报警器</span></div>
+      <div id="cap-096" class="clip caption" data-start="180.673" data-duration="1.286" data-track-index="20"><span>出现这三个信号</span></div>
+      <div id="cap-097" class="clip caption" data-start="181.959" data-duration="1.073" data-track-index="20"><span>立刻降速</span></div>
+      <div id="cap-098" class="clip caption" data-start="183.032" data-duration="1.191" data-track-index="20"><span>熬夜写代码</span></div>
+      <div id="cap-099" class="clip caption" data-start="184.223" data-duration="1.379" data-track-index="20"><span>第二天上课犯困</span></div>
+      <div id="cap-100" class="clip caption" data-start="185.602" data-duration="1.840" data-track-index="20"><span>成绩连续两次下滑</span></div>
+      <div id="cap-101" class="clip caption" data-start="187.442" data-duration="1.061" data-track-index="20"><span>以研究为名</span></div>
+      <div id="cap-102" class="clip caption" data-start="188.503" data-duration="1.805" data-track-index="20"><span>其实打了一晚上游戏</span></div>
+      <div id="cap-103" class="clip caption" data-start="190.308" data-duration="0.802" data-track-index="20"><span>记住</span></div>
+      <div id="cap-104" class="clip caption" data-start="191.110" data-duration="1.450" data-track-index="20"><span>做游戏是创造</span></div>
+      <div id="cap-105" class="clip caption" data-start="192.560" data-duration="2.220" data-track-index="20"><span>玩游戏是消费</span></div>
+      <div id="cap-106" class="clip caption" data-start="195.777" data-duration="1.554" data-track-index="20"><span>怎么说服家长？</span></div>
+      <div id="cap-107" class="clip caption" data-start="197.331" data-duration="1.509" data-track-index="20"><span>别只说我想做游戏</span></div>
+      <div id="cap-108" class="clip caption" data-start="198.840" data-duration="1.828" data-track-index="20"><span>而是递上一份方案</span></div>
+      <div id="cap-109" class="clip caption" data-start="200.668" data-duration="1.203" data-track-index="20"><span>红线是什么</span></div>
+      <div id="cap-110" class="clip caption" data-start="201.871" data-duration="1.297" data-track-index="20"><span>时间怎么排</span></div>
+      <div id="cap-111" class="clip caption" data-start="203.168" data-duration="1.274" data-track-index="20"><span>跌破了怎么办</span></div>
+      <div id="cap-112" class="clip caption" data-start="204.442" data-duration="2.630" data-track-index="20"><span>每个月请他们玩一次你的新作品</span></div>
+      <div id="cap-113" class="clip caption" data-start="207.072" data-duration="1.650" data-track-index="20"><span>用成绩守住信任</span></div>
+      <div id="cap-114" class="clip caption" data-start="208.722" data-duration="2.616" data-track-index="20"><span>用作品赢得支持</span></div>
+      <div id="cap-115" class="clip caption" data-start="212.335" data-duration="1.663" data-track-index="20"><span>这件事真正的价值</span></div>
+      <div id="cap-116" class="clip caption" data-start="213.998" data-duration="1.577" data-track-index="20"><span>不只是一款游戏</span></div>
+      <div id="cap-117" class="clip caption" data-start="215.575" data-duration="2.371" data-track-index="20"><span>你在练习把模糊的想法拆成任务</span></div>
+      <div id="cap-118" class="clip caption" data-start="217.946" data-duration="1.521" data-track-index="20"><span>在有限时间里交付</span></div>
+      <div id="cap-119" class="clip caption" data-start="219.467" data-duration="1.509" data-track-index="20"><span>面对bug不放弃</span></div>
+      <div id="cap-120" class="clip caption" data-start="220.976" data-duration="3.054" data-track-index="20"><span>这正是AI时代最稀缺的能力</span></div>
+      <div id="cap-121" class="clip caption" data-start="224.030" data-duration="1.758" data-track-index="20"><span>一份真实的作品集</span></div>
+      <div id="cap-122" class="clip caption" data-start="225.788" data-duration="2.016" data-track-index="20"><span>也比一句我喜欢编程</span></div>
+      <div id="cap-123" class="clip caption" data-start="227.804" data-duration="2.036" data-track-index="20"><span>有说服力得多</span></div>
+      <div id="cap-124" class="clip caption" data-start="230.837" data-duration="1.625" data-track-index="20"><span>这周就能开始</span></div>
+      <div id="cap-125" class="clip caption" data-start="232.462" data-duration="0.731" data-track-index="20"><span>第一</span></div>
+      <div id="cap-126" class="clip caption" data-start="233.193" data-duration="2.606" data-track-index="20"><span>和家长定好红线和时间表</span></div>
+      <div id="cap-127" class="clip caption" data-start="235.799" data-duration="1.828" data-track-index="20"><span>第二，选一个工具</span></div>
+      <div id="cap-128" class="clip caption" data-start="237.627" data-duration="4.434" data-track-index="20"><span>让AI带你做出一个能用键盘控制的小方块</span></div>
+      <div id="cap-129" class="clip caption" data-start="242.061" data-duration="0.920" data-track-index="20"><span>第三</span></div>
+      <div id="cap-130" class="clip caption" data-start="242.981" data-duration="1.698" data-track-index="20"><span>准备一本开发日志</span></div>
+      <div id="cap-131" class="clip caption" data-start="244.679" data-duration="3.135" data-track-index="20"><span>写下你的第一个游戏点子</span></div>
+      <div id="cap-132" class="clip caption" data-start="248.961" data-duration="2.123" data-track-index="20"><span>学习，是在打地基</span></div>
+      <div id="cap-133" class="clip caption" data-start="251.084" data-duration="1.014" data-track-index="20"><span>做游戏</span></div>
+      <div id="cap-134" class="clip caption" data-start="252.098" data-duration="3.110" data-track-index="20"><span>是让你看见自己能盖出什么样的房子</span></div>
+      <div id="cap-135" class="clip caption" data-start="255.208" data-duration="1.286" data-track-index="20"><span>不必二选一</span></div>
+      <div id="cap-136" class="clip caption" data-start="256.494" data-duration="1.580" data-track-index="20"><span>两样你都可以要</span></div>
+      <div id="cap-137" class="clip caption" data-start="258.074" data-duration="1.179" data-track-index="20"><span>从今天起</span></div>
+      <div id="cap-138" class="clip caption" data-start="259.253" data-duration="1.474" data-track-index="20"><span>不只做玩游戏的人</span></div>
+      <div id="cap-139" class="clip caption" data-start="260.727" data-duration="2.475" data-track-index="20"><span>去做那个创造游戏的人</span></div>
+
+      <audio id="narration" src="assets/narration.mp3" data-start="0" data-duration="266.752" data-track-index="30" data-volume="1"></audio>
+      <audio id="bgm" src="assets/bgm.mp3" data-start="0" data-duration="266.752" data-track-index="31" data-volume="0.13"></audio>
+    </div>
+
+    <script>
+      const T = {"s01": {"start": 0.0, "dur": 16.544, "end": 16.544, "vo": 0.8, "speech": 14.544, "cues": {"want": 1.888, "grade": 4.812, "parent": 8.465, "q": 11.154, "go": 12.427}}, "s02": {"start": 16.544, "dur": 15.598, "end": 32.142, "vo": 16.994, "speech": 14.448, "cues": {"not": 20.178, "b1": 23.091, "b2": 24.235, "b3": 25.367, "ans": 27.041}}, "s03": {"start": 32.142, "dur": 18.142, "end": 50.284, "vo": 32.592, "speech": 16.992, "cues": {"ex": 36.601, "keep": 39.219, "brk": 42.226, "rule": 46.165}}, "s04": {"start": 50.284, "dur": 20.59, "end": 70.874, "vo": 50.734, "speech": 19.44, "cues": {"total": 54.272, "sleep": 55.51, "school": 56.559, "hw": 57.786, "life": 59.177, "left": 61.335, "six": 63.399, "plan": 65.604}}, "s05": {"start": 70.874, "dur": 18.31, "end": 89.184, "vo": 71.324, "speech": 17.16, "cues": {"one": 74.178, "stuck": 78.494, "log": 82.515, "next": 85.864}}, "s06": {"start": 89.184, "dur": 24.07, "end": 113.254, "vo": 89.634, "speech": 22.92, "cues": {"past": 92.594, "now": 95.141, "proto": 99.316, "trap": 101.91, "rule": 106.981}}, "s07": {"start": 113.254, "dur": 22.294, "end": 135.548, "vo": 113.704, "speech": 21.144, "cues": {"m1": 118.232, "m2": 120.202, "phy": 123.739, "eng": 126.758, "chn": 129.011, "mem": 130.709}}, "s08": {"start": 135.548, "dur": 22.15, "end": 157.698, "vo": 135.998, "speech": 21.0, "cues": {"open": 139.347, "g1": 145.585, "g2": 146.599, "g3": 147.448, "tool": 148.899, "done": 153.757}}, "s09": {"start": 157.698, "dur": 20.662, "end": 178.36, "vo": 158.148, "speech": 19.512, "cues": {"t1": 160.613, "t2": 164.598, "t3": 169.587, "t4": 173.525}}, "s10": {"start": 178.36, "dur": 16.87, "end": 195.23, "vo": 178.81, "speech": 15.72, "cues": {"w1": 183.032, "w2": 185.602, "w3": 187.442, "key": 190.308}}, "s11": {"start": 195.23, "dur": 16.558, "end": 211.788, "vo": 195.68, "speech": 15.408, "cues": {"plan": 199.501, "demo": 204.442, "win": 207.072}}, "s12": {"start": 211.788, "dur": 18.502, "end": 230.29, "vo": 212.238, "speech": 17.352, "cues": {"s1": 217.049, "s2": 218.099, "s3": 219.467, "rare": 220.976, "port": 224.03}}, "s13": {"start": 230.29, "dur": 17.974, "end": 248.264, "vo": 230.74, "speech": 16.824, "cues": {"a1": 232.462, "a2": 235.799, "a3": 242.061}}, "s14": {"start": 248.264, "dur": 18.488, "end": 266.752, "vo": 248.864, "speech": 14.088, "cues": {"l1": 248.961, "l2": 251.084, "l3": 255.208, "l4": 258.074}}};
+      const TOTAL = Number(document.getElementById("root").dataset.duration);
+      const tl = gsap.timeline({ paused: true });
+      const C = (s, k) => T[s].cues[k];
+
+      function reveal(sel, at, from, opts) {
+        tl.fromTo(sel, Object.assign({ opacity: 0 }, from || { y: 34 }), Object.assign({ opacity: 1, x: 0, y: 0, scale: 1, rotation: 0, duration: 0.6, ease: "power3.out" }, opts || {}), at);
+      }
+      function pop(sel, at) {
+        reveal(sel, at, { scale: 0.6, y: 0 }, { ease: "back.out(2)" });
+      }
+      function draw(sel, at, dur) {
+        tl.fromTo(sel, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: dur || 0.8, ease: "power2.inOut" }, at);
+      }
+      function strike(sel, at) {
+        tl.fromTo(sel, { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power2.out" }, at);
+      }
+      function sceneIn(id, sel) {
+        tl.fromTo(sel || `#${id} .inner`, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, T[id].start + 0.02);
+      }
+      function sceneOut(id, sel) {
+        tl.to(sel || `#${id} .inner`, { opacity: 0, y: -18, duration: 0.42, ease: "power2.in" }, T[id].end - 0.44);
+      }
+
+      // persistent background drift + xp bar
+      tl.fromTo(".blob.b1", { x: 0, y: 0 }, { x: 180, y: 100, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".blob.b2", { x: 0, y: 0 }, { x: -160, y: -120, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".blob.b3", { x: 0, y: 0 }, { x: 240, y: -60, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".grid", { backgroundPosition: "0px 0px" }, { backgroundPosition: "0px 640px", duration: TOTAL, ease: "none" }, 0);
+      tl.fromTo(".xp-fill", { scaleX: 0 }, { scaleX: 1, duration: TOTAL, ease: "none" }, 0);
+
+      // s01
+      {
+        const s = T.s01;
+        tl.fromTo("#s01 .s01-a", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s.start);
+        reveal("#s01 .s01-lead", s.start + 0.2);
+        reveal("#s01 .sd-game", C("s01", "want") + 0.3, { x: 60 });
+        reveal("#s01 .sd-grade", C("s01", "grade"), { x: -60 });
+        reveal("#s01 .vs", C("s01", "grade") + 0.5, { scale: 2, rotation: -30, y: 0 }, { duration: 0.45, ease: "power4.in" });
+        reveal("#s01 .s01-parent", C("s01", "parent") - 0.3, { y: 24 });
+        reveal("#s01 .s01-q", C("s01", "q") - 0.4, { scale: 0.8, y: 0 }, { ease: "back.out(2)" });
+        tl.to("#s01 .s01-a", { opacity: 0, y: -30, duration: 0.45, ease: "power2.in" }, C("s01", "go") - 0.45);
+        tl.fromTo("#s01 .s01-b", { opacity: 0 }, { opacity: 1, duration: 0.3 }, C("s01", "go") - 0.05);
+        reveal("#s01 .hero-kicker", C("s01", "go"), { y: 20 });
+        reveal("#s01 .hero", C("s01", "go") + 0.15, { y: 50, scale: 0.94 }, { duration: 0.9 });
+        tl.fromTo("#s01 .hero-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power3.out" }, C("s01", "go") + 0.7);
+        reveal("#s01 .hero-sub", C("s01", "go") + 1.0, { y: 20 });
+        sceneOut("s01", "#s01 .s01-b");
+      }
+
+      // s02
+      {
+        sceneIn("s02");
+        reveal("#s02 .s02-row .lbl", T.s02.vo + 1.2, { x: -30 });
+        reveal("#s02 .s02-not", C("s02", "not") - 0.2, { x: -30 });
+        strike("#s02 .s02-not .strike", C("s02", "not") + 1.0);
+        reveal("#s02 .s02-arrow", C("s02", "not") + 1.4, { x: -20 });
+        pop("#s02 .s02-real", C("s02", "not") + 1.7);
+        reveal("#s02 .bg1", C("s02", "b1"), { y: 40 });
+        reveal("#s02 .bg2", C("s02", "b2"), { y: 40 });
+        reveal("#s02 .bg3", C("s02", "b3"), { y: 40 });
+        reveal("#s02 .s02-ans", C("s02", "ans"), { y: 30 });
+        pop("#s02 .sh1", C("s02", "ans") + 1.6);
+        pop("#s02 .sh2", C("s02", "ans") + 1.8);
+        pop("#s02 .sh3", C("s02", "ans") + 2.0);
+        sceneOut("s02");
+      }
+
+      // s03
+      {
+        sceneIn("s03");
+        reveal("#s03 .chart", T.s03.vo + 0.3, { x: -40 });
+        reveal("#s03 .ex", C("s03", "ex") - 0.3, { x: 40 });
+        draw("#s03 .pk", C("s03", "keep") - 0.2, 1.4);
+        reveal("#s03 .ok", C("s03", "keep"), { x: 40 });
+        draw("#s03 .pb", C("s03", "brk"), 0.5);
+        pop("#s03 .pdot", C("s03", "brk") + 0.5);
+        reveal("#s03 .bad", C("s03", "brk"), { x: 40 });
+        draw("#s03 .pr", C("s03", "brk") + 2.0, 0.8);
+        reveal("#s03 .s03-rule", C("s03", "rule"), { y: 30 });
+        sceneOut("s03");
+      }
+
+      // s04
+      {
+        sceneIn("s04");
+        reveal("#s04 .s04-total", C("s04", "total"), { x: 30 });
+        const segs = [["sleep", "sleep"], ["school", "school"], ["hw", "hw"], ["life", "life"], ["left", "left"]];
+        segs.forEach(([cls, cue]) => {
+          tl.fromTo(`#s04 .seg.${cls}`, { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.5, ease: "power3.out" }, C("s04", cue) - 0.1);
+          reveal(`#s04 .l-${cls}`, C("s04", cue) + 0.1, { y: 12 });
+        });
+        tl.fromTo("#s04 .seg.left", { scaleY: 1 }, { scaleY: 1.18, duration: 0.3, yoyo: true, repeat: 1, ease: "power1.inOut" }, C("s04", "left") + 0.8);
+        reveal("#s04 .week", C("s04", "six") - 0.2, { y: 40 });
+        const days = gsap.utils.toArray("#s04 .blk.on, #s04 .blk.big");
+        days.forEach((el, i) => pop(el, C("s04", "plan") + 0.3 + i * (i < 3 ? 0.55 : 0.7)));
+        reveal("#s04 .s04-rest", T.s04.end - 2.6, { y: 20 });
+        sceneOut("s04");
+      }
+
+      // s05
+      {
+        sceneIn("s05");
+        reveal("#s05 .st1", C("s05", "one") - 0.2, { y: 40 });
+        reveal("#s05 .a1", C("s05", "stuck") - 0.4, { x: -16 });
+        reveal("#s05 .st2", C("s05", "stuck") - 0.2, { y: 40 });
+        reveal("#s05 .a2", C("s05", "log") - 0.4, { x: -16 });
+        reveal("#s05 .st3", C("s05", "log") - 0.2, { y: 40 });
+        reveal("#s05 .devlog", C("s05", "log") + 1.2, { y: 30 });
+        reveal("#s05 .d1", C("s05", "log") + 1.6, { x: -20 });
+        reveal("#s05 .d2", C("s05", "log") + 2.0, { x: -20 });
+        reveal("#s05 .d3", C("s05", "next") - 0.2, { x: -20 });
+        tl.fromTo("#s05 .d3", { backgroundColor: "rgba(155,225,93,0)" }, { backgroundColor: "rgba(155,225,93,0.18)", duration: 0.4 }, C("s05", "next") + 0.4);
+        sceneOut("s05");
+      }
+
+      // s06
+      {
+        sceneIn("s06");
+        reveal("#s06 .old .who", C("s06", "past") - 0.2, { x: -20 });
+        tl.fromTo("#s06 .old .run", { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 1.6, ease: "power1.inOut" }, C("s06", "past"));
+        reveal("#s06 .new .who", C("s06", "now") - 0.2, { x: -20 });
+        tl.fromTo("#s06 .new .run", { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.45, ease: "power3.out" }, C("s06", "proto") - 0.1);
+        const chips = gsap.utils.toArray("#s06 .tools span");
+        chips.forEach((el, i) => pop(el, C("s06", "now") + 0.6 + i * 0.55));
+        reveal("#s06 .s06-trap", C("s06", "trap"), { y: 30 });
+        reveal("#s06 .s06-rule", C("s06", "rule"), { scale: 0.85, y: 0 }, { ease: "back.out(1.8)" });
+        sceneOut("s06");
+      }
+
+      // s07
+      {
+        sceneIn("s07");
+        reveal("#s07 .game", T.s07.vo + 0.2, { x: -40 });
+        reveal("#s07 .hero-sq", T.s07.vo + 0.5, { y: -30 }, { ease: "bounce.out", duration: 0.8 });
+        draw("#s07 .jump", C("s07", "m1") - 0.1, 1.2);
+        reveal("#s07 .jump-l", C("s07", "m1") + 1.0, { y: 10 });
+        reveal("#s07 .m1", C("s07", "m1"), { x: 40 });
+        reveal("#s07 .shot", C("s07", "m2"), { x: -20 });
+        reveal("#s07 .m2", C("s07", "m2"), { x: 40 });
+        reveal("#s07 .grav", C("s07", "phy"), { y: -20 });
+        reveal("#s07 .m3", C("s07", "phy"), { x: 40 });
+        reveal("#s07 .err", C("s07", "eng"), { y: -10 });
+        reveal("#s07 .m4", C("s07", "eng"), { x: 40 });
+        reveal("#s07 .m5", C("s07", "chn"), { x: 40 });
+        reveal("#s07 .s07-mem", C("s07", "mem"), { y: 24 });
+        sceneOut("s07");
+      }
+
+      // s08
+      {
+        sceneIn("s08");
+        reveal("#s08 .g-open", C("s08", "open") - 0.2, { y: 40 });
+        reveal("#s08 .g-open .x", C("s08", "open") + 1.6, { scale: 2, rotation: -20, y: 0 }, { duration: 0.4, ease: "power4.in" });
+        tl.to("#s08 .g-open .ill", { opacity: 0.35, duration: 0.4 }, C("s08", "open") + 1.9);
+        reveal("#s08 .g-snake", C("s08", "g1"), { y: 40 });
+        reveal("#s08 .g-brick", C("s08", "g2"), { y: 40 });
+        reveal("#s08 .g-jump", C("s08", "g3"), { y: 40 });
+        reveal("#s08 .s08-tool", C("s08", "tool"), { y: 24 });
+        reveal("#s08 .s08-done", C("s08", "done"), { scale: 0.85, y: 0 }, { ease: "back.out(1.8)" });
+        sceneOut("s08");
+      }
+
+      // s09
+      {
+        sceneIn("s09");
+        const keys = ["t1", "t2", "t3", "t4"];
+        keys.forEach((k, i) => {
+          tl.fromTo(`#s09 .n${i + 1} .dot`, { opacity: 0, scale: 0.3, rotation: 45 }, { opacity: 1, scale: 1, rotation: 45, duration: 0.6, ease: "back.out(2.2)" }, C("s09", k) - 0.1);
+          reveal(`#s09 .n${i + 1} .k, #s09 .n${i + 1} .when`, C("s09", k), { y: 20 });
+          reveal(`#s09 .n${i + 1} .card`, C("s09", k) + 0.4, { y: 40 });
+          if (i > 0) tl.fromTo("#s09 .lv-fill", { scaleX: (i - 1) / 3 }, { scaleX: i / 3, duration: 0.7, ease: "power2.inOut", immediateRender: false }, C("s09", k) - 0.5);
+        });
+        tl.set("#s09 .lv-fill", { scaleX: 0 }, T.s09.start);
+        sceneOut("s09");
+      }
+
+      // s10
+      {
+        sceneIn("s10");
+        ["w1", "w2", "w3"].forEach((k, i) => {
+          reveal(`#s10 .al${i + 1}`, C("s10", k) - 0.1, { y: 40 });
+          tl.to(`#s10 .al${i + 1} .ico`, { keyframes: { rotation: [0, -14, 12, -10, 8, 0] }, duration: 0.6, ease: "none" }, C("s10", k) + 0.4);
+        });
+        reveal("#s10 .make", C("s10", "key") + 0.3, { x: -40 });
+        reveal("#s10 .play", C("s10", "key") + 1.6, { x: 40 });
+        sceneOut("s10");
+      }
+
+      // s11
+      {
+        sceneIn("s11");
+        reveal("#s11 .weak", T.s11.vo + 1.0, { x: -30 });
+        strike("#s11 .weak .strike", C("s11", "plan") - 0.4);
+        reveal("#s11 .s11-arrow", C("s11", "plan"), { x: -20 });
+        reveal("#s11 .doc", C("s11", "plan") + 0.1, { x: 40 });
+        reveal("#s11 .i1", C("s11", "plan") + 1.0, { x: 20 });
+        reveal("#s11 .i2", C("s11", "plan") + 1.9, { x: 20 });
+        reveal("#s11 .i3", C("s11", "plan") + 2.8, { x: 20 });
+        reveal("#s11 .demo", C("s11", "demo"), { x: 20 });
+        reveal("#s11 .w1", C("s11", "win"), { y: 24 });
+        reveal("#s11 .w2", C("s11", "win") + 1.4, { y: 24 });
+        sceneOut("s11");
+      }
+
+      // s12
+      {
+        sceneIn("s12");
+        reveal("#s12 .k1", C("s12", "s1") - 0.3, { y: 40 });
+        reveal("#s12 .k2", C("s12", "s2") - 0.2, { y: 40 });
+        reveal("#s12 .k3", C("s12", "s3") - 0.2, { y: 40 });
+        reveal("#s12 .s12-rare", C("s12", "rare"), { scale: 0.85, y: 0 }, { ease: "back.out(1.8)" });
+        reveal("#s12 .pf", C("s12", "port"), { x: -30 });
+        reveal("#s12 .gt", C("s12", "port") + 1.3, { scale: 0.4, y: 0 });
+        reveal("#s12 .say", C("s12", "port") + 1.5, { x: 30 });
+        sceneOut("s12");
+      }
+
+      // s13
+      {
+        sceneIn("s13");
+        reveal("#s13 .quests", T.s13.vo + 0.2, { y: 40 });
+        const keys = ["a1", "a2", "a3"];
+        keys.forEach((k, i) => {
+          reveal(`#s13 .q${i + 1}`, C("s13", k) - 0.1, { x: -30 });
+          const tickAt = i < 2 ? C("s13", keys[i + 1]) - 0.7 : T.s13.end - 1.4;
+          tl.fromTo(`#s13 .q${i + 1} .tick`, { strokeDashoffset: 60 }, { strokeDashoffset: 0, duration: 0.45, ease: "power2.out" }, tickAt);
+          tl.fromTo(`#s13 .q${i + 1} .xpv`, { scale: 1 }, { scale: 1.25, duration: 0.25, yoyo: true, repeat: 1, ease: "power1.inOut" }, tickAt + 0.2);
+        });
+        sceneOut("s13");
+      }
+
+      // s14
+      {
+        const s = T.s14;
+        tl.fromTo("#s14 .inner", { opacity: 0 }, { opacity: 1, duration: 0.4 }, s.start);
+        reveal("#s14 .e1", C("s14", "l1") - 0.1, { y: 30 }, { duration: 0.8 });
+        reveal("#s14 .e2", C("s14", "l2") - 0.1, { y: 30 }, { duration: 0.8 });
+        reveal("#s14 .e3", C("s14", "l3") - 0.1, { y: 24 }, { duration: 0.8 });
+        reveal("#s14 .cheer", C("s14", "l4") - 0.1, { scale: 0.7, y: 20 }, { duration: 0.9, ease: "back.out(1.8)" });
+        reveal("#s14 .credit", C("s14", "l4") + 1.5, { y: 10 });
+      }
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="zh-CN" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      /*@FONTS@*/
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #f8f4ea; }
+
+      :root {
+        --ink: #23302b;
+        --muted: #5f6b66;
+        --paper: #f8f4ea;
+        --card: #fffdf8;
+        --coral: #e8553f;
+        --peach: #ffc29e;
+        --mint: #17977f;
+        --mintbg: #e2f3ee;
+        --sky: #3470e0;
+        --lav: #6b5be6;
+        --sun: #f2b01e;
+        --line: rgba(35, 48, 43, 0.12);
+      }
+
+      #root {
+        position: relative; width: 100%; height: 100%; overflow: hidden;
+        background: var(--paper); color: var(--ink);
+        font-family: "Noto Sans SC", sans-serif; font-weight: 400;
+      }
+
+      /* ---------- persistent layers ---------- */
+      .bg { position: absolute; inset: 0; }
+      .dots {
+        position: absolute; inset: 0;
+        background-image: radial-gradient(rgba(35, 48, 43, 0.06) 2px, transparent 2.5px);
+        background-size: 40px 40px;
+      }
+      .glow { position: absolute; display: block; border-radius: 50%; }
+      .glow.g1 { width: 900px; height: 900px; left: -320px; top: -360px; background: radial-gradient(circle, rgba(150, 214, 190, 0.55) 0%, rgba(150, 214, 190, 0) 68%); }
+      .glow.g2 { width: 820px; height: 820px; right: -300px; top: 200px; background: radial-gradient(circle, rgba(255, 194, 158, 0.5) 0%, rgba(255, 194, 158, 0) 68%); }
+      .glow.g3 { width: 760px; height: 760px; left: 560px; bottom: -480px; background: radial-gradient(circle, rgba(160, 196, 245, 0.45) 0%, rgba(160, 196, 245, 0) 68%); }
+      .brand {
+        position: absolute; top: 44px; right: 64px;
+        font-size: 26px; font-weight: 700; letter-spacing: 0.12em; color: rgba(35, 48, 43, 0.62);
+      }
+      .progress { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: rgba(35, 48, 43, 0.06); }
+      .progress-fill { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, var(--mint), var(--sky)); transform-origin: 0 50%; }
+
+      /* ---------- scene scaffold ---------- */
+      .scene { position: absolute; inset: 0; }
+      .inner { position: absolute; inset: 0; padding: 90px 150px 210px; display: flex; flex-direction: column; }
+      .center { align-items: center; justify-content: center; text-align: center; }
+      .tag {
+        align-self: flex-start; display: inline-flex; align-items: center; gap: 14px;
+        padding: 10px 28px; border-radius: 999px; background: var(--ink); color: #fff;
+        font-size: 28px; font-weight: 700; letter-spacing: 0.08em;
+      }
+      .tag b { color: var(--peach); font-weight: 900; }
+      .title { margin-top: 22px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 78px; line-height: 1.22; }
+      .title em { font-style: normal; color: #0f7a66; }
+      .title em.c { color: var(--coral); }
+      .card { background: var(--card); border: 2px solid var(--line); border-radius: 28px; box-shadow: 0 18px 40px rgba(35, 48, 43, 0.08); }
+      .muted { color: var(--muted); }
+      svg.ico { display: block; fill: none; stroke: currentColor; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+      .arrow { width: 60px; height: 60px; color: var(--muted); flex: none; }
+      .fnote { font-size: 24px; color: var(--muted); }
+
+      /* ---------- captions ---------- */
+      .caption { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 50px; pointer-events: none; }
+      .caption span {
+        display: block; max-width: 1560px; padding: 12px 36px; border-radius: 18px;
+        background: rgba(35, 48, 43, 0.88); color: #fff;
+        font-size: 46px; line-height: 1.4; font-weight: 700; letter-spacing: 0.04em;
+      }
+
+      /* ---------- s01 ---------- */
+      .s01-row { display: flex; gap: 56px; align-items: center; }
+      .report { width: 860px; padding: 36px 48px 30px; text-align: left; }
+      .report .hd { display: flex; align-items: center; gap: 16px; font-size: 36px; font-weight: 900; padding-bottom: 16px; border-bottom: 2px dashed var(--line); }
+      .report .hd .ico { width: 46px; height: 46px; color: var(--mint); }
+      .report .hd span { margin-left: auto; font-size: 26px; font-weight: 400; color: var(--muted); }
+      .rrow { display: flex; align-items: center; gap: 20px; padding: 20px 0; border-bottom: 2px dashed var(--line); font-size: 36px; }
+      .rrow:last-child { border-bottom: 0; }
+      .rrow .nm { flex: 1; font-weight: 700; }
+      .rrow .val { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 52px; color: var(--coral); }
+      .rrow .unit { width: 130px; font-size: 26px; color: var(--muted); }
+      .rrow .up { width: 58px; height: 58px; border-radius: 16px; background: var(--coral); color: #fff; display: flex; align-items: center; justify-content: center; }
+      .rrow .up .ico { width: 36px; height: 36px; stroke-width: 4.5; }
+      .s01-side { display: flex; flex-direction: column; gap: 40px; align-items: flex-start; }
+      .worry { padding: 26px 40px; border-radius: 34px; border-bottom-left-radius: 8px; background: #ece9df; font-size: 44px; font-weight: 700; color: var(--ink); line-height: 1.4; text-align: left; }
+      .calm { display: flex; align-items: center; gap: 18px; padding: 22px 40px; border-radius: 999px; background: var(--mint); color: #fff; font-size: 48px; font-weight: 900; }
+      .calm .ico { width: 56px; height: 56px; }
+      .hero-kicker { font-size: 38px; letter-spacing: 0.3em; color: var(--mint); font-weight: 900; }
+      .hero { margin-top: 26px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 120px; line-height: 1.22; }
+      .hero .hl { color: var(--mint); }
+      .hero-rule { display: block; width: 200px; height: 8px; border-radius: 4px; margin: 40px auto 0; background: linear-gradient(90deg, var(--mint), var(--sky)); transform-origin: 50% 50%; }
+      .hero-keys { margin-top: 40px; display: flex; gap: 26px; justify-content: center; }
+      .hero-keys span { display: flex; width: 104px; height: 104px; border-radius: 50%; align-items: center; justify-content: center; color: #fff; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 54px; }
+
+      /* ---------- s02 ---------- */
+      .s02-body { display: flex; gap: 50px; margin-top: 40px; align-items: stretch; }
+      .vessel { flex: 1; padding: 30px 40px; display: flex; flex-direction: column; }
+      .vessel .lbl { display: flex; gap: 20px; align-items: center; font-size: 34px; font-weight: 700; }
+      .vessel .lbl small { font-size: 28px; font-weight: 400; color: var(--muted); }
+      .vessel svg { width: 100%; height: 190px; margin-top: 16px; }
+      .plaque { opacity: 0; }
+      .risks { width: 520px; flex: none; display: flex; flex-direction: column; gap: 26px; justify-content: center; }
+      .risk { display: flex; align-items: center; gap: 22px; padding: 26px 34px; border-color: rgba(232, 85, 63, 0.45); }
+      .risk .ico { width: 64px; height: 64px; color: var(--coral); flex: none; }
+      .risk b { font-size: 46px; font-weight: 900; }
+      .risk small { display: block; font-size: 26px; color: var(--muted); font-weight: 400; }
+      .five { margin-top: 44px; display: flex; align-items: center; gap: 30px; }
+      .five .lead { font-size: 40px; font-weight: 900; color: var(--ink); margin-right: 10px; }
+      .five .lead em { font-style: normal; color: var(--mint); }
+      .kc { display: flex; width: 110px; height: 110px; border-radius: 50%; align-items: center; justify-content: center; color: #fff; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 58px; }
+
+      /* ---------- s03 ---------- */
+      .gauge { margin-top: 44px; padding: 36px 50px 30px; }
+      .gauge .cap { display: flex; align-items: baseline; gap: 18px; font-size: 32px; font-weight: 700; }
+      .gauge .cap small { font-size: 26px; color: var(--muted); font-weight: 400; }
+      .bar { position: relative; margin-top: 64px; height: 64px; width: 1500px; border-radius: 32px; overflow: hidden; display: flex; }
+      .bar span { display: block; height: 100%; }
+      .zone-lbl { position: absolute; top: -50px; font-size: 26px; font-weight: 900; white-space: nowrap; }
+      .ticks { position: relative; height: 56px; width: 1500px; }
+      .tick { position: absolute; top: 10px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 34px; transform: translateX(-50%); }
+      .tick::before { content: ""; position: absolute; left: 50%; top: -14px; width: 3px; height: 12px; margin-left: -1.5px; background: var(--ink); }
+      .marker { position: absolute; top: -4px; width: 0; height: 0; }
+      .s03-low { display: flex; gap: 36px; margin-top: 34px; }
+      .tg { flex: 1; padding: 24px 32px; display: flex; align-items: center; gap: 22px; }
+      .tg .ico { width: 62px; height: 62px; flex: none; }
+      .tg .t { font-size: 36px; font-weight: 900; line-height: 1.3; }
+      .tg .t small { display: block; font-size: 27px; font-weight: 400; color: var(--muted); }
+      .tg.fit .ico { color: var(--mint); }
+      .tg.old .ico { color: var(--sky); }
+      .tg.hypo { border-color: rgba(232, 85, 63, 0.5); background: #fff4f1; }
+      .tg.hypo .ico { color: var(--coral); }
+      .s03-note { margin-top: 18px; }
+
+      /* ---------- s04 ---------- */
+      .s04-body { display: flex; gap: 70px; margin-top: 30px; align-items: center; }
+      .plate-wrap { position: relative; width: 560px; height: 560px; flex: none; }
+      .plate-rim { position: absolute; inset: 0; border-radius: 50%; background: #fff; box-shadow: 0 18px 44px rgba(35, 48, 43, 0.14), inset 0 0 0 2px var(--line); }
+      .seg { position: absolute; inset: 34px; border-radius: 50%; }
+      .seg.veg { background: conic-gradient(#2f8f57 0deg 178deg, transparent 178deg 360deg); }
+      .seg.grain { background: conic-gradient(transparent 0deg 182deg, #f2b01e 182deg 268deg, transparent 268deg 360deg); }
+      .seg.prot { background: conic-gradient(transparent 0deg 272deg, #e8553f 272deg 358deg, transparent 358deg 360deg); }
+      .plbl { position: absolute; color: #fff; font-weight: 900; text-align: center; line-height: 1.25; }
+      .plbl small { display: block; font-size: 24px; font-weight: 700; }
+      .plbl.veg { left: 300px; top: 210px; font-size: 44px; }
+      .plbl.grain { left: 92px; top: 330px; font-size: 36px; color: var(--ink); }
+      .plbl.prot { left: 86px; top: 140px; font-size: 36px; }
+      .s04-right { flex: 1; display: flex; flex-direction: column; gap: 28px; }
+      .order-hd { font-size: 34px; font-weight: 900; color: var(--muted); }
+      .order { display: flex; align-items: center; gap: 18px; }
+      .step { display: flex; align-items: center; gap: 14px; padding: 18px 32px; border-radius: 999px; color: #fff; font-size: 42px; font-weight: 900; }
+      .step i { font-style: normal; width: 48px; height: 48px; border-radius: 50%; background: rgba(255, 255, 255, 0.28); display: flex; align-items: center; justify-content: center; font-size: 30px; }
+      .order .arrow { width: 48px; height: 48px; }
+      .whole { display: flex; align-items: center; gap: 16px; font-size: 32px; font-weight: 700; }
+      .whole span { display: block; padding: 10px 26px; border-radius: 999px; background: #fdf0cf; color: #6a4a00; font-size: 32px; font-weight: 900; }
+      .nostarve { display: flex; align-items: center; gap: 22px; padding: 24px 32px; border-color: rgba(23, 151, 127, 0.5); background: var(--mintbg); }
+      .nostarve .ico { width: 62px; height: 62px; color: var(--mint); flex: none; }
+      .nostarve .t { font-size: 36px; font-weight: 900; line-height: 1.35; }
+      .nostarve .t small { display: block; font-size: 28px; font-weight: 400; color: var(--muted); }
+
+      /* ---------- s05 ---------- */
+      .lesses { display: flex; gap: 40px; margin-top: 44px; }
+      .less { flex: 1; padding: 32px 36px; display: flex; flex-direction: column; align-items: flex-start; }
+      .less .badge { display: flex; align-items: center; gap: 16px; padding: 10px 26px 10px 14px; border-radius: 999px; color: #fff; font-size: 44px; font-weight: 900; }
+      .less .badge .ico { width: 52px; height: 52px; }
+      .less .num { margin-top: 22px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 62px; line-height: 1.1; }
+      .less .num small { font-size: 32px; margin-left: 6px; font-family: "Noto Sans SC", sans-serif; font-weight: 700; color: var(--muted); }
+      .less p { margin-top: 14px; font-size: 32px; color: var(--muted); line-height: 1.5; }
+      .less p b { color: var(--ink); font-weight: 700; }
+      .capbox { display: flex; align-items: center; gap: 16px; margin-top: 14px; font-size: 30px; font-weight: 700; color: var(--ink); }
+      .capbox .ico { width: 58px; height: 58px; color: var(--sky); }
+      .fruit { margin-top: 40px; align-self: center; display: flex; align-items: center; gap: 24px; padding: 22px 44px; }
+      .fruit .ico { width: 64px; height: 64px; color: var(--coral); flex: none; }
+      .fruit .t { font-size: 40px; font-weight: 900; }
+      .fruit .t em { font-style: normal; color: var(--mint); }
+      .fruit .fist { padding: 8px 24px; border-radius: 999px; background: var(--sun); color: var(--ink); font-size: 34px; font-weight: 900; }
+
+      /* ---------- s06 ---------- */
+      .stats { display: flex; gap: 34px; margin-top: 40px; }
+      .stat { flex: 1; padding: 26px 30px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+      .stat .d { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 96px; line-height: 1.05; color: var(--mint); }
+      .stat .d small { font-size: 40px; margin-left: 6px; color: var(--ink); }
+      .stat .l { margin-top: 8px; font-size: 32px; font-weight: 700; color: var(--muted); }
+      .talk { margin-top: 26px; align-self: center; display: flex; align-items: center; gap: 16px; padding: 12px 34px; border-radius: 999px; background: var(--sun); color: var(--ink); font-size: 36px; font-weight: 900; }
+      .talk .ico { width: 44px; height: 44px; }
+      .s06-low { display: flex; gap: 34px; margin-top: 30px; align-items: stretch; }
+      .power { flex: 1; padding: 24px 34px; display: flex; align-items: center; gap: 26px; }
+      .power .ico { width: 70px; height: 70px; color: var(--sky); flex: none; }
+      .power .t { font-size: 38px; font-weight: 900; }
+      .chips { display: flex; gap: 14px; margin-top: 10px; }
+      .chips span { display: block; padding: 6px 22px; border-radius: 999px; background: #e3ecfc; color: #1f4fae; font-size: 28px; font-weight: 700; }
+      .engine { width: 560px; flex: none; padding: 24px 32px; border-radius: 28px; background: var(--mint); color: #fff; display: flex; align-items: center; gap: 22px; }
+      .engine .ico { width: 70px; height: 70px; flex: none; }
+      .engine .t { font-size: 38px; font-weight: 900; line-height: 1.3; }
+      .engine .t small { display: block; font-size: 27px; font-weight: 700; color: rgba(255, 255, 255, 0.9); }
+
+      /* ---------- s07 ---------- */
+      .checks { display: flex; gap: 34px; margin-top: 42px; }
+      .chk { flex: 1; padding: 28px 30px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+      .chk .ic { width: 104px; height: 104px; border-radius: 30px; display: flex; align-items: center; justify-content: center; background: var(--mintbg); color: var(--mint); }
+      .chk .ic .ico { width: 62px; height: 62px; }
+      .chk .t { margin-top: 18px; font-size: 38px; font-weight: 900; }
+      .chk .t small { display: block; margin-top: 4px; font-size: 27px; font-weight: 400; color: var(--muted); }
+      .s07-low { display: flex; gap: 34px; margin-top: 34px; }
+      .alarm { flex: 1.3; padding: 24px 34px; display: flex; align-items: center; gap: 24px; border-radius: 28px; background: var(--coral); color: #fff; }
+      .alarm .ico { width: 70px; height: 70px; flex: none; }
+      .alarm .t { font-size: 38px; font-weight: 900; line-height: 1.3; }
+      .alarm .t small { display: block; font-size: 30px; font-weight: 700; color: rgba(255, 255, 255, 0.94); }
+      .bal { flex: 1; padding: 24px 34px; display: flex; align-items: center; gap: 22px; }
+      .bal .ico { width: 70px; height: 70px; color: var(--lav); flex: none; }
+      .bal .t { font-size: 36px; font-weight: 900; line-height: 1.3; }
+      .bal .t small { display: block; font-size: 27px; font-weight: 400; color: var(--muted); }
+
+      /* ---------- s08 ---------- */
+      .grid4 { display: grid; grid-template-columns: 1fr 1fr; gap: 36px 40px; margin-top: 50px; }
+      .g4 { padding: 44px 40px; display: flex; align-items: center; gap: 28px; }
+      .g4 .ic { width: 110px; height: 110px; border-radius: 30px; display: flex; align-items: center; justify-content: center; flex: none; color: #fff; position: relative; }
+      .g4 .ic .ico { width: 64px; height: 64px; }
+      .g4 .t { font-size: 44px; font-weight: 900; line-height: 1.25; }
+      .g4 .t small { display: block; margin-top: 4px; font-size: 30px; font-weight: 400; color: var(--muted); }
+      .g4 .t em { font-style: normal; color: var(--mint); }
+
+      /* ---------- s09 ---------- */
+      .s09-body { display: flex; gap: 60px; margin-top: 36px; align-items: stretch; }
+      .pillbox { width: 640px; flex: none; padding: 30px 34px; display: flex; flex-direction: column; }
+      .pillbox .hd { font-size: 32px; font-weight: 900; display: flex; align-items: center; gap: 14px; }
+      .pillbox .hd .ico { width: 44px; height: 44px; color: var(--sky); }
+      .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-top: 22px; }
+      .day { border-radius: 16px; background: #eef1f6; padding: 10px 0 14px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+      .day b { font-size: 28px; font-weight: 700; color: var(--muted); }
+      .day i { display: block; width: 40px; height: 40px; border-radius: 50%; background: #d6dbe5; position: relative; }
+      .day i em { position: absolute; inset: 0; border-radius: 50%; background: var(--sky); display: block; }
+      .day i em.pm { background: var(--mint); }
+      .pillbox .ft { margin-top: 22px; font-size: 28px; color: var(--muted); }
+      .pillbox .ft b { color: var(--ink); }
+      .rules { flex: 1; display: flex; flex-direction: column; gap: 20px; justify-content: center; }
+      .rl { display: flex; align-items: center; gap: 20px; padding: 20px 28px; }
+      .rl .mk { width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none; color: #fff; }
+      .rl .mk .ico { width: 34px; height: 34px; stroke-width: 4.5; }
+      .rl .t { font-size: 36px; font-weight: 900; line-height: 1.3; }
+      .rl .t small { display: block; font-size: 26px; font-weight: 400; color: var(--muted); }
+      .combo { margin-top: 30px; align-self: center; display: flex; align-items: center; gap: 18px; font-size: 40px; font-weight: 900; }
+      .combo span { display: block; padding: 12px 32px; border-radius: 999px; color: #fff; }
+      .combo i { font-style: normal; color: var(--muted); font-size: 44px; }
+
+      /* ---------- s10 ---------- */
+      .cols { display: flex; gap: 34px; margin-top: 40px; }
+      .col { flex: 1; padding: 0 0 26px; overflow: hidden; display: flex; flex-direction: column; }
+      .col .hd { padding: 18px 30px; color: #fff; font-size: 38px; font-weight: 900; display: flex; align-items: center; gap: 14px; }
+      .col .hd .ico { width: 48px; height: 48px; }
+      .col ul { list-style: none; padding: 18px 30px 0; }
+      .col li { font-size: 34px; font-weight: 700; line-height: 1.7; padding-left: 34px; position: relative; }
+      .col li::before { content: ""; position: absolute; left: 4px; top: 24px; width: 14px; height: 14px; border-radius: 50%; background: currentColor; opacity: 0.35; }
+      .col li small { font-size: 26px; font-weight: 400; color: var(--muted); }
+      .hypo-bar { margin-top: 32px; display: flex; align-items: center; gap: 22px; padding: 20px 36px; border-radius: 28px; background: #fff1ed; border: 2px solid rgba(232, 85, 63, 0.5); }
+      .hypo-bar .ico { width: 58px; height: 58px; color: var(--coral); flex: none; }
+      .hypo-bar .k { font-size: 36px; font-weight: 900; color: #b8392a; }
+      .hypo-bar .sym { display: flex; gap: 12px; }
+      .hypo-bar .sym span { display: block; padding: 6px 20px; border-radius: 999px; background: #fff; border: 2px solid rgba(232, 85, 63, 0.4); font-size: 32px; font-weight: 700; color: var(--ink); }
+      .hypo-bar .arrow { width: 50px; height: 50px; color: #b8392a; }
+      .hypo-bar .act { padding: 10px 28px; border-radius: 999px; background: var(--coral); color: #fff; font-size: 36px; font-weight: 900; }
+
+      /* ---------- s11 ---------- */
+      .day-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 40px; margin-top: 40px; }
+      .slot { padding: 22px 30px; display: flex; align-items: center; gap: 26px; }
+      .slot .tm { flex: none; width: 150px; padding: 10px 0; border-radius: 16px; text-align: center; color: #fff; font-size: 34px; font-weight: 900; }
+      .slot .ico { width: 62px; height: 62px; flex: none; }
+      .slot .t { font-size: 40px; font-weight: 900; }
+      .slot .t small { display: block; font-size: 27px; font-weight: 400; color: var(--muted); }
+
+      /* ---------- s12 ---------- */
+      .end-line { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 68px; line-height: 1.35; }
+      .end-line em { font-style: normal; color: var(--mint); }
+      .end-line.small { font-size: 50px; font-weight: 700; color: var(--muted); }
+      .end-keys { margin-top: 44px; display: flex; gap: 22px; justify-content: center; }
+      .end-keys span { display: block; padding: 14px 32px; border-radius: 999px; color: #fff; font-size: 40px; font-weight: 900; }
+      .end-mid { margin-top: 40px; font-size: 46px; font-weight: 700; color: var(--muted); }
+      .cheer { margin-top: 22px; font-family: "Ma Shan Zheng", cursive; font-size: 110px; color: var(--mint); line-height: 1.2; }
+      .disclaimer { position: absolute; left: 0; right: 0; bottom: 176px; text-align: center; font-size: 24px; color: rgba(35, 48, 43, 0.66); }
+      .credit { position: absolute; left: 0; right: 0; bottom: 140px; text-align: center; font-size: 22px; color: rgba(35, 48, 43, 0.6); letter-spacing: 0.1em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="{{TOTAL}}" data-width="1920" data-height="1080">
+      <div id="bg" class="clip bg" data-start="0" data-duration="{{TOTAL}}" data-track-index="0">
+        <div class="glow g1"></div>
+        <div class="glow g2"></div>
+        <div class="glow g3"></div>
+        <div class="dots"></div>
+        <div class="brand">健康课堂 · 六十岁以后</div>
+        <div class="progress"><div class="progress-fill"></div></div>
+      </div>
+
+      <!-- s01 · hook + title -->
+      <section id="s01" class="clip scene" data-start="{{s01.start}}" data-duration="{{s01.dur}}" data-track-index="1">
+        <div class="inner center s01-a">
+          <div class="s01-row">
+            <div class="card report">
+              <div class="hd">
+                <svg class="ico" viewBox="0 0 48 48"><rect x="10" y="6" width="28" height="36" rx="4" /><path d="M18 6v4h12V6M17 20h14M17 28h14M17 35h8" /></svg>
+                体检报告<span>65 岁 · 例</span>
+              </div>
+              <div class="rrow r1"><span class="nm">空腹血糖</span><span class="val">7.6</span><span class="unit">mmol/L</span><span class="up"><svg class="ico" viewBox="0 0 48 48"><path d="M24 38V10M12 22l12-12 12 12" /></svg></span></div>
+              <div class="rrow r2"><span class="nm">甘油三酯</span><span class="val">2.4</span><span class="unit">mmol/L</span><span class="up"><svg class="ico" viewBox="0 0 48 48"><path d="M24 38V10M12 22l12-12 12 12" /></svg></span></div>
+              <div class="rrow r3"><span class="nm">低密度脂蛋白胆固醇</span><span class="val">4.2</span><span class="unit">mmol/L</span><span class="up"><svg class="ico" viewBox="0 0 48 48"><path d="M24 38V10M12 22l12-12 12 12" /></svg></span></div>
+            </div>
+            <div class="s01-side">
+              <div class="worry">是不是从此<br />什么都不能吃了？</div>
+              <div class="calm">
+                <svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><path d="M16 24l6 6 11-12" /></svg>
+                不用慌，管得住
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="inner center s01-b">
+          <div class="hero-kicker">写给六十岁以上的朋友</div>
+          <div class="hero">血糖血脂高<br /><span class="hl">怎样健康地生活</span></div>
+          <div class="hero-rule"></div>
+          <div class="hero-keys">
+            <span style="background: var(--coral)">吃</span>
+            <span style="background: var(--mint)">动</span>
+            <span style="background: var(--lav)">睡</span>
+            <span style="background: var(--sky)">药</span>
+            <span style="background: var(--ink)">查</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- s02 · silent damage + five things -->
+      <section id="s02" class="clip scene" data-start="{{s02.start}}" data-duration="{{s02.dur}}" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>00</b> 先弄明白</div>
+          <div class="title">伤人的不是数字，是<em class="c">血管</em></div>
+          <div class="s02-body">
+            <div class="card vessel">
+              <div class="lbl">血管里，悄悄在变窄<small>平时往往没什么感觉</small></div>
+              <svg viewBox="0 0 900 190" preserveAspectRatio="none">
+                <rect x="10" y="30" width="880" height="130" rx="65" fill="#fbe1da" stroke="#e8553f" stroke-width="4" />
+                <rect x="10" y="62" width="880" height="66" rx="33" fill="#f6b3a3" />
+                <g class="plaque">
+                  <path d="M330 32 C 380 32 400 82 460 82 C 520 82 540 32 600 32 Z" fill="#f2b01e" stroke="#c98d06" stroke-width="3" />
+                  <path d="M380 158 C 420 158 440 118 490 118 C 540 118 560 158 600 158 Z" fill="#f2b01e" stroke="#c98d06" stroke-width="3" />
+                </g>
+                <g fill="#e8553f">
+                  <circle class="cell c1" cx="90" cy="95" r="16" />
+                  <circle class="cell c2" cx="170" cy="88" r="14" />
+                  <circle class="cell c3" cx="250" cy="100" r="15" />
+                </g>
+              </svg>
+            </div>
+            <div class="risks">
+              <div class="card risk rk1">
+                <svg class="ico" viewBox="0 0 48 48"><path d="M24 41S7 31 7 18a8.5 8.5 0 0 1 17-2 8.5 8.5 0 0 1 17 2c0 13-17 23-17 23z" /><path d="M12 24h7l3-6 4 11 3-5h7" /></svg>
+                <div><b>心梗</b><small>心脏的血管堵了</small></div>
+              </div>
+              <div class="card risk rk2">
+                <svg class="ico" viewBox="0 0 48 48"><path d="M17 40c-6 0-10-4-10-10 0-3 1-5 3-7-1-7 4-13 11-13 3-4 11-4 14 0 6 0 9 5 8 10 2 2 3 5 2 8-1 6-6 9-11 9" /><path d="M24 22l-3 7h6l-3 7" /></svg>
+                <div><b>脑卒中</b><small>也就是中风</small></div>
+              </div>
+            </div>
+          </div>
+          <div class="five">
+            <div class="lead">好消息：做好<em>五件事</em></div>
+            <div class="kc k1" style="background: var(--coral)">吃</div>
+            <div class="kc k2" style="background: var(--mint)">动</div>
+            <div class="kc k3" style="background: var(--lav)">睡</div>
+            <div class="kc k4" style="background: var(--sky)">药</div>
+            <div class="kc k5" style="background: var(--ink)">查</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s03 · targets for seniors -->
+      <section id="s03" class="clip scene" data-start="{{s03.start}}" data-duration="{{s03.dur}}" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>01</b> 先定目标</div>
+          <div class="title">老年人控糖，<em class="c">不是越低越好</em></div>
+          <div class="card gauge">
+            <div class="cap">空腹血糖<small>单位 mmol/L</small></div>
+            <div class="bar">
+              <span class="z-low" style="width: 317px; background: #e8553f"></span>
+              <span style="width: 83px; background: #f5c9bd"></span>
+              <span class="z-ok" style="width: 433px; background: #17977f"></span>
+              <span class="z-loose" style="width: 217px; background: #9fd8c7"></span>
+              <span style="width: 450px; background: #e4e2d8"></span>
+            </div>
+            <div class="ticks">
+              <span class="zone-lbl zl-low" style="left: 40px; top: -112px; color: #c43c28">低血糖 · 危险</span>
+              <span class="zone-lbl zl-ok" style="left: 470px; top: -112px; color: #0f7a66">身体较好的目标</span>
+              <span class="zone-lbl zl-loose" style="left: 846px; top: -112px; color: #2f7d6b">可适当放宽</span>
+              <span class="tick" style="left: 317px">3.9</span>
+              <span class="tick tk-a" style="left: 400px">4.4</span>
+              <span class="tick tk-b" style="left: 833px">7.0</span>
+            </div>
+          </div>
+          <div class="s03-low">
+            <div class="card tg fit"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="11" r="5" /><path d="M24 17v13M15 24l9-5 9 5M18 44l6-14 6 14" /></svg><div class="t">身体较好<small>空腹 4.4–7.0</small></div></div>
+            <div class="card tg old"><svg class="ico" viewBox="0 0 48 48"><circle cx="22" cy="10" r="5" /><path d="M22 16v14M22 30l-6 14M22 30l5 14M22 21l9 4M36 22v22" /></svg><div class="t">年纪更大、病多<small>听医生的，适当放宽</small></div></div>
+            <div class="card tg hypo"><svg class="ico" viewBox="0 0 48 48"><path d="M24 6L44 40H4z" /><path d="M24 19v10M24 34h.1" stroke-width="4" /></svg><div class="t">低血糖更危险<small>头晕、跌倒、诱发心脑意外</small></div></div>
+          </div>
+          <div class="fnote s03-note">* 参考《中国老年糖尿病诊疗指南》的分层目标；每个人的控制目标请与主治医生商定</div>
+        </div>
+      </section>
+
+      <!-- s04 · the plate -->
+      <section id="s04" class="clip scene" data-start="{{s04.start}}" data-duration="{{s04.dur}}" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>02</b> 吃</div>
+          <div class="title">记住一个<em>餐盘</em></div>
+          <div class="s04-body">
+            <div class="plate-wrap">
+              <div class="plate-rim"></div>
+              <div class="seg veg"></div>
+              <div class="seg grain"></div>
+              <div class="seg prot"></div>
+              <div class="plbl veg">蔬菜<small>一半</small></div>
+              <div class="plbl grain">主食<small>四分之一</small></div>
+              <div class="plbl prot">鱼蛋豆肉<small>四分之一</small></div>
+            </div>
+            <div class="s04-right">
+              <div class="whole w-row">主食掺粗粮：<span>糙米</span><span>燕麦</span><span>杂豆</span></div>
+              <div class="order-hd oh">吃饭顺序</div>
+              <div class="order">
+                <div class="step o1" style="background: #2f8f57"><i>1</i>菜</div>
+                <svg class="ico arrow oa1" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+                <div class="step o2" style="background: var(--coral)"><i>2</i>肉</div>
+                <svg class="ico arrow oa2" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+                <div class="step o3" style="background: var(--sky)"><i>3</i>主食</div>
+              </div>
+              <div class="card nostarve">
+                <svg class="ico" viewBox="0 0 48 48"><path d="M8 34c0-8 7-14 16-14s16 6 16 14z" /><path d="M5 34h38M24 20v-6M18 12h12" /></svg>
+                <div class="t">别饿肚子<small>蛋白质吃够，才能留住肌肉</small></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s05 · less oil sugar salt -->
+      <section id="s05" class="clip scene" data-start="{{s05.start}}" data-duration="{{s05.dur}}" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>02</b> 吃</div>
+          <div class="title">管住<em>三样</em>东西</div>
+          <div class="lesses">
+            <div class="card less l-oil">
+              <div class="badge" style="background: #b8650a"><svg class="ico" viewBox="0 0 48 48"><path d="M24 6c6 9 12 15 12 23a12 12 0 0 1-24 0c0-8 6-14 12-23z" /></svg>少油</div>
+              <div class="num">≤ 25<small>克 / 天</small></div>
+              <p>少吃 <b>肥肉、内脏、油炸</b></p>
+            </div>
+            <div class="card less l-sugar">
+              <div class="badge" style="background: var(--lav)"><svg class="ico" viewBox="0 0 48 48"><path d="M16 8h16l-2 34H18zM14 16h20" /></svg>少糖</div>
+              <div class="num">尽量不碰</div>
+              <p><b>甜饮料、糕点</b></p>
+            </div>
+            <div class="card less l-salt">
+              <div class="badge" style="background: var(--sky)"><svg class="ico" viewBox="0 0 48 48"><path d="M16 16h16l3 26H13zM18 16l2-8h8l2 8M21 24h.1M27 24h.1M24 30h.1" /></svg>少盐</div>
+              <div class="num">≤ 5<small>克 / 天</small></div>
+              <div class="capbox"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="17" /><circle cx="24" cy="24" r="11" /><path d="M24 4v3M24 41v3M4 24h3M41 24h3M10 10l2 2M36 36l2 2M38 10l-2 2M12 36l-2 2" /></svg>约一个啤酒瓶盖</div>
+            </div>
+          </div>
+          <div class="card fruit">
+            <svg class="ico" viewBox="0 0 48 48"><path d="M24 16c-4-4-15-3-15 9 0 10 7 17 11 17 2 0 3-1 4-1s2 1 4 1c4 0 11-7 11-17 0-12-11-13-15-9z" /><path d="M24 16c0-5 2-8 6-10" /></svg>
+            <div class="t">水果<em>可以吃</em>：放在两餐之间</div>
+            <div class="fist">每次一个拳头大小</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s06 · move -->
+      <section id="s06" class="clip scene" data-start="{{s06.start}}" data-duration="{{s06.dur}}" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>03</b> 动</div>
+          <div class="title">每天<em>快走</em>，再加点力量</div>
+          <div class="stats">
+            <div class="card stat st1"><div class="d">5<small>天</small></div><div class="l">每周至少</div></div>
+            <div class="card stat st2"><div class="d">30<small>分钟</small></div><div class="l">每次快走左右</div></div>
+            <div class="card stat st3"><div class="d">饭后<small>半小时</small></div><div class="l">再出门，压住餐后血糖</div></div>
+          </div>
+          <div class="talk">
+            <svg class="ico" viewBox="0 0 48 48"><path d="M8 12a4 4 0 0 1 4-4h24a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H20l-8 7v-7a4 4 0 0 1-4-4z" /></svg>
+            强度刚好：微微出汗，还能说话
+          </div>
+          <div class="s06-low">
+            <div class="card power">
+              <svg class="ico" viewBox="0 0 48 48"><path d="M6 20v8M12 15v18M36 15v18M42 20v8M12 24h24" stroke-width="4" /></svg>
+              <div><div class="t">每周 2–3 次力量练习</div><div class="chips"><span class="cp1">靠墙静蹲</span><span class="cp2">弹力带</span></div></div>
+            </div>
+            <div class="engine">
+              <svg class="ico" viewBox="0 0 48 48"><path d="M24 6l4 6 7-1 1 7 6 4-4 6 1 7-7 1-4 6-4-6-7 1-1-7-6-4 4-6-1-7 7 1z" /><circle cx="24" cy="24" r="6" /></svg>
+              <div class="t">留住肌肉<small>就是留住降糖的“发动机”</small></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s07 · exercise safety -->
+      <section id="s07" class="clip scene" data-start="{{s07.start}}" data-duration="{{s07.dur}}" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>03</b> 动</div>
+          <div class="title">运动时，<em>安全第一</em></div>
+          <div class="checks">
+            <div class="card chk c1"><div class="ic"><svg class="ico" viewBox="0 0 48 48"><rect x="8" y="12" width="32" height="24" rx="4" /><path d="M14 20h10M14 27h16" /><circle cx="34" cy="22" r="0.5" /></svg></div><div class="t">糖 + 联系卡<small>随身带着</small></div></div>
+            <div class="card chk c2"><div class="ic"><svg class="ico" viewBox="0 0 48 48"><path d="M6 34V18l10 2 6 8 16 2a4 4 0 0 1 4 4v2H6zM6 40h36" /></svg></div><div class="t">合脚防滑鞋<small>护住双脚</small></div></div>
+            <div class="card chk c3"><div class="ic"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><path d="M11 11l26 26" /></svg></div><div class="t">不空腹运动<small>先吃点东西</small></div></div>
+          </div>
+          <div class="s07-low">
+            <div class="alarm">
+              <svg class="ico" viewBox="0 0 48 48"><path d="M24 6L44 40H4z" /><path d="M24 19v10M24 34h.1" stroke-width="4" /></svg>
+              <div class="t">胸闷、心慌、出冷汗<small>马上停下休息，必要时及时就医</small></div>
+            </div>
+            <div class="card bal">
+              <svg class="ico" viewBox="0 0 48 48"><path d="M30 6v36M30 14h10v28M30 24h10" /><circle cx="15" cy="9" r="4" /><path d="M15 13v14l-4 15M15 18l14 2M15 27l5 6" /></svg>
+              <div class="t">扶椅背单脚站<small>练平衡，减少跌倒</small></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s08 · sleep mood smoke wine -->
+      <section id="s08" class="clip scene" data-start="{{s08.start}}" data-duration="{{s08.dur}}" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>04</b> 睡</div>
+          <div class="title">睡好、心宽、<em>戒烟限酒</em></div>
+          <div class="grid4">
+            <div class="card g4 q1"><div class="ic" style="background: var(--lav)"><svg class="ico" viewBox="0 0 48 48"><path d="M38 30A16 16 0 1 1 20 9a13 13 0 0 0 18 21z" /></svg></div><div class="t">每晚 <em>6–8</em> 小时<small>睡不好，血糖也会波动</small></div></div>
+            <div class="card g4 q2"><div class="ic" style="background: var(--coral)"><svg class="ico" viewBox="0 0 48 48"><rect x="6" y="26" width="30" height="8" rx="2" /><path d="M40 26v8M36 20c0-4 4-4 4-8" /><path d="M6 42L42 6" stroke-width="4" /></svg></div><div class="t">烟，一定要戒<small>直接伤害血管</small></div></div>
+            <div class="card g4 q3"><div class="ic" style="background: #b8650a"><svg class="ico" viewBox="0 0 48 48"><path d="M15 6h18l-2 16a7 7 0 0 1-14 0zM24 29v11M17 42h14" /><path d="M6 42L42 6" stroke-width="4" /></svg></div><div class="t">酒，最好不喝<small>别拿酒当“活血”</small></div></div>
+            <div class="card g4 q4"><div class="ic" style="background: var(--mint)"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="8" /><path d="M24 4v6M24 38v6M4 24h6M38 24h6M10 10l4 4M34 34l4 4M38 10l-4 4M14 34l-4 4" /></svg></div><div class="t">聊天、晒太阳<small>心情平和，血糖血压更稳</small></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s09 · medicine -->
+      <section id="s09" class="clip scene" data-start="{{s09.start}}" data-duration="{{s09.dur}}" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>05</b> 药</div>
+          <div class="title">药，要<em>按时吃</em></div>
+          <div class="s09-body">
+            <div class="card pillbox">
+              <div class="hd"><svg class="ico" viewBox="0 0 48 48"><rect x="6" y="18" width="36" height="14" rx="7" /><path d="M24 18v14" /></svg>一周药盒</div>
+              <div class="days">
+                <div class="day"><b>一</b><i><em class="am"></em></i><i><em class="pm"></em></i></div>
+                <div class="day"><b>二</b><i><em class="am"></em></i><i><em class="pm"></em></i></div>
+                <div class="day"><b>三</b><i><em class="am"></em></i><i><em class="pm"></em></i></div>
+                <div class="day"><b>四</b><i><em class="am"></em></i><i><em class="pm"></em></i></div>
+                <div class="day"><b>五</b><i><em class="am"></em></i><i><em class="pm"></em></i></div>
+                <div class="day"><b>六</b><i><em class="am"></em></i><i><em class="pm"></em></i></div>
+                <div class="day"><b>日</b><i><em class="am"></em></i><i><em class="pm"></em></i></div>
+              </div>
+              <div class="ft"><b>降糖药 · 他汀类降脂药</b><br />医生根据你的情况开的</div>
+            </div>
+            <div class="rules">
+              <div class="card rl x1"><span class="mk" style="background: var(--coral)"><svg class="ico" viewBox="0 0 48 48"><path d="M13 13l22 22M35 13L13 35" /></svg></span><div class="t">觉得好了，自己停药<small>指标可能很快反弹</small></div></div>
+              <div class="card rl x2"><span class="mk" style="background: var(--coral)"><svg class="ico" viewBox="0 0 48 48"><path d="M13 13l22 22M35 13L13 35" /></svg></span><div class="t">保健品代替药物<small>保健品不能治病</small></div></div>
+              <div class="card rl v1"><span class="mk" style="background: var(--mint)"><svg class="ico" viewBox="0 0 48 48"><path d="M11 25l9 9 17-19" /></svg></span><div class="t">有疑问，就去问医生<small>换药、减药都要医生同意</small></div></div>
+            </div>
+          </div>
+          <div class="combo">
+            <span style="background: var(--sky)">按时吃药</span><i>+</i>
+            <span style="background: var(--coral)">管住嘴</span><i>+</i>
+            <span style="background: var(--mint)">迈开腿</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- s10 · monitoring -->
+      <section id="s10" class="clip scene" data-start="{{s10.start}}" data-duration="{{s10.dur}}" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>06</b> 查</div>
+          <div class="title">定期检查，<em>心里有数</em></div>
+          <div class="cols">
+            <div class="card col cl1">
+              <div class="hd" style="background: var(--sky)"><svg class="ico" viewBox="0 0 48 48"><path d="M8 22L24 8l16 14v18H8z" /><path d="M20 40V28h8v12" /></svg>在家</div>
+              <ul><li>备一台血糖仪</li><li>空腹 + 餐后<br /><small>按医生建议测</small></li><li>记在本子上</li></ul>
+            </div>
+            <div class="card col cl2">
+              <div class="hd" style="background: var(--mint)"><svg class="ico" viewBox="0 0 48 48"><rect x="7" y="10" width="34" height="31" rx="4" /><path d="M7 19h34M16 6v8M32 6v8" /></svg>每 3–6 个月</div>
+              <ul><li>血脂四项</li><li>糖化血红蛋白<br /><small>反映近 3 个月平均血糖</small></li></ul>
+            </div>
+            <div class="card col cl3">
+              <div class="hd" style="background: var(--lav)"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><path d="M24 13v11l7 5" /></svg>每年</div>
+              <ul><li>眼底</li><li>肾功能</li><li>双脚<small>（感觉、伤口）</small></li></ul>
+            </div>
+          </div>
+          <div class="hypo-bar">
+            <svg class="ico" viewBox="0 0 48 48"><path d="M24 6L44 40H4z" /><path d="M24 19v10M24 34h.1" stroke-width="4" /></svg>
+            <span class="k">低血糖信号</span>
+            <div class="sym"><span>心慌</span><span>手抖</span><span>出冷汗</span></div>
+            <svg class="ico arrow" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <span class="act">马上吃三四块糖</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- s11 · one day -->
+      <section id="s11" class="clip scene" data-start="{{s11.start}}" data-duration="{{s11.dur}}" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>07</b> 串起来</div>
+          <div class="title">一天，可以<em>这样过</em></div>
+          <div class="day-grid">
+            <div class="card slot d1"><span class="tm" style="background: var(--sky)">7:00</span><svg class="ico" viewBox="0 0 48 48" style="color: var(--sky)"><path d="M14 6h20v10l-6 6v18a4 4 0 0 1-8 0V22l-6-6z" /><path d="M24 30v4" /></svg><div class="t">测血糖、吃早饭<small>早饭别省</small></div></div>
+            <div class="card slot d2"><span class="tm" style="background: var(--mint)">饭后</span><svg class="ico" viewBox="0 0 48 48" style="color: var(--mint)"><circle cx="27" cy="8" r="4" /><path d="M24 14l-6 12 8 4-2 14M24 14l8 6 6-2M18 26l-6 4" /></svg><div class="t">出门快走<small>饭后半小时再出发</small></div></div>
+            <div class="card slot d3"><span class="tm" style="background: var(--sun); color: var(--ink)">中午</span><svg class="ico" viewBox="0 0 48 48" style="color: #b8650a"><circle cx="24" cy="24" r="17" /><path d="M24 7v34M24 24h17" /></svg><div class="t">一份好餐盘<small>再小睡一会儿</small></div></div>
+            <div class="card slot d4"><span class="tm" style="background: var(--lav)">下午</span><svg class="ico" viewBox="0 0 48 48" style="color: var(--lav)"><path d="M6 20v8M12 15v18M36 15v18M42 20v8M12 24h24" stroke-width="4" /></svg><div class="t">力量 + 平衡练习<small>静蹲、单脚站</small></div></div>
+            <div class="card slot d5"><span class="tm" style="background: var(--coral)">晚饭</span><svg class="ico" viewBox="0 0 48 48" style="color: var(--coral)"><path d="M8 26h32a16 16 0 0 1-32 0zM16 18c0-4 4-4 4-8M26 18c0-4 4-4 4-8" /></svg><div class="t">清淡，七分饱<small>少油少盐</small></div></div>
+            <div class="card slot d6"><span class="tm" style="background: var(--ink)">22:00</span><svg class="ico" viewBox="0 0 48 48" style="color: var(--ink)"><path d="M38 30A16 16 0 1 1 20 9a13 13 0 0 0 18 21z" /></svg><div class="t">安心入睡<small>十点前上床</small></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s12 · closing -->
+      <section id="s12" class="clip scene" data-start="{{s12.start}}" data-duration="{{s12.dur}}" data-track-index="1">
+        <div class="inner center">
+          <div class="end-line small e1">血糖血脂高，不是生活的终点，</div>
+          <div class="end-line e2">而是提醒我们，换一种<em>更好的活法</em>。</div>
+          <div class="end-keys">
+            <span class="ek1" style="background: var(--coral)">吃得对</span>
+            <span class="ek2" style="background: var(--mint)">动起来</span>
+            <span class="ek3" style="background: var(--lav)">睡得香</span>
+            <span class="ek4" style="background: var(--sky)">按时吃药</span>
+            <span class="ek5" style="background: var(--ink)">定期检查</span>
+          </div>
+          <div class="end-mid">不求一步到位，只求天天坚持</div>
+          <div class="cheer">稳稳当当　健康长寿</div>
+        </div>
+        <div class="disclaimer">本视频为健康科普，不能代替医生诊疗；用药和控制目标请遵医嘱</div>
+        <div class="credit">Made with Claude Opus 5.5 × HyperFrames in Cursor</div>
+      </section>
+
+      <!--@CAPTIONS@-->
+
+      <!--@AUDIO@-->
+    </div>
+
+    <script>
+      /*@TIMING@*/
+      const TOTAL = Number(document.getElementById("root").dataset.duration);
+      const tl = gsap.timeline({ paused: true });
+      const C = (s, k) => T[s].cues[k];
+
+      function reveal(sel, at, from, opts) {
+        tl.fromTo(sel, Object.assign({ opacity: 0 }, from || { y: 34 }), Object.assign({ opacity: 1, x: 0, y: 0, scale: 1, rotation: 0, duration: 0.6, ease: "power3.out" }, opts || {}), at);
+      }
+      function pop(sel, at) {
+        reveal(sel, at, { scale: 0.6, y: 0 }, { ease: "back.out(2)" });
+      }
+      function sceneIn(id, sel) {
+        tl.fromTo(sel || `#${id} .inner`, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, T[id].start + 0.02);
+      }
+      function sceneOut(id, sel) {
+        tl.to(sel || `#${id} .inner`, { opacity: 0, y: -18, duration: 0.42, ease: "power2.in" }, T[id].end - 0.44);
+      }
+
+      tl.fromTo(".glow.g1", { x: 0, y: 0 }, { x: 180, y: 110, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".glow.g2", { x: 0, y: 0 }, { x: -160, y: -120, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".glow.g3", { x: 0, y: 0 }, { x: 240, y: -80, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".progress-fill", { scaleX: 0 }, { scaleX: 1, duration: TOTAL, ease: "none" }, 0);
+
+      // s01
+      {
+        const s = T.s01;
+        tl.fromTo("#s01 .s01-a", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s.start);
+        reveal("#s01 .report", C("s01", "report") - 0.2, { x: -50 });
+        [".r1", ".r2", ".r3"].forEach((r, i) => reveal(`#s01 ${r}`, C("s01", "report") + 0.4 + i * 0.35, { x: -20 }));
+        [".r1", ".r2", ".r3"].forEach((r, i) => pop(`#s01 ${r} .up`, C("s01", "arrow") + i * 0.22));
+        reveal("#s01 .worry", C("s01", "worry") - 0.1, { scale: 0.8, y: 20 }, { ease: "back.out(1.8)" });
+        reveal("#s01 .calm", C("s01", "calm"), { scale: 0.7, y: 0 }, { ease: "back.out(2)" });
+        tl.to("#s01 .s01-a", { opacity: 0, y: -30, duration: 0.5, ease: "power2.in" }, C("s01", "q") - 0.5);
+        tl.fromTo("#s01 .s01-b", { opacity: 0 }, { opacity: 1, duration: 0.3 }, C("s01", "q") - 0.05);
+        reveal("#s01 .hero-kicker", C("s01", "q"), { y: 20 });
+        reveal("#s01 .hero", C("s01", "q") + 0.15, { y: 50, scale: 0.94 }, { duration: 0.9 });
+        tl.fromTo("#s01 .hero-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power3.out" }, C("s01", "q") + 0.7);
+        tl.fromTo("#s01 .hero-keys span", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2)", stagger: 0.14 }, C("s01", "q") + 1.1);
+        sceneOut("s01", "#s01 .s01-b");
+      }
+
+      // s02
+      {
+        sceneIn("s02");
+        reveal("#s02 .vessel", C("s02", "silent") - 0.6, { x: -40 });
+        tl.fromTo("#s02 .cell", { x: -60 }, { x: 560, duration: 6, ease: "none", stagger: 0.6 }, C("s02", "silent") - 0.4);
+        tl.fromTo("#s02 .plaque", { opacity: 0 }, { opacity: 1, duration: 1.2, ease: "power1.inOut" }, C("s02", "vessel"));
+        reveal("#s02 .rk1", C("s02", "risk"), { x: 40 });
+        reveal("#s02 .rk2", C("s02", "risk") + 0.6, { x: 40 });
+        reveal("#s02 .five .lead", C("s02", "good"), { y: 20 });
+        ["k1", "k2", "k3", "k4", "k5"].forEach((k) => pop(`#s02 .${k}`, C("s02", k) - 0.05));
+        sceneOut("s02");
+      }
+
+      // s03
+      {
+        sceneIn("s03");
+        reveal("#s03 .gauge", C("s03", "notlow") - 0.4, { y: 40 });
+        reveal("#s03 .zl-ok", C("s03", "fit"), { y: 10 });
+        tl.fromTo("#s03 .z-ok", { opacity: 0.25 }, { opacity: 1, duration: 0.6, repeat: 4, yoyo: true, ease: "sine.inOut" }, C("s03", "range") - 0.2);
+        reveal("#s03 .fit", C("s03", "range"), { y: 40 });
+        reveal("#s03 .zl-loose", C("s03", "loose"), { y: 10 });
+        reveal("#s03 .old", C("s03", "loose") + 0.4, { y: 40 });
+        reveal("#s03 .zl-low", C("s03", "hypo"), { y: 10 });
+        tl.fromTo("#s03 .z-low", { opacity: 0.4 }, { opacity: 1, duration: 0.45, repeat: 6, yoyo: true, ease: "sine.inOut" }, C("s03", "hypo"));
+        reveal("#s03 .hypo", C("s03", "hypo") + 0.5, { y: 40 });
+        reveal("#s03 .s03-note", C("s03", "doc"), { y: 10 });
+        sceneOut("s03");
+      }
+
+      // s04
+      {
+        sceneIn("s04");
+        reveal("#s04 .plate-rim", C("s04", "plate") - 0.2, { scale: 0.85, y: 0 }, { duration: 0.7 });
+        reveal("#s04 .seg.veg", C("s04", "veg"), { scale: 0.9, y: 0 });
+        reveal("#s04 .plbl.veg", C("s04", "veg") + 0.3, { y: 10 });
+        reveal("#s04 .seg.grain", C("s04", "grain"), { scale: 0.9, y: 0 });
+        reveal("#s04 .plbl.grain", C("s04", "grain") + 0.3, { y: 10 });
+        reveal("#s04 .seg.prot", C("s04", "prot"), { scale: 0.9, y: 0 });
+        reveal("#s04 .plbl.prot", C("s04", "prot") + 0.3, { y: 10 });
+        reveal("#s04 .w-row", C("s04", "whole") - 0.3, { x: 40 });
+        reveal("#s04 .oh", C("s04", "o1") - 0.8, { y: 16 });
+        pop("#s04 .o1", C("s04", "o1"));
+        reveal("#s04 .oa1", C("s04", "o2") - 0.3, { x: -16 });
+        pop("#s04 .o2", C("s04", "o2"));
+        reveal("#s04 .oa2", C("s04", "o3") - 0.3, { x: -16 });
+        pop("#s04 .o3", C("s04", "o3"));
+        reveal("#s04 .nostarve", C("s04", "nostarve"), { y: 40 });
+        sceneOut("s04");
+      }
+
+      // s05
+      {
+        sceneIn("s05");
+        reveal("#s05 .l-oil", C("s05", "oil") - 0.1, { y: 50 });
+        reveal("#s05 .l-sugar", C("s05", "sugar") - 0.1, { y: 50 });
+        reveal("#s05 .l-salt", C("s05", "salt") - 0.1, { y: 50 });
+        reveal("#s05 .capbox", C("s05", "cap") - 0.3, { x: -20 });
+        reveal("#s05 .fruit", C("s05", "fruit"), { y: 30 });
+        pop("#s05 .fist", C("s05", "fist") - 0.2);
+        sceneOut("s05");
+      }
+
+      // s06
+      {
+        sceneIn("s06");
+        reveal("#s06 .st1", C("s06", "walk"), { y: 40 });
+        reveal("#s06 .st2", C("s06", "walk") + 1.4, { y: 40 });
+        pop("#s06 .talk", C("s06", "talk"));
+        reveal("#s06 .st3", C("s06", "after"), { y: 40 });
+        reveal("#s06 .power", C("s06", "power") - 0.2, { x: -40 });
+        pop("#s06 .cp1", C("s06", "squat"));
+        pop("#s06 .cp2", C("s06", "band"));
+        reveal("#s06 .engine", C("s06", "engine"), { x: 40 });
+        tl.fromTo("#s06 .engine .ico", { rotation: 0 }, { rotation: 180, duration: 3, ease: "power1.inOut" }, C("s06", "engine") + 0.4);
+        sceneOut("s06");
+      }
+
+      // s07
+      {
+        sceneIn("s07");
+        reveal("#s07 .c1", C("s07", "candy") - 0.2, { y: 40 });
+        reveal("#s07 .c2", C("s07", "shoe") - 0.2, { y: 40 });
+        reveal("#s07 .c3", C("s07", "empty") - 0.1, { y: 40 });
+        reveal("#s07 .alarm", C("s07", "stop"), { scale: 0.85, y: 20 }, { ease: "back.out(1.6)" });
+        reveal("#s07 .bal", C("s07", "bal"), { x: 40 });
+        sceneOut("s07");
+      }
+
+      // s08
+      {
+        sceneIn("s08");
+        reveal("#s08 .q1", C("s08", "sleep") - 0.1, { y: 40 });
+        reveal("#s08 .q2", C("s08", "smoke") - 0.1, { y: 40 });
+        reveal("#s08 .q3", C("s08", "wine") - 0.1, { y: 40 });
+        reveal("#s08 .q4", C("s08", "mood") - 0.1, { y: 40 });
+        sceneOut("s08");
+      }
+
+      // s09
+      {
+        sceneIn("s09");
+        reveal("#s09 .pillbox", C("s09", "ontime") - 0.2, { x: -40 });
+        tl.fromTo("#s09 .day em", { scale: 0 }, { scale: 1, duration: 0.3, ease: "back.out(2)", stagger: 0.12 }, C("s09", "ontime") + 0.6);
+        reveal("#s09 .x1", C("s09", "nostop"), { x: 40 });
+        reveal("#s09 .x2", C("s09", "nopill"), { x: 40 });
+        reveal("#s09 .v1", C("s09", "ask"), { x: 40 });
+        tl.fromTo("#s09 .combo > *", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out", stagger: 0.2 }, C("s09", "both"));
+        sceneOut("s09");
+      }
+
+      // s10
+      {
+        sceneIn("s10");
+        reveal("#s10 .cl1", C("s10", "meter") - 0.3, { y: 40 });
+        reveal("#s10 .cl2", C("s10", "lab") - 0.5, { y: 40 });
+        reveal("#s10 .cl3", C("s10", "year"), { y: 40 });
+        reveal("#s10 .hypo-bar", C("s10", "sign") - 0.1, { y: 30 });
+        tl.fromTo("#s10 .hypo-bar .sym span", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)", stagger: 0.45 }, C("s10", "sign") + 0.9);
+        pop("#s10 .hypo-bar .act", C("s10", "eat"));
+        sceneOut("s10");
+      }
+
+      // s11
+      {
+        sceneIn("s11");
+        ["t1", "t2", "t3", "t4", "t5", "t6"].forEach((k, i) => reveal(`#s11 .d${i + 1}`, C("s11", k) - 0.15, { x: i % 2 ? 40 : -40 }));
+        sceneOut("s11");
+      }
+
+      // s12
+      {
+        const s = T.s12;
+        tl.fromTo("#s12 .inner", { opacity: 0 }, { opacity: 1, duration: 0.4 }, s.start);
+        reveal("#s12 .e1", C("s12", "notend") - 0.6, { y: 20 }, { duration: 0.8 });
+        reveal("#s12 .e2", C("s12", "remind") - 0.4, { y: 30 }, { duration: 0.8 });
+        ["r1", "r2", "r3", "r4", "r5"].forEach((k, i) => pop(`#s12 .ek${i + 1}`, C("s12", k) - 0.05));
+        reveal("#s12 .end-mid", C("s12", "keep") - 0.1, { y: 20 });
+        reveal("#s12 .cheer", C("s12", "long") - 0.1, { scale: 0.8, y: 20 }, { duration: 0.9, ease: "back.out(1.6)" });
+        reveal("#s12 .disclaimer", C("s12", "long") + 1.2, { y: 10 });
+        reveal("#s12 .credit", C("s12", "long") + 1.6, { y: 10 });
+      }
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

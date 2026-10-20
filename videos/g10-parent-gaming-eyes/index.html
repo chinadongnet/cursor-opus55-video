@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="zh-CN" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Noto Sans SC"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-400.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Sans SC"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-700.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Sans SC"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-900.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Serif SC"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/noto-serif-sc-700.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Serif SC"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/noto-serif-sc-900.woff2") format("woff2"); }
+      @font-face { font-family: "Ma Shan Zheng"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/ma-shan-zheng-400.woff2") format("woff2"); }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #f7f3ec; }
+
+      :root {
+        --ink: #22253a;
+        --muted: #646a84;
+        --paper: #f7f3ec;
+        --card: #fffdf9;
+        --coral: #e8553f;
+        --peach: #ffb38a;
+        --mint: #17977f;
+        --sky: #3470e0;
+        --lav: #6b5be6;
+        --sun: #f2b01e;
+        --line: rgba(34, 37, 58, 0.12);
+      }
+
+      #root {
+        position: relative; width: 100%; height: 100%; overflow: hidden;
+        background: var(--paper); color: var(--ink);
+        font-family: "Noto Sans SC", sans-serif; font-weight: 400;
+      }
+
+      /* ---------- persistent layers ---------- */
+      .bg { position: absolute; inset: 0; }
+      .dots {
+        position: absolute; inset: 0;
+        background-image: radial-gradient(rgba(34, 37, 58, 0.07) 2px, transparent 2.5px);
+        background-size: 40px 40px;
+      }
+      .blob { position: absolute; display: block; border-radius: 50%; filter: blur(70px); opacity: 0.36; }
+      .blob.b1 { width: 620px; height: 620px; left: -160px; top: -180px; background: #a9d8f5; }
+      .blob.b2 { width: 560px; height: 560px; right: -140px; top: 260px; background: #b9ecd9; }
+      .blob.b3 { width: 520px; height: 520px; left: 620px; bottom: -300px; background: var(--peach); }
+      .brand {
+        position: absolute; top: 44px; right: 64px;
+        font-size: 24px; font-weight: 700; letter-spacing: 0.12em; color: rgba(34, 37, 58, 0.62);
+      }
+      .progress { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: rgba(34, 37, 58, 0.06); }
+      .progress-fill { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, var(--sky), var(--mint)); transform-origin: 0 50%; }
+
+      /* ---------- scene scaffold ---------- */
+      .scene { position: absolute; inset: 0; }
+      .inner { position: absolute; inset: 0; padding: 96px 150px 210px; display: flex; flex-direction: column; }
+      .center { align-items: center; justify-content: center; text-align: center; }
+      .tag {
+        align-self: flex-start; display: inline-flex; align-items: center; gap: 14px;
+        padding: 10px 26px; border-radius: 999px; background: var(--ink); color: #fff;
+        font-size: 26px; font-weight: 700; letter-spacing: 0.08em;
+      }
+      .tag b { color: var(--peach); font-weight: 900; }
+      .title { margin-top: 26px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 76px; line-height: 1.22; }
+      .title em { font-style: normal; color: var(--sky); }
+      .card { background: var(--card); border: 2px solid var(--line); border-radius: 28px; box-shadow: 0 18px 40px rgba(34, 37, 58, 0.08); }
+      .muted { color: var(--muted); }
+      svg.ico { display: block; fill: none; stroke: currentColor; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+      .strike { position: absolute; left: -6px; right: -6px; top: 52%; height: 6px; border-radius: 3px; background: var(--coral); display: block; transform-origin: 0 50%; }
+      .arrow { width: 64px; height: 64px; color: var(--muted); flex: none; }
+      .fnote { font-size: 24px; color: var(--muted); }
+
+      /* ---------- captions ---------- */
+      .caption { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 54px; pointer-events: none; }
+      .caption span {
+        display: block; max-width: 1500px; padding: 12px 34px; border-radius: 18px;
+        background: rgba(34, 37, 58, 0.86); color: #fff;
+        font-size: 40px; line-height: 1.4; font-weight: 400; letter-spacing: 0.04em;
+      }
+
+      /* ---------- s01 ---------- */
+      .s01-row { display: flex; gap: 48px; align-items: stretch; }
+      .night { width: 600px; padding: 44px 48px; border-radius: 28px; background: var(--ink); color: #fff; display: flex; flex-direction: column; align-items: center; position: relative; overflow: hidden; }
+      .night .clock { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 150px; line-height: 1; color: var(--peach); }
+      .night .sub { margin-top: 22px; font-size: 32px; color: rgba(255, 255, 255, 0.86); }
+      .night .glow { position: absolute; left: 50%; bottom: 0; width: 10px; height: 64px; margin-left: -5px; border-radius: 5px 5px 0 0; background: #9fd0ff; box-shadow: 0 0 40px 14px rgba(140, 200, 255, 0.55); }
+      .report { width: 600px; padding: 34px 44px; display: flex; flex-direction: column; }
+      .report .hd { display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 900; padding-bottom: 16px; border-bottom: 2px dashed var(--line); }
+      .report .hd .ico { width: 40px; height: 40px; color: var(--sky); }
+      .report .rw { display: flex; justify-content: space-between; align-items: baseline; margin-top: 20px; font-size: 32px; }
+      .report .rw b { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 52px; }
+      .report .rw.now b { color: var(--coral); }
+      .report .up { align-self: flex-end; margin-top: 18px; padding: 8px 22px; border-radius: 12px; background: var(--coral); color: #fff; font-size: 34px; font-weight: 900; }
+      .s01-shout { margin-top: 46px; display: flex; align-items: center; gap: 40px; }
+      .shout { padding: 22px 40px; border-radius: 30px; border-bottom-left-radius: 8px; background: var(--coral); color: #fff; font-size: 46px; font-weight: 900; }
+      .door { display: flex; align-items: center; gap: 18px; }
+      .door .ico { width: 84px; height: 84px; color: var(--ink); }
+      .door .bang { font-family: "Ma Shan Zheng", cursive; font-size: 72px; color: var(--ink); }
+      .hero-kicker { font-size: 34px; letter-spacing: 0.4em; color: var(--sky); font-weight: 900; }
+      .hero { margin-top: 26px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 116px; line-height: 1.22; }
+      .hero .hl { color: var(--sky); }
+      .hero-rule { display: block; width: 180px; height: 8px; border-radius: 4px; margin: 40px auto 0; background: linear-gradient(90deg, var(--sky), var(--mint)); transform-origin: 50% 50%; }
+      .hero-sub { margin-top: 34px; font-size: 42px; color: var(--muted); font-weight: 700; letter-spacing: 0.06em; }
+
+      /* ---------- s02 ---------- */
+      .s02-body { display: flex; gap: 70px; margin-top: 36px; align-items: center; }
+      .ice { width: 700px; flex: none; display: flex; flex-direction: column; align-items: center; }
+      .ice-lbl { font-size: 26px; font-weight: 700; color: var(--muted); letter-spacing: 0.1em; }
+      .ice-top { display: flex; gap: 22px; margin-top: 12px; }
+      .ice-top span { display: block; padding: 14px 28px; border-radius: 16px; background: #e6e8f0; font-size: 34px; font-weight: 700; color: var(--ink); }
+      .wave { width: 700px; height: 40px; margin-top: 16px; color: var(--sky); }
+      .ice-root { margin-top: 14px; width: 620px; padding: 34px 0; border-radius: 30px 30px 120px 120px; background: var(--sky); color: #fff; text-align: center; }
+      .ice-root small { display: block; font-size: 28px; font-weight: 700; color: rgba(255, 255, 255, 0.88); letter-spacing: 0.1em; }
+      .ice-root b { display: block; margin-top: 6px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 72px; }
+      .rel { flex: 1; display: flex; flex-direction: column; gap: 30px; }
+      .rel .card { display: flex; align-items: center; gap: 26px; padding: 26px 32px; }
+      .rel .k { flex: none; padding: 8px 20px; border-radius: 12px; color: #fff; font-size: 30px; font-weight: 900; }
+      .rel .t { font-size: 38px; font-weight: 700; }
+      .order { margin-top: 44px; display: flex; align-items: center; justify-content: center; gap: 24px; }
+      .step { display: flex; align-items: center; gap: 14px; padding: 16px 34px; border-radius: 999px; color: #fff; font-size: 38px; font-weight: 900; }
+      .step i { font-style: normal; width: 46px; height: 46px; border-radius: 50%; background: rgba(255, 255, 255, 0.28); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+      .order .arrow { width: 52px; height: 52px; }
+
+      /* ---------- s03 ---------- */
+      .needs { display: flex; gap: 42px; margin-top: 44px; }
+      .need { flex: 1; padding: 34px 36px; display: flex; flex-direction: column; }
+      .need .gl { width: 96px; height: 96px; border-radius: 28px; display: flex; align-items: center; justify-content: center; color: #fff; }
+      .need .gl .ico { width: 56px; height: 56px; }
+      .need h3 { margin-top: 20px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 56px; }
+      .need p { margin-top: 6px; font-size: 34px; font-weight: 700; }
+      .need .game { margin-top: 18px; padding-top: 16px; border-top: 2px dashed var(--line); font-size: 28px; color: var(--muted); line-height: 1.45; }
+      .need .game b { color: var(--ink); }
+      .s03-gap { margin-top: 40px; align-self: center; display: flex; align-items: center; gap: 22px; padding: 20px 40px; font-size: 36px; font-weight: 700; }
+      .s03-gap .arrow { width: 48px; height: 48px; }
+      .s03-gap em { font-style: normal; color: var(--coral); font-weight: 900; }
+
+      /* ---------- s04 ---------- */
+      .qs { display: flex; align-items: center; gap: 30px; margin-top: 38px; }
+      .q { padding: 22px 36px; font-size: 40px; font-weight: 700; }
+      .q.old { color: var(--muted); }
+      .q.old .txt { position: relative; }
+      .q.new { border-color: var(--sky); background: #edf3ff; font-weight: 900; }
+      .lvls { display: flex; gap: 40px; margin-top: 44px; }
+      .lvl { flex: 1; padding: 30px 36px; display: flex; flex-direction: column; }
+      .lvl .hd { display: flex; align-items: center; gap: 16px; }
+      .lvl .hd .ico { width: 52px; height: 52px; }
+      .lvl .hd b { font-size: 44px; font-weight: 900; }
+      .lvl ul { list-style: none; margin-top: 16px; }
+      .lvl li { font-size: 32px; line-height: 1.6; padding-left: 30px; position: relative; }
+      .lvl li::before { content: ""; position: absolute; left: 4px; top: 21px; width: 12px; height: 12px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+      .lvl.ok { border-color: rgba(23, 151, 127, 0.5); }
+      .lvl.ok .hd { color: var(--mint); }
+      .lvl.bad { border-color: rgba(232, 85, 63, 0.5); }
+      .lvl.bad .hd { color: var(--coral); }
+      .s04-note { margin-top: 18px; }
+
+      /* ---------- s05 ---------- */
+      .donts { display: flex; gap: 40px; margin-top: 46px; }
+      .dont { flex: 1; padding: 32px 34px; display: flex; flex-direction: column; align-items: flex-start; }
+      .dont .x { width: 72px; height: 72px; border-radius: 50%; background: #fde7e3; color: var(--coral); display: flex; align-items: center; justify-content: center; }
+      .dont .x .ico { width: 40px; height: 40px; }
+      .dont h3 { margin-top: 20px; font-size: 44px; font-weight: 900; }
+      .dont p { margin-top: 12px; font-size: 32px; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+      .dont p b { color: var(--coral); font-weight: 900; }
+      .respect { margin-top: 48px; align-self: center; display: flex; align-items: center; gap: 26px; padding: 22px 46px; border-radius: 999px; background: var(--mint); color: #fff; font-size: 44px; font-weight: 900; }
+      .respect .ico { width: 56px; height: 56px; }
+
+      /* ---------- s06 ---------- */
+      .s06-body { display: flex; gap: 60px; margin-top: 36px; flex: 1; min-height: 0; }
+      .rules { flex: 1; display: flex; flex-direction: column; gap: 26px; justify-content: center; }
+      .rule { display: flex; align-items: center; gap: 26px; padding: 24px 30px; }
+      .rule .n { flex: none; width: 62px; height: 62px; border-radius: 50%; background: var(--sky); color: #fff; font-weight: 900; font-size: 34px; display: flex; align-items: center; justify-content: center; }
+      .rule .t { font-size: 38px; font-weight: 900; line-height: 1.35; }
+      .rule .t small { display: block; font-size: 28px; color: var(--muted); font-weight: 400; }
+      .chat { width: 760px; flex: none; padding: 26px 32px; display: flex; flex-direction: column; gap: 18px; justify-content: center; }
+      .chat-head { display: flex; align-items: center; gap: 14px; font-size: 26px; color: var(--muted); font-weight: 700; padding-bottom: 14px; border-bottom: 2px dashed var(--line); }
+      .chat-head .ico { width: 36px; height: 36px; color: var(--sky); }
+      .bubble { position: relative; max-width: 92%; padding: 16px 26px; border-radius: 24px; font-size: 32px; line-height: 1.45; align-self: flex-end; border-bottom-right-radius: 6px; }
+      .bubble.ask { background: var(--sky); color: #fff; }
+      .bubble.good { background: var(--mint); color: #fff; font-weight: 700; }
+      .bubble.bad { background: #e6e8f0; color: var(--muted); }
+      .bubble .who { display: block; font-size: 22px; font-weight: 700; opacity: 0.85; }
+      .bubble .txt { position: relative; }
+
+      /* ---------- s07 ---------- */
+      .s07-body { display: flex; gap: 46px; margin-top: 32px; align-items: stretch; }
+      .pact { flex: 1; padding: 26px 44px 22px; background-color: #fffdf6; }
+      .pact .hd { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 12px; border-bottom: 3px double var(--line); }
+      .pact .hd b { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 44px; }
+      .pact .hd span { font-size: 26px; color: var(--muted); }
+      .pr { display: flex; align-items: center; gap: 22px; padding: 16px 0; border-bottom: 2px dashed var(--line); }
+      .pr .n { flex: none; width: 50px; height: 50px; border-radius: 14px; color: #fff; font-size: 28px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+      .pr .t { font-size: 34px; font-weight: 700; line-height: 1.35; }
+      .pr .t small { display: block; font-size: 26px; font-weight: 400; color: var(--muted); }
+      .sigs { display: flex; gap: 60px; padding-top: 18px; }
+      .sig { display: flex; align-items: flex-end; gap: 16px; font-size: 26px; color: var(--muted); }
+      .sig .hand { display: block; min-width: 150px; padding: 0 10px 2px; border-bottom: 3px solid var(--ink); font-family: "Ma Shan Zheng", cursive; font-size: 50px; line-height: 1.1; color: var(--sky); }
+      .trust { width: 400px; flex: none; padding: 34px 34px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-color: rgba(23, 151, 127, 0.5); }
+      .trust .ico { width: 110px; height: 110px; color: var(--mint); }
+      .trust b { margin-top: 18px; font-size: 44px; font-weight: 900; }
+      .trust p { margin-top: 10px; font-size: 32px; color: var(--muted); line-height: 1.5; }
+      .trust p em { font-style: normal; color: var(--mint); font-weight: 900; }
+      .s07-note { margin-top: 14px; }
+
+      /* ---------- s08 ---------- */
+      .pill { align-self: flex-start; margin-top: 18px; padding: 10px 28px; border-radius: 999px; background: var(--sun); color: var(--ink); font-size: 32px; font-weight: 900; }
+      .trio { display: flex; align-items: center; gap: 26px; margin-top: 30px; }
+      .tw { flex: 1; padding: 22px 30px; display: flex; flex-direction: column; align-items: center; }
+      .tw .d { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 96px; line-height: 1.05; color: var(--sky); }
+      .tw .d small { font-size: 40px; margin-left: 6px; color: var(--ink); }
+      .tw .l { margin-top: 6px; font-size: 32px; font-weight: 700; color: var(--muted); }
+      .eyecare { display: flex; gap: 30px; margin-top: 30px; }
+      .eyecare .card { flex: 1; padding: 22px 28px; display: flex; align-items: center; gap: 22px; }
+      .eyecare .ico { width: 60px; height: 60px; flex: none; }
+      .eyecare .t { font-size: 36px; font-weight: 900; line-height: 1.3; }
+      .eyecare .t small { display: block; font-size: 26px; font-weight: 400; color: var(--muted); }
+
+      /* ---------- s09 ---------- */
+      .flow { display: flex; align-items: center; gap: 18px; margin-top: 50px; }
+      .fnode { flex: 1; padding: 30px 22px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+      .fnode .ico { width: 72px; height: 72px; }
+      .fnode .t { margin-top: 16px; font-size: 36px; font-weight: 900; }
+      .fnode .t small { display: block; font-size: 26px; font-weight: 400; color: var(--muted); margin-top: 4px; }
+      .flow .arrow { width: 48px; height: 48px; }
+      .s09-low { display: flex; gap: 36px; margin-top: 44px; align-items: stretch; }
+      .med { flex: 1; padding: 26px 34px; display: flex; align-items: center; gap: 24px; }
+      .med .ico { width: 64px; height: 64px; color: var(--lav); flex: none; }
+      .med .t { font-size: 36px; font-weight: 900; }
+      .med .t small { display: block; font-size: 28px; font-weight: 400; color: var(--muted); margin-top: 4px; }
+      .warns { display: flex; flex-direction: column; gap: 18px; justify-content: center; }
+      .warn { display: flex; align-items: center; gap: 14px; padding: 14px 30px; border-radius: 999px; background: #fde7e3; color: #b8392a; font-size: 32px; font-weight: 900; }
+      .warn .ico { width: 36px; height: 36px; }
+
+      /* ---------- s10 ---------- */
+      .s10-sub { margin-top: 14px; font-size: 38px; font-weight: 700; color: var(--muted); }
+      .s10-sub em { font-style: normal; color: #0f7a66; font-weight: 900; }
+      .tries { display: flex; gap: 40px; margin-top: 40px; }
+      .try { flex: 1; padding: 28px 34px; display: flex; align-items: center; gap: 24px; }
+      .try .ico { width: 68px; height: 68px; flex: none; }
+      .try .t { font-size: 42px; font-weight: 900; }
+      .flip { margin-top: 46px; align-self: center; display: flex; align-items: center; gap: 34px; }
+      .flip .pg { position: relative; padding: 22px 44px; font-size: 48px; font-weight: 900; color: var(--muted); }
+      .flip .pg .strike { top: 50%; }
+      .flip .mg { padding: 18px 44px; border-radius: 28px; background: var(--lav); color: #fff; font-size: 48px; font-weight: 900; text-align: center; }
+      .flip .mg small { display: block; font-size: 26px; font-weight: 700; color: rgba(255, 255, 255, 0.88); }
+      .flip .arrow { width: 72px; height: 72px; color: var(--lav); }
+
+      /* ---------- s11 ---------- */
+      .s11-body { display: flex; gap: 44px; margin-top: 40px; }
+      .s11-body .card { flex: 1; padding: 30px 36px; display: flex; align-items: center; gap: 28px; }
+      .s11-body .ico { width: 92px; height: 92px; flex: none; }
+      .s11-body .t { font-size: 38px; font-weight: 900; line-height: 1.35; }
+      .s11-body .t small { display: block; font-size: 28px; font-weight: 400; color: var(--muted); }
+      .s11-body .hypo { position: relative; }
+      .s11-body .hypo .x { position: absolute; right: 26px; top: 50%; margin-top: -30px; width: 60px; height: 60px; color: var(--coral); }
+      .chips { display: flex; gap: 14px; margin-top: 12px; }
+      .chips span { display: block; padding: 6px 20px; border-radius: 999px; background: #e3f4ef; color: #0f6e5c; font-size: 26px; font-weight: 700; }
+      .quote { margin-top: 56px; align-self: center; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 60px; line-height: 1.4; text-align: center; }
+      .quote em { font-style: normal; color: var(--sky); }
+
+      /* ---------- s12 ---------- */
+      .note {
+        position: relative; margin-top: 34px; align-self: center; width: 1300px; padding: 28px 60px 28px 120px;
+        background-color: #fffdf6;
+        background-image: repeating-linear-gradient(180deg, transparent 0, transparent 97px, rgba(52, 112, 224, 0.18) 97px, rgba(52, 112, 224, 0.18) 99px);
+        border-radius: 24px; border: 2px solid var(--line); box-shadow: 0 18px 40px rgba(34, 37, 58, 0.08);
+      }
+      .note::before { content: ""; position: absolute; left: 86px; top: 0; bottom: 0; width: 3px; background: rgba(232, 85, 63, 0.45); }
+      .item { display: flex; align-items: center; gap: 28px; height: 99px; }
+      .item .when { flex: none; width: 140px; padding: 6px 0; border-radius: 12px; text-align: center; color: #fff; font-size: 30px; font-weight: 900; }
+      .item .what { flex: 1; font-family: "Ma Shan Zheng", cursive; font-size: 50px; color: var(--ink); white-space: nowrap; }
+      .box { flex: none; width: 52px; height: 52px; border-radius: 12px; border: 4px solid var(--ink); position: relative; }
+      .box svg { position: absolute; left: -4px; top: -10px; width: 64px; height: 64px; color: var(--mint); }
+      .tick { stroke-dasharray: 60; }
+
+      /* ---------- s13 ---------- */
+      .end-line { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 74px; line-height: 1.35; }
+      .end-line em { font-style: normal; color: var(--sky); }
+      .end-line em.c { color: var(--coral); }
+      .end-line.small { font-size: 44px; font-weight: 700; color: var(--muted); margin-bottom: 30px; }
+      .end-line.mid { margin-top: 36px; font-size: 50px; font-weight: 700; color: var(--muted); }
+      .cheer { margin-top: 30px; font-family: "Ma Shan Zheng", cursive; font-size: 96px; color: var(--mint); }
+      .credit { position: absolute; left: 0; right: 0; bottom: 140px; text-align: center; font-size: 24px; color: rgba(34, 37, 58, 0.62); letter-spacing: 0.1em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="260.712" data-width="1920" data-height="1080">
+      <div id="bg" class="clip bg" data-start="0" data-duration="260.712" data-track-index="0">
+        <div class="dots"></div>
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
+        <div class="blob b3"></div>
+        <div class="brand">家长课堂 · 陪伴高一成长</div>
+        <div class="progress"><div class="progress-fill"></div></div>
+      </div>
+
+      <!-- s01 · hook + title -->
+      <section id="s01" class="clip scene" data-start="0.000" data-duration="18.872" data-track-index="1">
+        <div class="inner center s01-a">
+          <div class="s01-row">
+            <div class="night">
+              <div class="clock">23:00</div>
+              <div class="sub">房门缝里，还透着屏幕的光</div>
+              <div class="glow"></div>
+            </div>
+            <div class="card report">
+              <div class="hd">
+                <svg class="ico" viewBox="0 0 48 48"><path d="M4 24s7-12 20-12 20 12 20 12-7 12-20 12S4 24 4 24z" /><circle cx="24" cy="24" r="6" /></svg>
+                学生体检报告 · 视力
+              </div>
+              <div class="rw"><span class="muted">上学期</span><b>300 度</b></div>
+              <div class="rw now"><span class="muted">这学期</span><b>400 度</b></div>
+              <div class="up">近视 +100 度</div>
+            </div>
+          </div>
+          <div class="s01-shout">
+            <div class="shout">“你还要不要眼睛了！”</div>
+            <div class="door">
+              <svg class="ico" viewBox="0 0 48 48"><path d="M10 42V6h24v36M6 42h36M28 24h.1" stroke-width="3.6" /></svg>
+              <span class="bang">砰！</span>
+            </div>
+          </div>
+        </div>
+        <div class="inner center s01-b">
+          <div class="hero-kicker">写给高一家长</div>
+          <div class="hero">孩子游戏多、视力差<br /><span class="hl">家长该怎么办？</span></div>
+          <div class="hero-rule"></div>
+          <div class="hero-sub">处理好亲子关系，引导孩子健康成长</div>
+        </div>
+      </section>
+
+      <!-- s02 · relationship is the root -->
+      <section id="s02" class="clip scene" data-start="18.872" data-duration="19.488" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>00</b> 关键判断</div>
+          <div class="title">问题在水面下：<em>亲子关系</em></div>
+          <div class="s02-body">
+            <div class="ice">
+              <div class="ice-lbl">表面问题</div>
+              <div class="ice-top"><span>游戏时间多</span><span>视力变差</span></div>
+              <svg class="ico wave" viewBox="0 0 700 40" preserveAspectRatio="none"><path d="M0 20 Q 35 4 70 20 T 140 20 T 210 20 T 280 20 T 350 20 T 420 20 T 490 20 T 560 20 T 630 20 T 700 20" /></svg>
+              <div class="ice-root"><small>根本问题</small><b>亲子关系</b></div>
+            </div>
+            <div class="rel">
+              <div class="card r-good"><span class="k" style="background: var(--mint)">关系好</span><span class="t">你的话，他听得进</span></div>
+              <div class="card r-bad"><span class="k" style="background: var(--coral)">关系坏</span><span class="t">再正确的道理，也是唠叨</span></div>
+            </div>
+          </div>
+          <div class="order">
+            <div class="step o1" style="background: var(--coral)"><i>1</i>先修关系</div>
+            <svg class="ico arrow oa1" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="step o2" style="background: var(--sky)"><i>2</i>再谈规则</div>
+            <svg class="ico arrow oa2" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="step o3" style="background: var(--mint)"><i>3</i>最后才是方法</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s03 · three needs -->
+      <section id="s03" class="clip scene" data-start="38.360" data-duration="20.712" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>01</b> 先理解</div>
+          <div class="title">孩子为什么<em>爱玩游戏</em>？</div>
+          <div class="needs">
+            <div class="card need n-a">
+              <div class="gl" style="background: var(--coral)"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><path d="M24 10l5 14-5 14-5-14z" /></svg></div>
+              <h3>自主</h3><p>自己说了算</p>
+              <div class="game">游戏里：<b>自己选角色、定打法</b></div>
+            </div>
+            <div class="card need n-c">
+              <div class="gl" style="background: var(--sky)"><svg class="ico" viewBox="0 0 48 48"><path d="M15 7h18v10a9 9 0 0 1-18 0zM15 11H8v3a7 7 0 0 0 7 7M33 11h7v3a7 7 0 0 1-7 7M24 26v8M16 41h16M19 34h10v7H19z" /></svg></div>
+              <h3>胜任</h3><p>觉得自己行</p>
+              <div class="game">游戏里：<b>升级、上分，马上有反馈</b></div>
+            </div>
+            <div class="card need n-b">
+              <div class="gl" style="background: var(--mint)"><svg class="ico" viewBox="0 0 48 48"><circle cx="17" cy="17" r="6" /><circle cx="33" cy="17" r="6" /><path d="M6 38c0-6 5-10 11-10s11 4 11 10M22 38c0-6 5-10 11-10s9 4 9 10" /></svg></div>
+              <h3>归属</h3><p>有朋友、被认同</p>
+              <div class="game">游戏里：<b>一起开黑的队友</b></div>
+            </div>
+          </div>
+          <div class="card s03-gap">
+            <span>高一学业压力陡增</span>
+            <svg class="ico arrow" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <span>现实中需要<em>落空</em></span>
+            <svg class="ico arrow" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <span>去游戏里<em>找</em></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- s04 · ask a better question + severity -->
+      <section id="s04" class="clip scene" data-start="59.072" data-duration="20.424" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>02</b> 换个问法</div>
+          <div class="title">先看懂，再判断<em>程度</em></div>
+          <div class="qs">
+            <div class="card q old"><span class="txt">怎么让他不玩？<span class="strike"></span></span></div>
+            <svg class="ico arrow qa" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="card q new">他在游戏里得到了什么？</div>
+          </div>
+          <div class="lvls">
+            <div class="card lvl ok">
+              <div class="hd"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><path d="M16 24l6 6 11-12" /></svg><b>需要管理</b></div>
+              <ul><li>游戏时间偏多</li><li>作息、成绩、社交基本正常</li></ul>
+            </div>
+            <div class="card lvl bad">
+              <div class="hd"><svg class="ico" viewBox="0 0 48 48"><path d="M24 6L44 40H4z" /><path d="M24 19v10M24 34h.1" stroke-width="4" /></svg><b>寻求专业帮助</b></div>
+              <ul><li>失控已持续一年左右</li><li>严重影响睡眠和上学</li><li>一停下来就暴躁</li></ul>
+            </div>
+          </div>
+          <div class="fnote s04-note">* 参考世界卫生组织“游戏障碍”的判断要点；可咨询医院心理科或精神卫生专科</div>
+        </div>
+      </section>
+
+      <!-- s05 · don'ts -->
+      <section id="s05" class="clip scene" data-start="79.496" data-duration="18.768" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>03</b> 避坑</div>
+          <div class="title">三种做法，往往<em>适得其反</em></div>
+          <div class="donts">
+            <div class="card dont d1">
+              <div class="x"><svg class="ico" viewBox="0 0 48 48"><path d="M12 12l24 24M36 12L12 36" stroke-width="5" /></svg></div>
+              <h3>没收、砸手机</h3><p>换来 <b>对抗和偷偷玩</b></p>
+            </div>
+            <div class="card dont d2">
+              <div class="x"><svg class="ico" viewBox="0 0 48 48"><path d="M12 12l24 24M36 12L12 36" stroke-width="5" /></svg></div>
+              <h3>唠叨、翻旧账</h3><p>孩子 <b>关上耳朵</b></p>
+            </div>
+            <div class="card dont d3">
+              <div class="x"><svg class="ico" viewBox="0 0 48 48"><path d="M12 12l24 24M36 12L12 36" stroke-width="5" /></svg></div>
+              <h3>比“别人家孩子”</h3><p>伤的是 <b>自尊</b></p>
+            </div>
+          </div>
+          <div class="respect">
+            <svg class="ico" viewBox="0 0 48 48"><path d="M24 40S7 30 7 18a8.5 8.5 0 0 1 17-2 8.5 8.5 0 0 1 17 2c0 12-17 22-17 22z" /></svg>
+            十六岁的他，最需要被尊重
+          </div>
+        </div>
+      </section>
+
+      <!-- s06 · how to talk -->
+      <section id="s06" class="clip scene" data-start="98.264" data-duration="20.928" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>04</b> 沟通</div>
+          <div class="title">怎么谈？试试<em>三步</em></div>
+          <div class="s06-body">
+            <div class="rules">
+              <div class="card rule r1"><div class="n">1</div><div class="t">挑平静的时候<small>别在他打到一半时开口</small></div></div>
+              <div class="card rule r2"><div class="n">2</div><div class="t">先听，再说<small>好奇地问，而不是审问</small></div></div>
+              <div class="card rule r3"><div class="n">3</div><div class="t">用“我”开头说感受<small>表达担心，不贴标签</small></div></div>
+            </div>
+            <div class="card chat">
+              <div class="chat-head">
+                <svg class="ico" viewBox="0 0 48 48"><path d="M8 12a4 4 0 0 1 4-4h24a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H20l-8 7v-7h0a4 4 0 0 1-4-4z" /></svg>
+                家长可以这样说
+              </div>
+              <div class="bubble ask b1"><span class="who">先听</span>这款游戏，最吸引你的是什么？</div>
+              <div class="bubble good b2"><span class="who">“我”信息</span>我看到体检单，很担心你的眼睛。</div>
+              <div class="bubble bad b3"><span class="who">而不是</span><span class="txt">你就知道玩！<span class="strike"></span></span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s07 · co-created rules -->
+      <section id="s07" class="clip scene" data-start="119.192" data-duration="24.192" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>05</b> 规则</div>
+          <div class="title">和孩子<em>一起定</em>，而不是替他定</div>
+          <div class="s07-body">
+            <div class="card pact">
+              <div class="hd"><b>家庭游戏约定</b><span>共同商量 · 每月可调整</span></div>
+              <div class="pr p1"><span class="n" style="background: var(--sky)">1</span><span class="t">网游：周五至周日、节假日 20:00–21:00<small>参考国家防沉迷规定</small></span></div>
+              <div class="pr p2"><span class="n" style="background: var(--mint)">2</span><span class="t">上学日：以休息为主</span></div>
+              <div class="pr p3"><span class="n" style="background: var(--lav)">3</span><span class="t">22:30 手机放到客厅充电</span></div>
+              <div class="sigs">
+                <div class="sig sg1">孩子<span class="hand">小宇</span></div>
+                <div class="sig sg2">家长<span class="hand">爸爸 妈妈</span></div>
+              </div>
+            </div>
+            <div class="card trust">
+              <svg class="ico" viewBox="0 0 48 48"><path d="M24 5l16 6v12c0 10-7 17-16 20C15 40 8 33 8 23V11z" /><path d="M16 24l6 6 11-12" /></svg>
+              <b>做到了</b>
+              <p>就给<em>更多信任</em><br />和更多自主</p>
+            </div>
+          </div>
+          <div class="fnote s07-note">* 国家新闻出版署 2021 年防沉迷通知：网游仅可在周五、周六、周日和法定节假日 20 时至 21 时向未成年人提供服务</div>
+        </div>
+      </section>
+
+      <!-- s08 · eye care basics -->
+      <section id="s08" class="clip scene" data-start="143.384" data-duration="21.816" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>06</b> 护眼</div>
+          <div class="title">护眼，记住<em>三个二十</em></div>
+          <div class="pill">近视基本不可逆，但可以延缓加深</div>
+          <div class="trio">
+            <div class="card tw w1"><div class="d">20<small>分钟</small></div><div class="l">近距离用眼</div></div>
+            <svg class="ico arrow ta1" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="card tw w2"><div class="d">6<small>米外</small></div><div class="l">看远处（约 20 英尺）</div></div>
+            <svg class="ico arrow ta2" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="card tw w3"><div class="d">20<small>秒</small></div><div class="l">至少远眺这么久</div></div>
+          </div>
+          <div class="eyecare">
+            <div class="card e-out"><svg class="ico" viewBox="0 0 48 48" style="color: var(--sun)"><circle cx="24" cy="24" r="8" /><path d="M24 4v6M24 38v6M4 24h6M38 24h6M10 10l4 4M34 34l4 4M38 10l-4 4M14 34l-4 4" /></svg><div class="t">户外 2 小时<small>每天，白天自然光</small></div></div>
+            <div class="card e-arm"><svg class="ico" viewBox="0 0 48 48" style="color: var(--sky)"><rect x="26" y="8" width="16" height="30" rx="3" /><path d="M4 30h16M14 24l6 6-6 6" /></svg><div class="t">一臂以上<small>屏幕离眼睛的距离</small></div></div>
+            <div class="card e-dark"><svg class="ico" viewBox="0 0 48 48" style="color: var(--lav)"><path d="M38 30A16 16 0 1 1 20 9a13 13 0 0 0 18 21z" /></svg><div class="t">不在黑暗中<small>关灯后别看手机</small></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s09 · see a doctor -->
+      <section id="s09" class="clip scene" data-start="165.200" data-duration="19.152" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>06</b> 护眼</div>
+          <div class="title">交给<em>专业</em>的人</div>
+          <div class="flow">
+            <div class="card fnode f1"><svg class="ico" viewBox="0 0 48 48" style="color: var(--coral)"><rect x="8" y="10" width="32" height="32" rx="4" /><path d="M24 18v16M16 26h16" stroke-width="4" /></svg><div class="t">正规医院<small>眼科 / 视光中心</small></div></div>
+            <svg class="ico arrow fa1" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="card fnode f2"><svg class="ico" viewBox="0 0 48 48" style="color: var(--sky)"><path d="M4 24s7-12 20-12 20 12 20 12-7 12-20 12S4 24 4 24z" /><circle cx="24" cy="24" r="6" /></svg><div class="t">规范验光<small>+ 眼底检查</small></div></div>
+            <svg class="ico arrow fa2" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="card fnode f3"><svg class="ico" viewBox="0 0 48 48" style="color: var(--mint)"><circle cx="13" cy="28" r="8" /><circle cx="35" cy="28" r="8" /><path d="M21 28c1-2 5-2 6 0M5 26l-1-8M43 26l1-8" /></svg><div class="t">合适的眼镜<small>度数准、戴着舒服</small></div></div>
+            <svg class="ico arrow fa3" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="card fnode f4"><svg class="ico" viewBox="0 0 48 48" style="color: var(--lav)"><rect x="7" y="10" width="34" height="31" rx="4" /><path d="M7 19h34M16 6v8M32 6v8M16 28h.1M24 28h.1M32 28h.1" stroke-width="3.6" /></svg><div class="t">每半年复查<small>跟踪度数变化</small></div></div>
+          </div>
+          <div class="s09-low">
+            <div class="card med">
+              <svg class="ico" viewBox="0 0 48 48"><path d="M17 6h14M20 6v10L9 38a3 3 0 0 0 3 4h24a3 3 0 0 0 3-4L28 16V6M14 30h20" /></svg>
+              <div class="t">角膜塑形镜 · 低浓度阿托品<small>是否适用、怎么用，听医生的</small></div>
+            </div>
+            <div class="warns">
+              <div class="warn w-a"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><path d="M11 11l26 26" /></svg>别信偏方</div>
+              <div class="warn w-b"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><path d="M11 11l26 26" /></svg>眼镜不是一劳永逸</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s10 · channel, don't block -->
+      <section id="s10" class="clip scene" data-start="184.352" data-duration="19.128" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>07</b> 疏导</div>
+          <div class="title">堵不如<em>疏</em></div>
+          <div class="s10-sub">游戏给的<em>成就感和友谊</em>，现实里也能找到</div>
+          <div class="tries">
+            <div class="card try t-ball"><svg class="ico" viewBox="0 0 48 48" style="color: var(--coral)"><circle cx="24" cy="24" r="18" /><path d="M6 24h36M24 6v36M11 11c7 7 7 19 0 26M37 11c-7 7-7 19 0 26" /></svg><div class="t">陪他打球</div></div>
+            <div class="card try t-hill"><svg class="ico" viewBox="0 0 48 48" style="color: var(--mint)"><path d="M4 40l14-24 8 12 6-8 12 20zM32 10a4 4 0 1 0 0 .1" /></svg><div class="t">周末爬山</div></div>
+            <div class="card try t-club"><svg class="ico" viewBox="0 0 48 48" style="color: var(--sky)"><circle cx="17" cy="17" r="6" /><circle cx="33" cy="17" r="6" /><path d="M6 38c0-6 5-10 11-10s11 4 11 10M22 38c0-6 5-10 11-10s9 4 9 10" /></svg><div class="t">加入社团</div></div>
+          </div>
+          <div class="flip">
+            <div class="card pg">玩游戏<span class="strike"></span></div>
+            <svg class="ico arrow fl-a" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="mg">做游戏<small>游戏设计 · 编程</small></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s11 · parents go first -->
+      <section id="s11" class="clip scene" data-start="203.480" data-duration="18.432" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>08</b> 以身作则</div>
+          <div class="title">最难的一条：家长<em>先做到</em></div>
+          <div class="s11-body">
+            <div class="card hypo">
+              <svg class="ico" viewBox="0 0 48 48" style="color: var(--muted)"><rect x="13" y="4" width="22" height="40" rx="4" /><path d="M21 38h6" /></svg>
+              <div class="t">一边刷手机<small>一边让孩子放下手机</small></div>
+              <svg class="ico x" viewBox="0 0 48 48"><path d="M12 12l24 24M36 12L12 36" stroke-width="5" /></svg>
+            </div>
+            <div class="card fam">
+              <svg class="ico" viewBox="0 0 48 48" style="color: var(--mint)"><circle cx="24" cy="24" r="18" /><path d="M24 13v11l7 5" /></svg>
+              <div class="t">全家无屏幕时间<small>比如晚饭后一小时</small><div class="chips"><span>散步</span><span>聊天</span></div></div>
+            </div>
+          </div>
+          <div class="quote">孩子不会照你<em>说</em>的做，<br />但会照你<em>做</em>的做。</div>
+        </div>
+      </section>
+
+      <!-- s12 · four-week plan -->
+      <section id="s12" class="clip scene" data-start="221.912" data-duration="18.504" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>09</b> 行动计划</div>
+          <div class="title">四周，一步一步来</div>
+          <div class="note">
+            <div class="item i-1"><span class="when" style="background: var(--coral)">第 1 周</span><span class="what">只听不评，重建信任</span><span class="box"><svg class="ico" viewBox="0 0 48 48"><path class="tick" d="M10 26l10 10 20-24" stroke-width="5" /></svg></span></div>
+            <div class="item i-2"><span class="when" style="background: var(--sky)">第 2 周</span><span class="what">坐下来，一起定规则</span><span class="box"><svg class="ico" viewBox="0 0 48 48"><path class="tick" d="M10 26l10 10 20-24" stroke-width="5" /></svg></span></div>
+            <div class="item i-3"><span class="when" style="background: var(--mint)">第 3 周</span><span class="what">眼科检查，安排户外时间</span><span class="box"><svg class="ico" viewBox="0 0 48 48"><path class="tick" d="M10 26l10 10 20-24" stroke-width="5" /></svg></span></div>
+            <div class="item i-4"><span class="when" style="background: var(--lav)">第 4 周</span><span class="what">复盘调整，看见每一点进步</span><span class="box"><svg class="ico" viewBox="0 0 48 48"><path class="tick" d="M10 26l10 10 20-24" stroke-width="5" /></svg></span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s13 · closing -->
+      <section id="s13" class="clip scene" data-start="240.416" data-duration="20.296" data-track-index="1">
+        <div class="inner center">
+          <div class="end-line small e1">改变不会一夜发生，有反复，很正常。</div>
+          <div class="end-line e2">你和孩子，不是<em class="c">对手</em>，</div>
+          <div class="end-line e3">而是站在同一边的<em>队友</em>。</div>
+          <div class="end-line mid e4">先修关系，再谈规则；</div>
+          <div class="cheer">关系通了，成长的路就通了</div>
+        </div>
+        <div class="credit">Made with Claude Opus 5.5 × HyperFrames in Cursor</div>
+      </section>
+
+      <div id="cap-000" class="clip caption" data-start="0.898" data-duration="1.298" data-track-index="20"><span>晚上十一点</span></div>
+      <div id="cap-001" class="clip caption" data-start="2.196" data-duration="2.967" data-track-index="20"><span>孩子房门缝里还透着屏幕的光</span></div>
+      <div id="cap-002" class="clip caption" data-start="5.163" data-duration="1.058" data-track-index="20"><span>体检单上</span></div>
+      <div id="cap-003" class="clip caption" data-start="6.221" data-duration="2.007" data-track-index="20"><span>近视又涨了一百度</span></div>
+      <div id="cap-004" class="clip caption" data-start="8.228" data-duration="1.262" data-track-index="20"><span>你又急又气</span></div>
+      <div id="cap-005" class="clip caption" data-start="9.490" data-duration="2.416" data-track-index="20"><span>一句“你还要不要眼睛了”脱口而出</span></div>
+      <div id="cap-006" class="clip caption" data-start="11.906" data-duration="1.478" data-track-index="20"><span>门砰地关上</span></div>
+      <div id="cap-007" class="clip caption" data-start="13.384" data-duration="2.356" data-track-index="20"><span>高一孩子游戏多、视力差</span></div>
+      <div id="cap-008" class="clip caption" data-start="15.740" data-duration="2.182" data-track-index="20"><span>家长到底该怎么办？</span></div>
+      <div id="cap-009" class="clip caption" data-start="19.420" data-duration="1.755" data-track-index="20"><span>先做一个关键判断</span></div>
+      <div id="cap-010" class="clip caption" data-start="21.175" data-duration="1.166" data-track-index="20"><span>游戏和视力</span></div>
+      <div id="cap-011" class="clip caption" data-start="22.341" data-duration="1.310" data-track-index="20"><span>是表面问题</span></div>
+      <div id="cap-012" class="clip caption" data-start="23.651" data-duration="1.070" data-track-index="20"><span>亲子关系</span></div>
+      <div id="cap-013" class="clip caption" data-start="24.721" data-duration="2.233" data-track-index="20"><span>才是根本。关系好</span></div>
+      <div id="cap-014" class="clip caption" data-start="26.954" data-duration="1.370" data-track-index="20"><span>你的话他听得进</span></div>
+      <div id="cap-015" class="clip caption" data-start="28.324" data-duration="0.842" data-track-index="20"><span>关系坏</span></div>
+      <div id="cap-016" class="clip caption" data-start="29.166" data-duration="1.226" data-track-index="20"><span>再正确的道理</span></div>
+      <div id="cap-017" class="clip caption" data-start="30.392" data-duration="1.430" data-track-index="20"><span>也只是唠叨</span></div>
+      <div id="cap-018" class="clip caption" data-start="31.822" data-duration="1.947" data-track-index="20"><span>所以顺序很重要</span></div>
+      <div id="cap-019" class="clip caption" data-start="33.769" data-duration="1.070" data-track-index="20"><span>先修关系</span></div>
+      <div id="cap-020" class="clip caption" data-start="34.839" data-duration="1.070" data-track-index="20"><span>再谈规则</span></div>
+      <div id="cap-021" class="clip caption" data-start="35.909" data-duration="1.951" data-track-index="20"><span>最后才是方法</span></div>
+      <div id="cap-022" class="clip caption" data-start="38.908" data-duration="2.055" data-track-index="20"><span>修关系，先要理解</span></div>
+      <div id="cap-023" class="clip caption" data-start="40.963" data-duration="1.909" data-track-index="20"><span>孩子为什么爱玩游戏？</span></div>
+      <div id="cap-024" class="clip caption" data-start="42.872" data-duration="1.287" data-track-index="20"><span>心理学发现</span></div>
+      <div id="cap-025" class="clip caption" data-start="44.159" data-duration="1.682" data-track-index="20"><span>人有三种基本需要</span></div>
+      <div id="cap-026" class="clip caption" data-start="45.841" data-duration="1.887" data-track-index="20"><span>自主，自己说了算</span></div>
+      <div id="cap-027" class="clip caption" data-start="47.728" data-duration="1.755" data-track-index="20"><span>胜任，觉得自己行</span></div>
+      <div id="cap-028" class="clip caption" data-start="49.483" data-duration="0.745" data-track-index="20"><span>归属</span></div>
+      <div id="cap-029" class="clip caption" data-start="50.228" data-duration="2.104" data-track-index="20"><span>有朋友、被认同</span></div>
+      <div id="cap-030" class="clip caption" data-start="52.332" data-duration="1.815" data-track-index="20"><span>高一学业压力陡增</span></div>
+      <div id="cap-031" class="clip caption" data-start="54.147" data-duration="2.055" data-track-index="20"><span>这些需要在现实中落空</span></div>
+      <div id="cap-032" class="clip caption" data-start="56.202" data-duration="2.370" data-track-index="20"><span>孩子就会去游戏里找</span></div>
+      <div id="cap-033" class="clip caption" data-start="59.620" data-duration="0.829" data-track-index="20"><span>所以</span></div>
+      <div id="cap-034" class="clip caption" data-start="60.449" data-duration="1.779" data-track-index="20"><span>别只问“怎么让他不玩”</span></div>
+      <div id="cap-035" class="clip caption" data-start="62.228" data-duration="2.498" data-track-index="20"><span>先问“他在游戏里得到了什么”</span></div>
+      <div id="cap-036" class="clip caption" data-start="64.726" data-duration="1.383" data-track-index="20"><span>也要分清程度</span></div>
+      <div id="cap-037" class="clip caption" data-start="66.109" data-duration="1.081" data-track-index="20"><span>时间偏多</span></div>
+      <div id="cap-038" class="clip caption" data-start="67.190" data-duration="3.029" data-track-index="20"><span>但作息、成绩、社交基本正常</span></div>
+      <div id="cap-039" class="clip caption" data-start="70.219" data-duration="1.274" data-track-index="20"><span>属于需要管理</span></div>
+      <div id="cap-040" class="clip caption" data-start="71.493" data-duration="1.947" data-track-index="20"><span>如果失控已持续一年</span></div>
+      <div id="cap-041" class="clip caption" data-start="73.440" data-duration="2.032" data-track-index="20"><span>严重影响睡眠和上学</span></div>
+      <div id="cap-042" class="clip caption" data-start="75.472" data-duration="1.201" data-track-index="20"><span>一停就暴躁</span></div>
+      <div id="cap-043" class="clip caption" data-start="76.673" data-duration="2.323" data-track-index="20"><span>就该寻求专业帮助</span></div>
+      <div id="cap-044" class="clip caption" data-start="80.044" data-duration="1.286" data-track-index="20"><span>有三种做法</span></div>
+      <div id="cap-045" class="clip caption" data-start="81.330" data-duration="1.382" data-track-index="20"><span>往往适得其反</span></div>
+      <div id="cap-046" class="clip caption" data-start="82.712" data-duration="1.683" data-track-index="20"><span>没收、砸手机</span></div>
+      <div id="cap-047" class="clip caption" data-start="84.395" data-duration="1.743" data-track-index="20"><span>换来对抗和偷偷玩</span></div>
+      <div id="cap-048" class="clip caption" data-start="86.138" data-duration="1.476" data-track-index="20"><span>唠叨、翻旧账</span></div>
+      <div id="cap-049" class="clip caption" data-start="87.614" data-duration="1.671" data-track-index="20"><span>让孩子关上耳朵</span></div>
+      <div id="cap-050" class="clip caption" data-start="89.285" data-duration="1.635" data-track-index="20"><span>拿别人家孩子比较</span></div>
+      <div id="cap-051" class="clip caption" data-start="90.920" data-duration="1.490" data-track-index="20"><span>伤的是自尊</span></div>
+      <div id="cap-052" class="clip caption" data-start="92.410" data-duration="2.620" data-track-index="20"><span>十六岁的孩子正在长成大人</span></div>
+      <div id="cap-053" class="clip caption" data-start="95.030" data-duration="1.142" data-track-index="20"><span>他最需要的</span></div>
+      <div id="cap-054" class="clip caption" data-start="96.172" data-duration="1.592" data-track-index="20"><span>是被尊重</span></div>
+      <div id="cap-055" class="clip caption" data-start="98.812" data-duration="1.440" data-track-index="20"><span>那该怎么谈？</span></div>
+      <div id="cap-056" class="clip caption" data-start="100.252" data-duration="1.863" data-track-index="20"><span>试试三步：第一</span></div>
+      <div id="cap-057" class="clip caption" data-start="102.115" data-duration="2.104" data-track-index="20"><span>挑双方都平静的时候</span></div>
+      <div id="cap-058" class="clip caption" data-start="104.219" data-duration="2.296" data-track-index="20"><span>别在他打到一半时开口</span></div>
+      <div id="cap-059" class="clip caption" data-start="106.515" data-duration="1.718" data-track-index="20"><span>第二，先听再说</span></div>
+      <div id="cap-060" class="clip caption" data-start="108.233" data-duration="0.806" data-track-index="20"><span>问问他</span></div>
+      <div id="cap-061" class="clip caption" data-start="109.039" data-duration="2.439" data-track-index="20"><span>这款游戏最吸引你的是什么？</span></div>
+      <div id="cap-062" class="clip caption" data-start="111.478" data-duration="0.806" data-track-index="20"><span>第三</span></div>
+      <div id="cap-063" class="clip caption" data-start="112.284" data-duration="1.490" data-track-index="20"><span>用“我”开头说感受</span></div>
+      <div id="cap-064" class="clip caption" data-start="113.774" data-duration="1.322" data-track-index="20"><span>“我看到体检单</span></div>
+      <div id="cap-065" class="clip caption" data-start="115.096" data-duration="1.467" data-track-index="20"><span>很担心你的眼睛”</span></div>
+      <div id="cap-066" class="clip caption" data-start="116.563" data-duration="2.129" data-track-index="20"><span>而不是“你就知道玩”</span></div>
+      <div id="cap-067" class="clip caption" data-start="119.740" data-duration="1.094" data-track-index="20"><span>谈开之后</span></div>
+      <div id="cap-068" class="clip caption" data-start="120.834" data-duration="1.803" data-track-index="20"><span>和孩子一起定规则</span></div>
+      <div id="cap-069" class="clip caption" data-start="122.637" data-duration="1.572" data-track-index="20"><span>而不是替他定</span></div>
+      <div id="cap-070" class="clip caption" data-start="124.209" data-duration="2.416" data-track-index="20"><span>可以参考国家防沉迷规定</span></div>
+      <div id="cap-071" class="clip caption" data-start="126.625" data-duration="3.293" data-track-index="20"><span>未成年人只能在周五到周日、节假日的</span></div>
+      <div id="cap-072" class="clip caption" data-start="129.918" data-duration="2.921" data-track-index="20"><span>晚上八点到九点玩网游</span></div>
+      <div id="cap-073" class="clip caption" data-start="132.839" data-duration="1.959" data-track-index="20"><span>上学日以休息为主</span></div>
+      <div id="cap-074" class="clip caption" data-start="134.798" data-duration="3.113" data-track-index="20"><span>手机晚上十点半放到客厅充电</span></div>
+      <div id="cap-075" class="clip caption" data-start="137.911" data-duration="1.226" data-track-index="20"><span>规则写下来</span></div>
+      <div id="cap-076" class="clip caption" data-start="139.137" data-duration="1.154" data-track-index="20"><span>双方签字</span></div>
+      <div id="cap-077" class="clip caption" data-start="140.291" data-duration="2.593" data-track-index="20"><span>做到了就给更多信任</span></div>
+      <div id="cap-078" class="clip caption" data-start="143.932" data-duration="1.440" data-track-index="20"><span>再说视力</span></div>
+      <div id="cap-079" class="clip caption" data-start="145.372" data-duration="1.395" data-track-index="20"><span>近视一旦形成</span></div>
+      <div id="cap-080" class="clip caption" data-start="146.767" data-duration="1.154" data-track-index="20"><span>基本不可逆</span></div>
+      <div id="cap-081" class="clip caption" data-start="147.921" data-duration="1.875" data-track-index="20"><span>但可以延缓加深</span></div>
+      <div id="cap-082" class="clip caption" data-start="149.796" data-duration="1.454" data-track-index="20"><span>记住三个二十</span></div>
+      <div id="cap-083" class="clip caption" data-start="151.250" data-duration="1.983" data-track-index="20"><span>近距离用眼二十分钟</span></div>
+      <div id="cap-084" class="clip caption" data-start="153.233" data-duration="2.584" data-track-index="20"><span>就看六米外的远处二十秒</span></div>
+      <div id="cap-085" class="clip caption" data-start="155.817" data-duration="1.935" data-track-index="20"><span>每天户外活动两小时</span></div>
+      <div id="cap-086" class="clip caption" data-start="157.752" data-duration="1.238" data-track-index="20"><span>白天的自然光</span></div>
+      <div id="cap-087" class="clip caption" data-start="158.990" data-duration="1.767" data-track-index="20"><span>是最好的护眼药</span></div>
+      <div id="cap-088" class="clip caption" data-start="160.757" data-duration="1.683" data-track-index="20"><span>屏幕至少一臂远</span></div>
+      <div id="cap-089" class="clip caption" data-start="162.440" data-duration="2.260" data-track-index="20"><span>别在黑暗里看手机</span></div>
+      <div id="cap-090" class="clip caption" data-start="165.748" data-duration="0.757" data-track-index="20"><span>另外</span></div>
+      <div id="cap-091" class="clip caption" data-start="166.505" data-duration="1.683" data-track-index="20"><span>带孩子去正规医院</span></div>
+      <div id="cap-092" class="clip caption" data-start="168.188" data-duration="2.788" data-track-index="20"><span>做一次规范的验光和眼底检查</span></div>
+      <div id="cap-093" class="clip caption" data-start="170.976" data-duration="1.645" data-track-index="20"><span>配一副合适的眼镜</span></div>
+      <div id="cap-094" class="clip caption" data-start="172.621" data-duration="2.007" data-track-index="20"><span>之后每半年复查</span></div>
+      <div id="cap-095" class="clip caption" data-start="174.628" data-duration="3.762" data-track-index="20"><span>角膜塑形镜、低浓度阿托品这些控制手段</span></div>
+      <div id="cap-096" class="clip caption" data-start="178.390" data-duration="1.202" data-track-index="20"><span>要听医生的</span></div>
+      <div id="cap-097" class="clip caption" data-start="179.592" data-duration="1.070" data-track-index="20"><span>别信偏方</span></div>
+      <div id="cap-098" class="clip caption" data-start="180.662" data-duration="3.190" data-track-index="20"><span>也别指望一副眼镜一劳永逸</span></div>
+      <div id="cap-099" class="clip caption" data-start="184.900" data-duration="1.356" data-track-index="20"><span>堵不如疏</span></div>
+      <div id="cap-100" class="clip caption" data-start="186.256" data-duration="3.065" data-track-index="20"><span>孩子在游戏里追求的成就感和友谊</span></div>
+      <div id="cap-101" class="clip caption" data-start="189.321" data-duration="1.623" data-track-index="20"><span>现实里也能找到</span></div>
+      <div id="cap-102" class="clip caption" data-start="190.944" data-duration="1.286" data-track-index="20"><span>陪他打一场球</span></div>
+      <div id="cap-103" class="clip caption" data-start="192.230" data-duration="1.490" data-track-index="20"><span>周末一起爬山</span></div>
+      <div id="cap-104" class="clip caption" data-start="193.720" data-duration="1.995" data-track-index="20"><span>支持他加入社团</span></div>
+      <div id="cap-105" class="clip caption" data-start="195.715" data-duration="1.623" data-track-index="20"><span>如果他真热爱游戏</span></div>
+      <div id="cap-106" class="clip caption" data-start="197.338" data-duration="2.909" data-track-index="20"><span>就引导他去了解游戏设计和编程</span></div>
+      <div id="cap-107" class="clip caption" data-start="200.247" data-duration="2.733" data-track-index="20"><span>把“玩游戏”变成“做游戏”</span></div>
+      <div id="cap-108" class="clip caption" data-start="204.028" data-duration="1.118" data-track-index="20"><span>最难的一条</span></div>
+      <div id="cap-109" class="clip caption" data-start="205.146" data-duration="1.693" data-track-index="20"><span>是家长先做到</span></div>
+      <div id="cap-110" class="clip caption" data-start="206.839" data-duration="1.286" data-track-index="20"><span>你一边刷手机</span></div>
+      <div id="cap-111" class="clip caption" data-start="208.125" data-duration="1.767" data-track-index="20"><span>一边让孩子放下手机</span></div>
+      <div id="cap-112" class="clip caption" data-start="209.892" data-duration="1.610" data-track-index="20"><span>很难有说服力</span></div>
+      <div id="cap-113" class="clip caption" data-start="211.502" data-duration="2.332" data-track-index="20"><span>不妨定一个全家无屏幕时间</span></div>
+      <div id="cap-114" class="clip caption" data-start="213.834" data-duration="1.634" data-track-index="20"><span>比如晚饭后一小时</span></div>
+      <div id="cap-115" class="clip caption" data-start="215.468" data-duration="2.020" data-track-index="20"><span>一起散步、聊天</span></div>
+      <div id="cap-116" class="clip caption" data-start="217.488" data-duration="1.815" data-track-index="20"><span>孩子不会照你说的做</span></div>
+      <div id="cap-117" class="clip caption" data-start="219.303" data-duration="2.109" data-track-index="20"><span>但会照你做的做</span></div>
+      <div id="cap-118" class="clip caption" data-start="222.460" data-duration="2.306" data-track-index="20"><span>给你一份四周行动计划</span></div>
+      <div id="cap-119" class="clip caption" data-start="224.766" data-duration="1.779" data-track-index="20"><span>第一周，只听不评</span></div>
+      <div id="cap-120" class="clip caption" data-start="226.545" data-duration="2.223" data-track-index="20"><span>重建信任。第二周</span></div>
+      <div id="cap-121" class="clip caption" data-start="228.768" data-duration="0.818" data-track-index="20"><span>坐下来</span></div>
+      <div id="cap-122" class="clip caption" data-start="229.586" data-duration="1.562" data-track-index="20"><span>一起定规则</span></div>
+      <div id="cap-123" class="clip caption" data-start="231.148" data-duration="0.853" data-track-index="20"><span>第三周</span></div>
+      <div id="cap-124" class="clip caption" data-start="232.001" data-duration="1.551" data-track-index="20"><span>做一次眼科检查</span></div>
+      <div id="cap-125" class="clip caption" data-start="233.552" data-duration="1.875" data-track-index="20"><span>安排好户外时间</span></div>
+      <div id="cap-126" class="clip caption" data-start="235.427" data-duration="1.971" data-track-index="20"><span>第四周，复盘调整</span></div>
+      <div id="cap-127" class="clip caption" data-start="237.398" data-duration="2.518" data-track-index="20"><span>看见孩子的每一点进步</span></div>
+      <div id="cap-128" class="clip caption" data-start="241.114" data-duration="1.695" data-track-index="20"><span>改变不会一夜发生</span></div>
+      <div id="cap-129" class="clip caption" data-start="242.809" data-duration="2.149" data-track-index="20"><span>有反复，很正常</span></div>
+      <div id="cap-130" class="clip caption" data-start="244.958" data-duration="1.034" data-track-index="20"><span>请记住</span></div>
+      <div id="cap-131" class="clip caption" data-start="245.992" data-duration="1.971" data-track-index="20"><span>你和孩子从来不是对手</span></div>
+      <div id="cap-132" class="clip caption" data-start="247.963" data-duration="3.606" data-track-index="20"><span>而是站在同一边、一起面对问题的队友</span></div>
+      <div id="cap-133" class="clip caption" data-start="251.569" data-duration="1.142" data-track-index="20"><span>先修关系</span></div>
+      <div id="cap-134" class="clip caption" data-start="252.711" data-duration="1.202" data-track-index="20"><span>再谈规则</span></div>
+      <div id="cap-135" class="clip caption" data-start="253.913" data-duration="0.961" data-track-index="20"><span>关系通了</span></div>
+      <div id="cap-136" class="clip caption" data-start="254.874" data-duration="2.088" data-track-index="20"><span>成长的路就通了</span></div>
+
+      <audio id="narration" src="assets/narration.mp3" data-start="0" data-duration="260.712" data-track-index="30" data-volume="1"></audio>
+      <audio id="bgm" src="assets/bgm.mp3" data-start="0" data-duration="260.712" data-track-index="31" data-volume="0.14"></audio>
+    </div>
+
+    <script>
+      const T = {"s01": {"start": 0.0, "dur": 18.872, "end": 18.872, "vo": 0.8, "speech": 16.872, "cues": {"night": 0.898, "exam": 5.163, "angry": 8.228, "door": 11.906, "q": 13.384}}, "s02": {"start": 18.872, "dur": 19.488, "end": 38.36, "vo": 19.322, "speech": 18.288, "cues": {"surf": 21.175, "root": 23.651, "good": 26.005, "bad": 28.324, "o1": 33.769, "o2": 34.839, "o3": 35.909}}, "s03": {"start": 38.36, "dur": 20.712, "end": 59.072, "vo": 38.81, "speech": 19.512, "cues": {"why": 40.963, "a": 45.841, "c": 47.728, "b": 49.483, "press": 52.332}}, "s04": {"start": 59.072, "dur": 20.424, "end": 79.496, "vo": 59.522, "speech": 19.224, "cues": {"q1": 61.014, "q2": 62.565, "lvl": 65.015, "ok": 66.109, "bad": 71.493, "help": 76.974}}, "s05": {"start": 79.496, "dur": 18.768, "end": 98.264, "vo": 79.946, "speech": 17.568, "cues": {"x1": 82.712, "x2": 86.138, "x3": 89.285, "resp": 92.41}}, "s06": {"start": 98.264, "dur": 20.928, "end": 119.192, "vo": 98.714, "speech": 19.728, "cues": {"s1": 101.418, "s2": 106.515, "ask": 109.039, "s3": 111.478, "i": 113.774, "you": 116.563}}, "s07": {"start": 119.192, "dur": 24.192, "end": 143.384, "vo": 119.642, "speech": 22.992, "cues": {"co": 121.351, "law": 124.894, "school": 132.839, "phone": 134.798, "sign": 139.137, "trust": 140.291}}, "s08": {"start": 143.384, "dur": 21.816, "end": 165.2, "vo": 143.834, "speech": 20.616, "cues": {"irr": 145.372, "rule": 150.192, "n1": 151.25, "n2": 153.618, "n3": 154.195, "out": 155.817, "arm": 160.757, "dark": 162.44}}, "s09": {"start": 165.2, "dur": 19.152, "end": 184.352, "vo": 165.65, "speech": 17.952, "cues": {"hosp": 167.178, "exam": 168.657, "glass": 170.976, "re": 173.066, "med": 174.628, "no": 179.592}}, "s10": {"start": 184.352, "dur": 19.128, "end": 203.48, "vo": 184.802, "speech": 17.928, "cues": {"dredge": 184.9, "ball": 191.232, "hill": 192.975, "club": 194.61, "dev": 198.6, "flip": 200.247}}, "s11": {"start": 203.48, "dur": 18.432, "end": 221.912, "vo": 203.93, "speech": 17.232, "cues": {"hard": 204.028, "scroll": 206.839, "fam": 212.247, "walk": 215.468, "quote": 217.488}}, "s12": {"start": 221.912, "dur": 18.504, "end": 240.416, "vo": 222.362, "speech": 17.304, "cues": {"w1": 224.766, "w2": 227.987, "w3": 231.148, "w4": 235.427}}, "s13": {"start": 240.416, "dur": 20.296, "end": 260.712, "vo": 241.016, "speech": 15.696, "cues": {"slow": 241.114, "team": 245.992, "l3": 251.569, "l4": 253.913}}};
+      const TOTAL = Number(document.getElementById("root").dataset.duration);
+      const tl = gsap.timeline({ paused: true });
+      const C = (s, k) => T[s].cues[k];
+
+      function reveal(sel, at, from, opts) {
+        tl.fromTo(sel, Object.assign({ opacity: 0 }, from || { y: 34 }), Object.assign({ opacity: 1, x: 0, y: 0, scale: 1, rotation: 0, duration: 0.6, ease: "power3.out" }, opts || {}), at);
+      }
+      function pop(sel, at) {
+        reveal(sel, at, { scale: 0.6, y: 0 }, { ease: "back.out(2)" });
+      }
+      function strike(sel, at) {
+        tl.fromTo(sel, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, at);
+      }
+      function sceneIn(id, sel) {
+        tl.fromTo(sel || `#${id} .inner`, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, T[id].start + 0.02);
+      }
+      function sceneOut(id, sel) {
+        tl.to(sel || `#${id} .inner`, { opacity: 0, y: -18, duration: 0.42, ease: "power2.in" }, T[id].end - 0.44);
+      }
+
+      tl.fromTo(".blob.b1", { x: 0, y: 0 }, { x: 160, y: 90, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".blob.b2", { x: 0, y: 0 }, { x: -140, y: -120, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".blob.b3", { x: 0, y: 0 }, { x: 220, y: -60, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".progress-fill", { scaleX: 0 }, { scaleX: 1, duration: TOTAL, ease: "none" }, 0);
+
+      // s01
+      {
+        const s = T.s01;
+        tl.fromTo("#s01 .s01-a", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s.start);
+        reveal("#s01 .night", C("s01", "night") - 0.2, { x: -50 });
+        tl.fromTo("#s01 .glow", { opacity: 0.35 }, { opacity: 1, duration: 0.7, repeat: 5, yoyo: true, ease: "sine.inOut" }, C("s01", "night") + 0.4);
+        reveal("#s01 .report", C("s01", "exam") - 0.1, { x: 50 });
+        pop("#s01 .report .up", C("s01", "exam") + 1.4);
+        reveal("#s01 .shout", C("s01", "angry") + 0.6, { scale: 0.7, y: 20 }, { ease: "back.out(2.2)" });
+        reveal("#s01 .door", C("s01", "door"), { scale: 1.6, y: 0 }, { duration: 0.3, ease: "power4.in" });
+        tl.fromTo("#s01 .door .ico", { x: -6 }, { x: 6, duration: 0.05, repeat: 7, yoyo: true, ease: "none" }, C("s01", "door") + 0.3);
+        tl.to("#s01 .s01-a", { opacity: 0, y: -30, duration: 0.5, ease: "power2.in" }, C("s01", "q") - 0.5);
+        tl.fromTo("#s01 .s01-b", { opacity: 0 }, { opacity: 1, duration: 0.3 }, C("s01", "q") - 0.05);
+        reveal("#s01 .hero-kicker", C("s01", "q"), { y: 20 });
+        reveal("#s01 .hero", C("s01", "q") + 0.15, { y: 50, scale: 0.94 }, { duration: 0.9 });
+        tl.fromTo("#s01 .hero-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power3.out" }, C("s01", "q") + 0.7);
+        reveal("#s01 .hero-sub", C("s01", "q") + 1.0, { y: 20 });
+        sceneOut("s01", "#s01 .s01-b");
+      }
+
+      // s02
+      {
+        sceneIn("s02");
+        reveal("#s02 .ice-lbl", C("s02", "surf") - 0.2, { y: 16 });
+        reveal("#s02 .ice-top", C("s02", "surf"), { y: -24 });
+        reveal("#s02 .wave", C("s02", "surf") + 0.6, { x: -30 });
+        reveal("#s02 .ice-root", C("s02", "root"), { y: 60, scale: 0.9 }, { duration: 0.8 });
+        reveal("#s02 .r-good", C("s02", "good"), { x: 40 });
+        reveal("#s02 .r-bad", C("s02", "bad"), { x: 40 });
+        pop("#s02 .o1", C("s02", "o1"));
+        reveal("#s02 .oa1", C("s02", "o2") - 0.3, { x: -16 });
+        pop("#s02 .o2", C("s02", "o2"));
+        reveal("#s02 .oa2", C("s02", "o3") - 0.3, { x: -16 });
+        pop("#s02 .o3", C("s02", "o3"));
+        sceneOut("s02");
+      }
+
+      // s03
+      {
+        sceneIn("s03");
+        reveal("#s03 .n-a", C("s03", "a") - 0.1, { y: 60 });
+        reveal("#s03 .n-c", C("s03", "c") - 0.1, { y: 60 });
+        reveal("#s03 .n-b", C("s03", "b") - 0.1, { y: 60 });
+        reveal("#s03 .s03-gap", C("s03", "press"), { y: 30 });
+        sceneOut("s03");
+      }
+
+      // s04
+      {
+        sceneIn("s04");
+        reveal("#s04 .q.old", C("s04", "q1") - 0.2, { x: -40 });
+        strike("#s04 .q.old .strike", C("s04", "q2") - 0.4);
+        reveal("#s04 .qa", C("s04", "q2") - 0.2, { x: -20 });
+        reveal("#s04 .q.new", C("s04", "q2"), { x: 40 });
+        reveal("#s04 .lvl.ok", C("s04", "ok"), { y: 50 });
+        reveal("#s04 .lvl.bad", C("s04", "bad"), { y: 50 });
+        reveal("#s04 .s04-note", C("s04", "help"), { y: 10 });
+        sceneOut("s04");
+      }
+
+      // s05
+      {
+        sceneIn("s05");
+        reveal("#s05 .d1", C("s05", "x1") - 0.1, { y: 50 });
+        reveal("#s05 .d2", C("s05", "x2") - 0.1, { y: 50 });
+        reveal("#s05 .d3", C("s05", "x3") - 0.1, { y: 50 });
+        reveal("#s05 .respect", C("s05", "resp"), { scale: 0.7, y: 20 }, { ease: "back.out(1.8)" });
+        sceneOut("s05");
+      }
+
+      // s06
+      {
+        sceneIn("s06");
+        reveal("#s06 .r1", C("s06", "s1"), { x: -40 });
+        reveal("#s06 .r2", C("s06", "s2"), { x: -40 });
+        reveal("#s06 .chat", C("s06", "s2"), { x: 50 });
+        reveal("#s06 .b1", C("s06", "ask"), { y: 20, scale: 0.9 });
+        reveal("#s06 .r3", C("s06", "s3"), { x: -40 });
+        reveal("#s06 .b2", C("s06", "i"), { y: 20, scale: 0.9 });
+        reveal("#s06 .b3", C("s06", "you"), { y: 20, scale: 0.9 });
+        strike("#s06 .b3 .strike", C("s06", "you") + 1.0);
+        sceneOut("s06");
+      }
+
+      // s07
+      {
+        sceneIn("s07");
+        reveal("#s07 .pact", C("s07", "co"), { y: 40 });
+        reveal("#s07 .p1", C("s07", "law"), { x: -30 });
+        reveal("#s07 .s07-note", C("s07", "law") + 0.8, { y: 10 });
+        reveal("#s07 .p2", C("s07", "school"), { x: -30 });
+        reveal("#s07 .p3", C("s07", "phone"), { x: -30 });
+        reveal("#s07 .sigs", C("s07", "sign") - 0.3, { y: 16 });
+        tl.fromTo("#s07 .sg1 .hand", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }, C("s07", "sign") + 0.2);
+        tl.fromTo("#s07 .sg2 .hand", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }, C("s07", "sign") + 0.8);
+        reveal("#s07 .trust", C("s07", "trust"), { scale: 0.7, y: 0 }, { ease: "back.out(1.8)" });
+        sceneOut("s07");
+      }
+
+      // s08
+      {
+        sceneIn("s08");
+        pop("#s08 .pill", C("s08", "irr"));
+        reveal("#s08 .w1", C("s08", "n1"), { y: 40 });
+        reveal("#s08 .ta1", C("s08", "n2") - 0.3, { x: -16 });
+        reveal("#s08 .w2", C("s08", "n2"), { y: 40 });
+        reveal("#s08 .ta2", C("s08", "n3") - 0.3, { x: -16 });
+        reveal("#s08 .w3", C("s08", "n3"), { y: 40 });
+        reveal("#s08 .e-out", C("s08", "out"), { y: 40 });
+        reveal("#s08 .e-arm", C("s08", "arm"), { y: 40 });
+        reveal("#s08 .e-dark", C("s08", "dark"), { y: 40 });
+        sceneOut("s08");
+      }
+
+      // s09
+      {
+        sceneIn("s09");
+        reveal("#s09 .f1", C("s09", "hosp"), { y: 40 });
+        reveal("#s09 .fa1", C("s09", "exam") - 0.3, { x: -16 });
+        reveal("#s09 .f2", C("s09", "exam"), { y: 40 });
+        reveal("#s09 .fa2", C("s09", "glass") - 0.3, { x: -16 });
+        reveal("#s09 .f3", C("s09", "glass"), { y: 40 });
+        reveal("#s09 .fa3", C("s09", "re") - 0.3, { x: -16 });
+        reveal("#s09 .f4", C("s09", "re"), { y: 40 });
+        reveal("#s09 .med", C("s09", "med"), { x: -40 });
+        pop("#s09 .w-a", C("s09", "no"));
+        pop("#s09 .w-b", C("s09", "no") + 1.0);
+        sceneOut("s09");
+      }
+
+      // s10
+      {
+        sceneIn("s10");
+        reveal("#s10 .s10-sub", C("s10", "dredge") + 1.0, { y: 20 });
+        reveal("#s10 .t-ball", C("s10", "ball"), { y: 40 });
+        reveal("#s10 .t-hill", C("s10", "hill") - 0.2, { y: 40 });
+        reveal("#s10 .t-club", C("s10", "club") - 0.2, { y: 40 });
+        reveal("#s10 .pg", C("s10", "dev") - 0.4, { x: -30 });
+        strike("#s10 .pg .strike", C("s10", "flip") + 0.6);
+        reveal("#s10 .fl-a", C("s10", "flip") + 0.8, { x: -20 });
+        reveal("#s10 .mg", C("s10", "flip") + 1.1, { scale: 0.6, y: 0 }, { ease: "back.out(2)" });
+        sceneOut("s10");
+      }
+
+      // s11
+      {
+        sceneIn("s11");
+        reveal("#s11 .hypo", C("s11", "scroll"), { x: -40 });
+        pop("#s11 .hypo .x", C("s11", "scroll") + 2.4);
+        tl.to("#s11 .hypo", { opacity: 0.55, duration: 0.4 }, C("s11", "fam") - 0.3);
+        reveal("#s11 .fam", C("s11", "fam"), { x: 40 });
+        pop("#s11 .chips span:nth-child(1)", C("s11", "walk"));
+        pop("#s11 .chips span:nth-child(2)", C("s11", "walk") + 0.5);
+        reveal("#s11 .quote", C("s11", "quote"), { y: 30 }, { duration: 0.8 });
+        sceneOut("s11");
+      }
+
+      // s12
+      {
+        sceneIn("s12");
+        reveal("#s12 .note", T.s12.vo + 0.3, { y: 40 });
+        const keys = ["w1", "w2", "w3", "w4"];
+        keys.forEach((k, i) => {
+          const row = `#s12 .i-${i + 1}`;
+          reveal(row, C("s12", k) - 0.1, { x: -30 });
+          const tickAt = i < 3 ? C("s12", keys[i + 1]) - 0.7 : T.s12.end - 1.4;
+          tl.fromTo(`${row} .tick`, { strokeDashoffset: 60 }, { strokeDashoffset: 0, duration: 0.45, ease: "power2.out" }, tickAt);
+        });
+        sceneOut("s12");
+      }
+
+      // s13
+      {
+        const s = T.s13;
+        tl.fromTo("#s13 .inner", { opacity: 0 }, { opacity: 1, duration: 0.4 }, s.start);
+        reveal("#s13 .e1", C("s13", "slow") - 0.1, { y: 20 }, { duration: 0.8 });
+        reveal("#s13 .e2", C("s13", "team") - 0.1, { y: 30 }, { duration: 0.8 });
+        reveal("#s13 .e3", C("s13", "team") + 2.2, { y: 30 }, { duration: 0.8 });
+        reveal("#s13 .e4", C("s13", "l3") - 0.1, { y: 24 }, { duration: 0.8 });
+        reveal("#s13 .cheer", C("s13", "l4") - 0.1, { scale: 0.8, y: 20 }, { duration: 0.9, ease: "back.out(1.6)" });
+        reveal("#s13 .credit", C("s13", "l4") + 1.6, { y: 10 });
+      }
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

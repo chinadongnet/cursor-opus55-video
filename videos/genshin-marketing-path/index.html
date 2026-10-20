@@ -1,0 +1,1014 @@
+<!doctype html>
+<html lang="zh-CN" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Noto Sans SC"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-400.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Sans SC"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-700.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Sans SC"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-900.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Serif SC"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/noto-serif-sc-700.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Serif SC"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/noto-serif-sc-900.woff2") format("woff2"); }
+      @font-face { font-family: "Ma Shan Zheng"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/ma-shan-zheng-400.woff2") format("woff2"); }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #0d1330; }
+
+      :root {
+        --bg: #0d1330;
+        --ink: #f4f1e8;
+        --muted: #aab1d0;
+        --card: rgba(255, 255, 255, 0.055);
+        --line: rgba(240, 195, 90, 0.22);
+        --gold: #f0c35a;
+        --teal: #3dd6c3;
+        --rose: #ff8a9a;
+        --sky: #7bb3ff;
+        --vio: #b39bff;
+        --dark: #0d1330;
+      }
+
+      #root {
+        position: relative; width: 100%; height: 100%; overflow: hidden;
+        background: var(--bg); color: var(--ink);
+        font-family: "Noto Sans SC", sans-serif; font-weight: 400;
+      }
+
+      /* ---------- persistent layers ---------- */
+      .bg { position: absolute; inset: 0; }
+      .glow { position: absolute; display: block; border-radius: 50%; filter: blur(90px); }
+      .glow.g1 { width: 760px; height: 760px; left: -220px; top: -260px; background: rgba(123, 179, 255, 0.22); }
+      .glow.g2 { width: 700px; height: 700px; right: -200px; top: 300px; background: rgba(179, 155, 255, 0.2); }
+      .glow.g3 { width: 620px; height: 620px; left: 700px; bottom: -380px; background: rgba(240, 195, 90, 0.16); }
+      .stars {
+        position: absolute; left: 0; top: -120px; width: 1920px; height: 1320px;
+        background-image:
+          radial-gradient(rgba(255, 255, 255, 0.55) 1.2px, transparent 1.8px),
+          radial-gradient(rgba(240, 195, 90, 0.5) 1.4px, transparent 2px),
+          radial-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1.5px);
+        background-size: 130px 130px, 230px 230px, 70px 70px;
+        background-position: 0 0, 60px 90px, 30px 20px;
+      }
+      .ring { position: absolute; left: 1180px; top: -330px; width: 1100px; height: 1100px; opacity: 0.1; color: var(--gold); }
+      .brand { position: absolute; top: 44px; right: 64px; font-size: 24px; font-weight: 700; letter-spacing: 0.12em; color: rgba(244, 241, 232, 0.62); }
+      .brand b { color: var(--gold); font-weight: 900; }
+      .progress { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: rgba(255, 255, 255, 0.06); }
+      .progress-fill { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, var(--gold), var(--rose), var(--vio)); transform-origin: 0 50%; }
+
+      /* ---------- scene scaffold ---------- */
+      .scene { position: absolute; inset: 0; }
+      .inner { position: absolute; inset: 0; padding: 96px 150px 210px; display: flex; flex-direction: column; }
+      .center { align-items: center; justify-content: center; text-align: center; }
+      .tag {
+        align-self: flex-start; display: inline-flex; align-items: center; gap: 14px;
+        padding: 10px 26px; border-radius: 999px;
+        background: rgba(240, 195, 90, 0.12); border: 2px solid rgba(240, 195, 90, 0.5); color: var(--ink);
+        font-size: 26px; font-weight: 700; letter-spacing: 0.08em;
+      }
+      .tag b { color: var(--gold); font-weight: 900; }
+      .title { margin-top: 24px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 72px; line-height: 1.22; }
+      .title em { font-style: normal; color: var(--gold); }
+      .card {
+        background: var(--card); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 26px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+      }
+      .muted { color: var(--muted); }
+      svg.ico { display: block; fill: none; stroke: currentColor; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+      .chipc { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; color: var(--dark); font-weight: 900; }
+      .banner {
+        align-self: center; display: flex; align-items: center; gap: 22px;
+        padding: 18px 44px; border-radius: 999px;
+        background: rgba(240, 195, 90, 0.12); border: 2px solid rgba(240, 195, 90, 0.55);
+        font-size: 38px; font-weight: 700;
+      }
+      .banner em { font-style: normal; color: var(--gold); font-weight: 900; }
+      .banner .ico { width: 48px; height: 48px; color: var(--gold); }
+      .strike { position: absolute; left: -6px; right: -6px; top: 52%; height: 5px; border-radius: 3px; background: var(--rose); display: block; transform-origin: 0 50%; }
+
+      /* ---------- captions ---------- */
+      .caption { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 54px; pointer-events: none; }
+      .caption span {
+        display: block; max-width: 1500px; padding: 12px 34px; border-radius: 18px;
+        background: rgba(5, 8, 24, 0.86); border: 1px solid rgba(240, 195, 90, 0.25); color: #fff;
+        font-size: 40px; line-height: 1.4; font-weight: 400; letter-spacing: 0.04em;
+      }
+
+      /* ---------- s01 ---------- */
+      .s01-lead { font-family: "Noto Serif SC", serif; font-weight: 700; font-size: 48px; }
+      .s01-lead em { font-style: normal; color: var(--gold); }
+      .s01-row { display: flex; gap: 70px; margin-top: 44px; align-items: center; }
+      .jd { width: 940px; flex: none; padding: 34px 44px 38px; border-color: rgba(240, 195, 90, 0.35); }
+      .jd-head { display: flex; align-items: center; gap: 24px; padding-bottom: 22px; border-bottom: 2px dashed rgba(255, 255, 255, 0.14); }
+      .jd-badge { flex: none; padding: 10px 20px; border-radius: 14px; background: var(--gold); color: var(--dark); font-size: 28px; font-weight: 900; }
+      .jd-title { font-size: 42px; font-weight: 900; }
+      .jd-sub { margin-top: 4px; font-size: 26px; color: var(--muted); }
+      .jd-list { margin-top: 18px; display: flex; flex-direction: column; gap: 6px; }
+      .jd-item { display: flex; align-items: center; gap: 20px; height: 64px; font-size: 34px; font-weight: 700; }
+      .jd-item .dot { flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--muted); }
+      .jd-item .tx { position: relative; }
+      .jd-item .tx span { position: relative; }
+      .jd-item .mk { position: absolute; left: -8px; right: -8px; bottom: 2px; height: 22px; border-radius: 6px; background: rgba(240, 195, 90, 0.42); display: block; transform-origin: 0 50%; }
+      .jd-item.ji4 { color: var(--muted); font-weight: 400; }
+      .s01-ten { flex: 1; display: flex; flex-direction: column; align-items: center; }
+      .ten-num { display: flex; align-items: baseline; gap: 8px; font-family: "Noto Serif SC", serif; font-weight: 900; color: var(--gold); }
+      .ten-num .big { font-size: 230px; line-height: 1; }
+      .ten-num .unit { font-size: 90px; }
+      .ten-bar { position: relative; width: 480px; margin-top: 26px; height: 70px; }
+      .ten-track { position: absolute; left: 20px; right: 20px; top: 12px; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.14); }
+      .ten-fill { display: block; width: 100%; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--gold), var(--rose)); transform-origin: 0 50%; }
+      .ten-end { position: absolute; top: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--bg); border: 5px solid var(--gold); }
+      .ten-end.e1 { left: 5px; }
+      .ten-end.e2 { right: 5px; border-color: var(--rose); }
+      .ten-yr { position: absolute; top: 40px; font-size: 26px; font-weight: 700; color: var(--muted); }
+      .ten-yr.y1 { left: 0; }
+      .ten-yr.y2 { right: 0; }
+      .ten-cap { margin-top: 10px; font-size: 34px; font-weight: 700; }
+      .s01-note { margin-top: 30px; font-size: 22px; color: var(--muted); }
+      .hero-kicker { font-size: 32px; letter-spacing: 0.36em; color: var(--gold); font-weight: 900; }
+      .hero { margin-top: 26px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 124px; line-height: 1.2; }
+      .hero .hl { color: var(--gold); }
+      .hero-rule { display: block; width: 200px; height: 8px; border-radius: 4px; margin: 40px auto 0; background: linear-gradient(90deg, var(--gold), var(--rose)); transform-origin: 50% 50%; }
+      .hero-sub { margin-top: 34px; font-size: 44px; color: var(--muted); font-weight: 700; letter-spacing: 0.06em; }
+
+      /* ---------- s02 ---------- */
+      .s02-cols { display: flex; gap: 36px; margin-top: 46px; }
+      .col { flex: 1; display: flex; flex-direction: column; align-items: center; }
+      .duty { align-self: stretch; padding: 30px 30px 32px; }
+      .duty .num { width: 62px; height: 62px; border-radius: 18px; display: flex; align-items: center; justify-content: center; color: var(--dark); font-weight: 900; font-size: 34px; }
+      .duty h3 { margin-top: 22px; font-size: 42px; font-weight: 900; }
+      .duty p { margin-top: 10px; min-height: 81px; font-size: 27px; line-height: 1.5; color: var(--muted); }
+      .down { width: 54px; height: 54px; margin-top: 16px; color: var(--muted); }
+      .abil { margin-top: 14px; padding: 14px 34px; font-size: 38px; }
+
+      /* ---------- s03 ---------- */
+      .maps { display: flex; flex-direction: column; gap: 14px; margin-top: 30px; }
+      .map-row { display: flex; align-items: center; gap: 26px; }
+      .subj { flex: none; width: 380px; display: flex; align-items: center; gap: 22px; white-space: nowrap; }
+      .subj .glyph { flex: none; width: 88px; height: 88px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: var(--dark); font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 50px; }
+      .subj .nm { font-size: 40px; font-weight: 900; }
+      .wire { position: relative; flex: 1; height: 4px; }
+      .wire i { position: absolute; inset: 0; display: block; border-radius: 2px; background: linear-gradient(90deg, rgba(255, 255, 255, 0.15), currentColor); transform-origin: 0 50%; }
+      .skill { flex: none; width: 640px; padding: 20px 32px; font-size: 38px; font-weight: 900; }
+      .skill small { margin-left: 16px; font-size: 26px; font-weight: 400; color: var(--muted); }
+      .s03-banner { margin-top: 28px; }
+
+      /* ---------- s04 ---------- */
+      .s04-body { display: flex; gap: 60px; margin-top: 40px; flex: 1; min-height: 0; align-items: center; }
+      .plan { flex: 1; display: flex; flex-direction: column; gap: 22px; }
+      .lvl { display: flex; align-items: center; gap: 24px; padding: 24px 32px; }
+      .lvl .k { flex: none; width: 108px; padding: 8px 0; border-radius: 12px; text-align: center; color: var(--dark); font-size: 30px; font-weight: 900; }
+      .lvl .v { font-size: 42px; font-weight: 900; }
+      .lvl small { margin-left: auto; font-size: 26px; color: var(--muted); }
+      .target { width: 560px; flex: none; padding: 30px 36px; display: flex; flex-direction: column; align-items: center; }
+      .target .bull { width: 250px; height: 250px; overflow: visible; }
+      .target .lbl { margin-top: 14px; font-size: 34px; font-weight: 900; text-align: center; }
+      .target .lbl em { font-style: normal; color: var(--rose); }
+      .alloc { margin-top: 22px; display: flex; gap: 26px; align-items: flex-end; height: 150px; }
+      .alloc .b { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+      .alloc .bar { width: 52px; height: 84px; border-radius: 10px 10px 4px 4px; background: rgba(255, 255, 255, 0.18); transform-origin: 50% 100%; }
+      .alloc .bar.weak { background: var(--rose); }
+      .alloc .n { font-size: 24px; font-weight: 700; color: var(--muted); }
+
+      /* ---------- s05 ---------- */
+      .pairs { display: flex; gap: 36px; margin-top: 40px; }
+      .pair { flex: 1; padding: 24px 30px; display: flex; align-items: center; gap: 22px; }
+      .pair .mk { font-size: 28px; color: var(--muted); font-weight: 700; }
+      .pair .mk b { display: block; font-size: 36px; color: var(--ink); }
+      .pair .ar { width: 44px; height: 44px; color: var(--gold); flex: none; }
+      .pair .st { font-size: 46px; font-weight: 900; color: var(--gold); }
+      .s05-bottom { display: flex; gap: 40px; margin-top: 34px; }
+      .wrong { position: relative; flex: 1; padding: 30px 38px; }
+      .wrong h4 { font-size: 40px; font-weight: 900; }
+      .wrong h4 em { font-style: normal; color: var(--gold); }
+      .steps { margin-top: 18px; display: flex; flex-direction: column; gap: 14px; }
+      .step { display: flex; align-items: center; gap: 18px; font-size: 34px; font-weight: 700; }
+      .step .ico { width: 42px; height: 42px; flex: none; }
+      .step .t { position: relative; }
+      .step.x { color: var(--muted); }
+      .stamp {
+        position: absolute; right: 30px; bottom: 26px;
+        padding: 10px 24px; border: 5px solid var(--gold); border-radius: 14px;
+        color: var(--gold); font-size: 40px; font-weight: 900; letter-spacing: 0.06em;
+        background: rgba(13, 19, 48, 0.9);
+      }
+      .chart { width: 600px; flex: none; padding: 24px 30px; }
+      .chart .h { font-size: 26px; font-weight: 700; color: var(--muted); }
+      .chart svg { display: block; margin-top: 8px; width: 540px; height: 230px; overflow: visible; }
+
+      /* ---------- s06 ---------- */
+      .quote { position: relative; margin-top: 34px; padding: 26px 40px 26px 96px; border-color: rgba(240, 195, 90, 0.45); font-size: 34px; font-weight: 700; line-height: 1.5; }
+      .quote .qm { position: absolute; left: 30px; top: 6px; font-family: "Noto Serif SC", serif; font-size: 96px; color: var(--gold); line-height: 1; }
+      .quote .src { display: inline-block; margin-right: 14px; padding: 2px 14px; border-radius: 8px; background: var(--gold); color: var(--dark); font-size: 24px; font-weight: 900; vertical-align: 4px; }
+      .flow { display: flex; align-items: center; gap: 14px; margin-top: 50px; }
+      .node { flex: 1; padding: 24px 24px 26px; display: flex; flex-direction: column; gap: 12px; }
+      .node .own { align-self: flex-start; padding: 4px 18px; font-size: 26px; }
+      .node .t { font-size: 38px; font-weight: 900; }
+      .node .s { font-size: 26px; color: var(--muted); }
+      .flow .ar { width: 40px; height: 40px; flex: none; color: var(--muted); }
+      .s06-banner { margin-top: 54px; }
+
+      /* ---------- s07 ---------- */
+      .s07-stage { position: relative; width: 1620px; height: 540px; margin-top: 30px; }
+      .s07-stage svg.lines { position: absolute; left: 0; top: 0; width: 1620px; height: 540px; overflow: visible; }
+      .glabel { position: absolute; left: 0; font-size: 26px; font-weight: 700; color: var(--muted); letter-spacing: 0.08em; }
+      .major { position: absolute; left: 0; width: 400px; height: 54px; padding: 0 26px; display: flex; align-items: center; font-size: 32px; font-weight: 900; border-radius: 16px; }
+      .major.m-a { background: rgba(240, 195, 90, 0.14); border: 2px solid rgba(240, 195, 90, 0.55); }
+      .major.m-b { background: rgba(61, 214, 195, 0.12); border: 2px solid rgba(61, 214, 195, 0.5); }
+      .goal { position: absolute; left: 1060px; top: 70px; width: 300px; height: 300px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: radial-gradient(circle, rgba(240, 195, 90, 0.3), rgba(240, 195, 90, 0.06) 70%); border: 3px solid var(--gold); }
+      .goal b { font-size: 44px; font-weight: 900; line-height: 1.25; }
+      .goal small { margin-top: 8px; font-size: 24px; color: var(--muted); }
+      .s07-key { position: absolute; left: 860px; top: 420px; width: 700px; justify-content: center; }
+
+      /* ---------- s08 ---------- */
+      .club { align-self: flex-start; margin-top: 30px; padding: 16px 34px; display: flex; align-items: center; gap: 18px; font-size: 36px; font-weight: 900; }
+      .club em { font-style: normal; color: var(--gold); }
+      .club .ico { width: 46px; height: 46px; color: var(--gold); }
+      .proc { position: relative; display: flex; margin-top: 44px; }
+      .proc-line { position: absolute; left: 135px; right: 135px; top: 46px; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.12); }
+      .proc-fill { display: block; width: 100%; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--gold), var(--rose), var(--vio)); transform-origin: 0 50%; }
+      .ps { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; }
+      .ps .c { width: 98px; height: 98px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #18204a; border: 4px solid var(--gold); color: var(--gold); }
+      .ps .c .ico { width: 50px; height: 50px; }
+      .ps .l { margin-top: 18px; font-size: 36px; font-weight: 900; }
+      .ps .j { margin-top: 6px; font-size: 24px; color: var(--muted); }
+      .intern { align-self: center; margin-top: 44px; padding: 18px 34px; display: flex; align-items: center; gap: 20px; font-size: 34px; font-weight: 900; }
+      .intern em { font-style: normal; color: var(--gold); }
+      .intern .chipc { padding: 6px 20px; font-size: 26px; background: var(--teal); }
+
+      /* ---------- s09 ---------- */
+      .fields { display: flex; gap: 22px; margin-top: 34px; }
+      .fields .chipc { padding: 12px 34px; font-size: 36px; }
+      .s09-mid { display: flex; align-items: center; gap: 36px; margin-top: 50px; }
+      .who { padding: 28px 34px; display: flex; flex-direction: column; gap: 14px; }
+      .who .hd { display: flex; align-items: center; gap: 16px; font-size: 38px; font-weight: 900; }
+      .who .hd .ico { width: 54px; height: 54px; }
+      .who.player { width: 460px; flex: none; }
+      .who.player .bub { font-size: 32px; color: var(--muted); }
+      .who.analyst { flex: 1; border-color: rgba(240, 195, 90, 0.45); }
+      .who .q { display: flex; align-items: center; gap: 14px; font-size: 32px; font-weight: 700; }
+      .who .q b { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--gold); color: var(--dark); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; }
+      .s09-mid .up { width: 64px; height: 64px; color: var(--gold); flex: none; }
+      .create { margin-top: 50px; display: flex; align-items: center; gap: 18px; font-size: 34px; font-weight: 900; }
+      .create .plus { padding: 6px 20px; font-size: 28px; background: var(--gold); }
+      .create .chipc.c { padding: 6px 22px; font-size: 28px; background: var(--vio); }
+
+      /* ---------- s10 ---------- */
+      .s10-body { display: flex; gap: 60px; margin-top: 40px; align-items: center; flex: 1; min-height: 0; }
+      .reqs { width: 520px; flex: none; padding: 30px 36px; display: flex; flex-direction: column; gap: 18px; }
+      .reqs .h { font-size: 26px; color: var(--muted); font-weight: 700; letter-spacing: 0.1em; }
+      .req { display: flex; align-items: center; gap: 16px; font-size: 36px; font-weight: 900; }
+      .req .ico { width: 40px; height: 40px; color: var(--teal); flex: none; }
+      .practice { flex: 1; display: flex; flex-direction: column; gap: 32px; }
+      .pr { padding: 30px 36px; display: flex; align-items: center; gap: 30px; }
+      .pr .vis { width: 120px; height: 120px; flex: none; color: var(--gold); overflow: visible; }
+      .pr .t { font-size: 40px; font-weight: 900; line-height: 1.35; }
+      .pr .t small { display: block; font-size: 30px; font-weight: 700; color: var(--gold); }
+
+      /* ---------- s11 ---------- */
+      .road { position: relative; width: 1620px; height: 620px; margin-top: 10px; }
+      .road svg { position: absolute; left: 0; top: 0; width: 1620px; height: 620px; overflow: visible; }
+      .ms { position: absolute; width: 0; height: 0; }
+      .ms .d { position: absolute; left: -24px; top: -24px; width: 48px; height: 48px; border-radius: 50%; background: var(--bg); border: 7px solid var(--gold); }
+      .ms .yr { position: absolute; left: -110px; top: -82px; width: 220px; text-align: center; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 40px; color: var(--gold); }
+      .ms .cd { position: absolute; left: -150px; top: 44px; width: 300px; padding: 18px 22px; text-align: center; }
+      .ms .cd b { display: block; font-size: 32px; font-weight: 900; }
+      .ms .cd small { display: block; margin-top: 6px; font-size: 24px; color: var(--muted); line-height: 1.4; }
+      .ms.final .d { left: -36px; top: -36px; width: 72px; height: 72px; border: none; background: var(--gold); display: flex; align-items: center; justify-content: center; color: var(--dark); box-shadow: 0 0 40px rgba(240, 195, 90, 0.7); }
+      .ms.final .d .ico { width: 44px; height: 44px; }
+      .ms.final .yr { top: -100px; }
+      .ms.final .cd { border-color: rgba(240, 195, 90, 0.7); background: rgba(240, 195, 90, 0.12); }
+
+      /* ---------- s12 ---------- */
+      .end-line { font-family: "Noto Serif SC", serif; font-weight: 700; font-size: 58px; line-height: 1.45; }
+      .end-line em { font-style: normal; color: var(--gold); font-weight: 900; }
+      .end-sub { margin-top: 44px; font-size: 42px; font-weight: 700; color: var(--muted); }
+      .cheer { margin-top: 12px; font-family: "Ma Shan Zheng", cursive; font-size: 104px; color: var(--gold); }
+      .wave { display: flex; align-items: center; gap: 10px; height: 90px; margin-top: 18px; }
+      .wave i { display: block; width: 10px; height: 80px; border-radius: 5px; background: linear-gradient(180deg, var(--gold), var(--rose)); }
+      .credit { position: absolute; left: 0; right: 0; bottom: 140px; text-align: center; font-size: 22px; color: rgba(244, 241, 232, 0.6); letter-spacing: 0.08em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="250.184" data-width="1920" data-height="1080">
+      <div id="bg" class="clip bg" data-start="0" data-duration="250.184" data-track-index="0">
+        <div class="glow g1"></div>
+        <div class="glow g2"></div>
+        <div class="glow g3"></div>
+        <div class="stars"></div>
+        <svg class="ring ico" viewBox="0 0 200 200" style="stroke-width: 0.6">
+          <circle cx="100" cy="100" r="96" />
+          <circle cx="100" cy="100" r="84" stroke-dasharray="2 4" />
+          <circle cx="100" cy="100" r="60" />
+          <circle cx="100" cy="100" r="40" stroke-dasharray="6 3" />
+          <path d="M100 4v18M100 178v18M4 100h18M178 100h18M32 32l12 12M156 156l12 12M168 32l-12 12M44 156l-12 12" />
+          <path d="M100 40l14 60-14 60-14-60z" />
+        </svg>
+        <div class="brand">备考 <b>×</b> 就业 · 成长之路</div>
+        <div class="progress"><div class="progress-fill"></div></div>
+      </div>
+
+      <!-- s01 · hook -->
+      <section id="s01" class="clip scene" data-start="0.000" data-duration="22.284" data-track-index="1">
+        <div class="inner s01-a">
+          <div class="s01-lead">假如十年后，你想加入<em>顶级游戏 IP</em> 的营销团队……</div>
+          <div class="s01-row">
+            <div class="card jd">
+              <div class="jd-head">
+                <span class="jd-badge">招聘</span>
+                <div><div class="jd-title">游戏 IP 营销 · 原神</div><div class="jd-sub">营销策略 / IP 内容 / 线下活动 / 品牌联名</div></div>
+              </div>
+              <div class="jd-list">
+                <div class="jd-item ji1"><span class="dot"></span><span class="tx"><i class="mk"></i><span>本科及以上学历</span></span></div>
+                <div class="jd-item ji2"><span class="dot"></span><span class="tx"><i class="mk"></i><span>5 年以上游戏 / 内容营销经验</span></span></div>
+                <div class="jd-item ji3"><span class="dot"></span><span class="tx"><span>完整的线下活动 / 联名操盘经验</span></span></div>
+                <div class="jd-item ji4"><span class="dot"></span><span class="tx"><span>加分：熟练运用 AI 产品</span></span></div>
+              </div>
+            </div>
+            <div class="s01-ten">
+              <div class="ten-num"><span class="big" id="ten-count">10</span><span class="unit">年</span></div>
+              <div class="ten-bar">
+                <div class="ten-track"><i class="ten-fill"></i></div>
+                <span class="ten-end e1"></span><span class="ten-end e2"></span>
+                <span class="ten-yr y1">今天</span><span class="ten-yr y2">那张工位</span>
+              </div>
+              <div class="ten-cap">备考 · 大学 · 五年历练</div>
+            </div>
+          </div>
+          <div class="s01-note">* 岗位要求摘自公开招聘信息，本视频为非官方的学习规划内容</div>
+        </div>
+        <div class="inner center s01-b">
+          <div class="hero-kicker">成长路线图 · 备考 × 就业</div>
+          <div class="hero">从备考，<br /><span class="hl">到游戏 IP 营销</span></div>
+          <div class="hero-rule"></div>
+          <div class="hero-sub">一条为学生准备的十年成长之路</div>
+        </div>
+      </section>
+
+      <!-- s02 · decode the job -->
+      <section id="s02" class="clip scene" data-start="22.284" data-duration="19.438" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>01</b> 拆解岗位</div>
+          <div class="title">先把这份工作<em>拆开看</em></div>
+          <div class="s02-cols">
+            <div class="col c-a">
+              <div class="card duty"><div class="num" style="background: var(--gold)">1</div><h3>制定营销策略</h3><p>目标人群 · 传播节奏 · 核心打法</p></div>
+              <svg class="ico down" viewBox="0 0 48 48"><path d="M24 8v30M14 28l10 10 10-10" /></svg>
+              <div class="chipc abil" style="background: var(--gold)">策略思维</div>
+            </div>
+            <div class="col c-b">
+              <div class="card duty"><div class="num" style="background: var(--rose)">2</div><h3>IP 内容与联名</h3><p>线下活动 · 品牌联名 · 落地执行</p></div>
+              <svg class="ico down" viewBox="0 0 48 48"><path d="M24 8v30M14 28l10 10 10-10" /></svg>
+              <div class="chipc abil" style="background: var(--rose)">创意执行</div>
+            </div>
+            <div class="col c-c">
+              <div class="card duty"><div class="num" style="background: var(--teal)">3</div><h3>跨团队协同</h3><p>研发 · 内容生态 · 舆情</p></div>
+              <svg class="ico down" viewBox="0 0 48 48"><path d="M24 8v30M14 28l10 10 10-10" /></svg>
+              <div class="chipc abil" style="background: var(--teal)">沟通协作</div>
+            </div>
+            <div class="col c-d">
+              <div class="card duty"><div class="num" style="background: var(--sky)">4</div><h3>数据与复盘</h3><p>曝光 · 参与 · 转化 · 粉丝增长</p></div>
+              <svg class="ico down" viewBox="0 0 48 48"><path d="M24 8v30M14 28l10 10 10-10" /></svg>
+              <div class="chipc abil" style="background: var(--sky)">数据分析</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s03 · roots in subjects -->
+      <section id="s03" class="clip scene" data-start="41.722" data-duration="24.046" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>02</b> 能力溯源</div>
+          <div class="title">能力的根，就在<em>课本里</em></div>
+          <div class="maps">
+            <div class="map-row r-chn" style="color: var(--gold)">
+              <div class="subj"><div class="glyph" style="background: var(--gold)">语</div><div class="nm" style="color: var(--ink)">语文</div></div>
+              <div class="wire"><i></i></div>
+              <div class="card skill" style="color: var(--ink)">写方案 · 讲故事<small>策划提案</small></div>
+            </div>
+            <div class="map-row r-math" style="color: var(--sky)">
+              <div class="subj"><div class="glyph" style="background: var(--sky)">数</div><div class="nm" style="color: var(--ink)">数学</div></div>
+              <div class="wire"><i></i></div>
+              <div class="card skill" style="color: var(--ink)">算数据 · 控预算<small>效果复盘</small></div>
+            </div>
+            <div class="map-row r-eng" style="color: var(--teal)">
+              <div class="subj"><div class="glyph" style="background: var(--teal)">英</div><div class="nm" style="color: var(--ink)">英语</div></div>
+              <div class="wire"><i></i></div>
+              <div class="card skill" style="color: var(--ink)">读懂海外市场<small>全球发行</small></div>
+            </div>
+            <div class="map-row r-hist" style="color: var(--rose)">
+              <div class="subj"><div class="glyph" style="background: var(--rose)">史</div><div class="nm" style="color: var(--ink)">历史 · 政治</div></div>
+              <div class="wire"><i></i></div>
+              <div class="card skill" style="color: var(--ink)">理解文化与舆论<small>IP 调性</small></div>
+            </div>
+          </div>
+          <div class="banner s03-banner">
+            <svg class="ico" viewBox="0 0 48 48"><path d="M6 40h36M10 40V22h8v18M20 40V14h8v26M30 40V6h8v34" /></svg>
+            备考不是苦差事，<em>是在打地基</em>
+          </div>
+        </div>
+      </section>
+
+      <!-- s04 · rhythm planning -->
+      <section id="s04" class="clip scene" data-start="65.768" data-duration="19.966" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>03</b> 第一招</div>
+          <div class="title">像做营销一样，<em>规划节奏</em></div>
+          <div class="s04-body">
+            <div class="plan">
+              <div class="card lvl l1"><span class="k" style="background: var(--gold)">学期</span><span class="v">定目标</span><small>如：数学 105 → 125</small></div>
+              <div class="card lvl l2" style="width: 88%"><span class="k" style="background: var(--sky)">每月</span><span class="v">拆任务</span><small>专题 · 套卷 · 背诵</small></div>
+              <div class="card lvl l3" style="width: 76%"><span class="k" style="background: var(--teal)">每周</span><span class="v">半天复盘</span><small>对照目标调节奏</small></div>
+            </div>
+            <div class="card target">
+              <svg class="bull ico" viewBox="0 0 100 100" style="color: var(--rose); stroke-width: 2.4">
+                <circle cx="50" cy="50" r="44" />
+                <circle cx="50" cy="50" r="30" />
+                <circle cx="50" cy="50" r="15" fill="rgba(255,138,154,0.35)" />
+                <g class="dart"><path d="M50 50L92 8" stroke="#f4f1e8" stroke-width="3" /><path d="M84 6l8 2 2 8M80 10l8 2 2 8" stroke="#f4f1e8" stroke-width="2.4" /></g>
+              </svg>
+              <div class="lbl">目标人群 = <em>最薄弱的 1~2 科</em></div>
+              <div class="alloc">
+                <div class="b"><div class="bar"></div><div class="n">语</div></div>
+                <div class="b"><div class="bar"></div><div class="n">数</div></div>
+                <div class="b"><div class="bar"></div><div class="n">英</div></div>
+                <div class="b"><div class="bar weak"></div><div class="n">物</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s05 · data -->
+      <section id="s05" class="clip scene" data-start="85.734" data-duration="20.494" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>04</b> 第二招</div>
+          <div class="title">用<em>数据</em>说话</div>
+          <div class="pairs">
+            <div class="card pair pa1"><div class="mk">营销看<b>曝光</b></div><svg class="ico ar" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg><div class="st sa1">练习量</div></div>
+            <div class="card pair pa2"><div class="mk">营销看<b>参与</b></div><svg class="ico ar" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg><div class="st sa2">正确率</div></div>
+            <div class="card pair pa3"><div class="mk">营销看<b>转化</b></div><svg class="ico ar" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg><div class="st sa3">提分幅度</div></div>
+          </div>
+          <div class="s05-bottom">
+            <div class="card wrong">
+              <h4>错题本 = 你的<em>复盘报告</em></h4>
+              <div class="steps">
+                <div class="step x st1"><svg class="ico" viewBox="0 0 48 48" style="color: var(--rose)"><path d="M14 14l20 20M34 14L14 34" /></svg><span class="t">只抄题<i class="strike"></i></span></div>
+                <div class="step st2"><svg class="ico" viewBox="0 0 48 48" style="color: var(--teal)"><circle cx="24" cy="24" r="18" /><path d="M16 24l6 6 11-12" /></svg><span class="t">写清错因</span></div>
+                <div class="step st3"><svg class="ico" viewBox="0 0 48 48" style="color: var(--teal)"><circle cx="24" cy="24" r="18" /><path d="M16 24l6 6 11-12" /></svg><span class="t">归纳成可复用的方法</span></div>
+              </div>
+              <div class="stamp">沉淀方法论</div>
+            </div>
+            <div class="card chart">
+              <div class="h">正确率趋势（示意）</div>
+              <svg viewBox="0 0 540 230">
+                <path d="M0 220H540" stroke="rgba(255,255,255,0.18)" stroke-width="2" />
+                <path class="trend" pathLength="1" d="M10 190 L100 172 L190 180 L280 132 L370 110 L460 72 L530 40" fill="none" stroke="#f0c35a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+                <circle class="tdot" cx="530" cy="40" r="11" fill="#f0c35a" />
+                <text x="10" y="160" fill="#aab1d0" font-size="26" font-weight="700">62%</text>
+                <text class="tval" x="440" y="22" fill="#f0c35a" font-size="30" font-weight="900">88%</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s06 · AI as tutor -->
+      <section id="s06" class="clip scene" data-start="106.228" data-duration="24.454" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>05</b> 第三招</div>
+          <div class="title">把 AI 变成你的<em>助教</em></div>
+          <div class="card quote"><span class="qm">“</span><span class="src">JD 加分项</span>熟练运用市面上的 AI 产品，能独立将 AI 和工作流程结合，提升交付质量。</div>
+          <div class="flow">
+            <div class="card node n1"><span class="chipc own" style="background: var(--gold)">你</span><div class="t">独立做题</div><div class="s">先想，再问</div></div>
+            <svg class="ico ar a1" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="card node n2"><span class="chipc own" style="background: var(--vio)">AI</span><div class="t">分析错因</div><div class="s">定位知识漏洞</div></div>
+            <svg class="ico ar a2" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="card node n3"><span class="chipc own" style="background: var(--vio)">AI</span><div class="t">出变式题</div><div class="s">同类题巩固</div></div>
+            <svg class="ico ar a3" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="card node n4"><span class="chipc own" style="background: var(--vio)">AI</span><div class="t">作文挑刺</div><div class="s">阅卷老师视角</div></div>
+          </div>
+          <div class="banner s06-banner">
+            <svg class="ico" viewBox="0 0 48 48"><path d="M24 4c8 6 12 14 12 24l-6 6H18l-6-6c0-10 4-18 12-24zM18 34l-4 10 8-4M30 34l4 10-8-4" /><circle cx="24" cy="20" r="4" /></svg>
+            <span><em>你</em>主导流程，AI 只是加速器</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- s07 · majors -->
+      <section id="s07" class="clip scene" data-start="130.682" data-duration="19.558" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>06</b> 选专业</div>
+          <div class="title">营销，没有<em>唯一入口</em></div>
+          <div class="s07-stage">
+            <svg class="lines" viewBox="0 0 1620 540" fill="none" stroke-width="3" stroke-linecap="round">
+              <path class="ln la" pathLength="1" d="M410 67 C 760 67, 760 220, 1060 220" stroke="rgba(240,195,90,0.6)" />
+              <path class="ln la" pathLength="1" d="M410 132 C 760 132, 760 220, 1060 220" stroke="rgba(240,195,90,0.6)" />
+              <path class="ln la" pathLength="1" d="M410 197 C 760 197, 760 220, 1060 220" stroke="rgba(240,195,90,0.6)" />
+              <path class="ln la" pathLength="1" d="M410 262 C 760 262, 760 220, 1060 220" stroke="rgba(240,195,90,0.6)" />
+              <path class="ln lb" pathLength="1" d="M410 377 C 760 377, 760 220, 1060 220" stroke="rgba(61,214,195,0.55)" />
+              <path class="ln lb" pathLength="1" d="M410 442 C 760 442, 760 220, 1060 220" stroke="rgba(61,214,195,0.55)" />
+              <path class="ln lb" pathLength="1" d="M410 507 C 760 507, 760 220, 1060 220" stroke="rgba(61,214,195,0.55)" />
+            </svg>
+            <div class="glabel ga" style="top: 0">最对口</div>
+            <div class="major m-a" style="top: 40px">市场营销</div>
+            <div class="major m-a" style="top: 105px">新闻传播</div>
+            <div class="major m-a" style="top: 170px">广告学</div>
+            <div class="major m-a" style="top: 235px">数字媒体</div>
+            <div class="glabel gb" style="top: 310px">同样有优势</div>
+            <div class="major m-b" style="top: 350px">汉语言文学</div>
+            <div class="major m-b" style="top: 415px">心理学</div>
+            <div class="major m-b" style="top: 480px">统计学</div>
+            <div class="goal"><b>游戏 IP<br />营销</b><small>殊途同归</small></div>
+            <div class="banner s07-key"><span>做过什么 <em>&gt;</em> 学过什么</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s08 · project experience -->
+      <section id="s08" class="clip scene" data-start="150.240" data-duration="21.934" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>07</b> 大学四年</div>
+          <div class="title">攒一段<em>完整的项目经验</em></div>
+          <div class="card club">
+            <svg class="ico" viewBox="0 0 48 48"><path d="M8 40V12l16-6 16 6v28M8 40h32M18 40V28h12v12M14 18h4M30 18h4" /></svg>
+            社团演练：办一场<em>校园漫展</em>
+          </div>
+          <div class="proc">
+            <div class="proc-line"><i class="proc-fill"></i></div>
+            <div class="ps q1"><div class="c"><svg class="ico" viewBox="0 0 48 48"><path d="M12 6h18l8 8v28H12zM30 6v8h8M18 24h14M18 31h14" /></svg></div><div class="l">写方案</div><div class="j">创意策划</div></div>
+            <div class="ps q2"><div class="c"><svg class="ico" viewBox="0 0 48 48"><path d="M6 26l8-8 8 4 6-6 14 10M14 18l-8 8 10 10 4-4M42 26l-10 10-6-4" /></svg></div><div class="l">拉赞助</div><div class="j">合作方筛选</div></div>
+            <div class="ps q3"><div class="c"><svg class="ico" viewBox="0 0 48 48"><rect x="10" y="5" width="28" height="38" rx="5" /><rect x="15" y="10" width="18" height="8" rx="2" /><path d="M16 26h.1M24 26h.1M32 26h.1M16 34h.1M24 34h.1M32 34h.1" stroke-width="4.5" /></svg></div><div class="l">算预算</div><div class="j">预算制定</div></div>
+            <div class="ps q4"><div class="c"><svg class="ico" viewBox="0 0 48 48"><path d="M4 14h24v20H4zM28 20h9l7 8v6H28zM10 38a4 4 0 1 0 0-.1M34 38a4 4 0 1 0 0-.1" /></svg></div><div class="l">找供应商</div><div class="j">供应商协调</div></div>
+            <div class="ps q5"><div class="c"><svg class="ico" viewBox="0 0 48 48"><path d="M10 44V6M10 8h26l-6 8 6 8H10" /></svg></div><div class="l">盯现场</div><div class="j">现场执行</div></div>
+            <div class="ps q6"><div class="c"><svg class="ico" viewBox="0 0 48 48"><path d="M6 40h36M12 40V28M22 40V18M32 40V24M42 8L30 18l-8-6-12 10" /></svg></div><div class="l">写复盘</div><div class="j">复盘报告</div></div>
+          </div>
+          <div class="card intern">
+            <span>再加 <em>2~3 段</em>相关实习</span>
+            <span class="chipc">游戏公司市场部</span><span class="chipc">品牌方</span><span class="chipc">广告 / 公关公司</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- s09 · interest -->
+      <section id="s09" class="clip scene" data-start="172.174" data-duration="23.446" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>08</b> 兴趣即专业</div>
+          <div class="title">从<em>玩家</em>，升级为<em>拆解者</em></div>
+          <div class="fields">
+            <span class="chipc f1" style="background: var(--rose)">动漫</span>
+            <span class="chipc f2" style="background: var(--gold)">游戏</span>
+            <span class="chipc f3" style="background: var(--sky)">影视</span>
+            <span class="chipc f4" style="background: var(--teal)">潮玩</span>
+            <span class="chipc f5" style="background: var(--vio)">文创</span>
+          </div>
+          <div class="s09-mid">
+            <div class="card who player">
+              <div class="hd"><svg class="ico" viewBox="0 0 48 48" style="color: var(--sky)"><path d="M14 14h20a10 10 0 0 1 10 10v4a8 8 0 0 1-14 5l-2-3h-8l-2 3a8 8 0 0 1-14-5v-4a10 10 0 0 1 10-10zM14 21v8M10 25h8M32 23h.1M36 27h.1" /></svg>玩家</div>
+              <div class="bub">“这个版本真好玩！”</div>
+            </div>
+            <svg class="ico up" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="card who analyst">
+              <div class="hd"><svg class="ico" viewBox="0 0 48 48" style="color: var(--gold)"><circle cx="21" cy="21" r="13" /><path d="M31 31l11 11" /></svg>拆解者：它<span style="color: var(--gold)">为什么</span>好玩？</div>
+              <div class="q qa"><b>1</b>一次版本更新，为什么能刷屏？</div>
+              <div class="q qb"><b>2</b>一个联名，为什么让粉丝买单？</div>
+            </div>
+          </div>
+          <div class="create">
+            <span class="chipc plus">加分项</span>
+            <span>自己也创作：</span>
+            <span class="chipc c cr1">同人绘画</span><span class="chipc c cr2">剪辑视频</span><span class="chipc c cr3">Cosplay</span><span class="chipc c cr4">写作</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- s10 · soft skills -->
+      <section id="s10" class="clip scene" data-start="195.620" data-duration="17.902" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>09</b> 软实力</div>
+          <div class="title">这些能力，你<em>其实正在练</em></div>
+          <div class="s10-body">
+            <div class="card reqs">
+              <div class="h">招聘要求</div>
+              <div class="req rq1"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><path d="M16 24l6 6 11-12" /></svg>责任心强</div>
+              <div class="req rq2"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><path d="M16 24l6 6 11-12" /></svg>有始有终</div>
+              <div class="req rq3"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><path d="M16 24l6 6 11-12" /></svg>多方协作</div>
+              <div class="req rq4"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><path d="M16 24l6 6 11-12" /></svg>压力下按时交付</div>
+            </div>
+            <div class="practice">
+              <div class="card pr pg">
+                <svg class="vis ico" viewBox="0 0 60 60" style="stroke-width: 2.6">
+                  <rect x="4" y="8" width="16" height="44" rx="3" /><rect x="22" y="8" width="16" height="44" rx="3" /><rect x="40" y="8" width="16" height="44" rx="3" />
+                  <rect class="kb" x="7" y="14" width="10" height="8" rx="2" fill="rgba(240,195,90,0.5)" />
+                  <rect x="25" y="14" width="10" height="8" rx="2" fill="rgba(240,195,90,0.25)" />
+                  <rect x="43" y="14" width="10" height="8" rx="2" fill="rgba(61,214,195,0.5)" /><rect x="43" y="26" width="10" height="8" rx="2" fill="rgba(61,214,195,0.5)" />
+                </svg>
+                <div class="t"><small>小组作业主动当组长</small>= 一次项目管理</div>
+              </div>
+              <div class="card pr pe">
+                <svg class="vis ico" viewBox="0 0 60 60" style="stroke-width: 2.6">
+                  <circle cx="30" cy="33" r="22" /><path d="M24 5h12M30 5v6M48 14l4-4" />
+                  <g class="hand"><path d="M30 33V17" stroke-width="3.4" /></g>
+                  <circle cx="30" cy="33" r="2.5" fill="currentColor" />
+                </svg>
+                <div class="t"><small>每一次考试</small>= 不能延期的交付</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s11 · roadmap -->
+      <section id="s11" class="clip scene" data-start="213.522" data-duration="19.822" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>10</b> 路线图</div>
+          <div class="title">十年成长<em>路线图</em></div>
+          <div class="road">
+            <svg viewBox="0 0 1620 620" fill="none" stroke-linecap="round">
+              <path d="M140 430 C 300 430, 330 350, 485 350 C 640 350, 670 270, 830 270 C 990 270, 1020 190, 1175 190 C 1330 190, 1320 110, 1460 110" stroke="rgba(255,255,255,0.16)" stroke-width="4" stroke-dasharray="4 14" />
+              <path class="route" pathLength="1" d="M140 430 C 300 430, 330 350, 485 350 C 640 350, 670 270, 830 270 C 990 270, 1020 190, 1175 190 C 1330 190, 1320 110, 1460 110" stroke="url(#rg)" stroke-width="8" />
+              <defs><linearGradient id="rg" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#7bb3ff" /><stop offset="0.6" stop-color="#ff8a9a" /><stop offset="1" stop-color="#f0c35a" /></linearGradient></defs>
+            </svg>
+            <div class="ms m1" style="left: 140px; top: 430px"><span class="d" style="border-color: var(--sky)"></span><div class="yr" style="color: var(--sky)">现在</div><div class="card cd"><b>备考打地基</b><small>学科能力 · 学习方法</small></div></div>
+            <div class="ms m2" style="left: 485px; top: 350px"><span class="d" style="border-color: var(--vio)"></span><div class="yr" style="color: var(--vio)">大学 4 年</div><div class="card cd"><b>专业 + 社团</b><small>作品集 · 2~3 段实习</small></div></div>
+            <div class="ms m3" style="left: 830px; top: 270px"><span class="d" style="border-color: var(--rose)"></span><div class="yr" style="color: var(--rose)">0~2 年</div><div class="card cd"><b>执行岗起步</b><small>活动执行 / 新媒体</small></div></div>
+            <div class="ms m4" style="left: 1175px; top: 190px"><span class="d" style="border-color: var(--teal)"></span><div class="yr" style="color: var(--teal)">3~5 年</div><div class="card cd"><b>独立负责项目</b><small>预算 · 风险 · 团队</small></div></div>
+            <div class="ms m5 final" style="left: 1460px; top: 110px">
+              <span class="d"><svg class="ico" viewBox="0 0 48 48" style="stroke-width: 3.6"><path d="M24 5l5.6 12 13 1.5-9.7 8.8 2.7 12.9L24 33.6 12.4 40.2l2.7-12.9-9.7-8.8 13-1.5z" fill="rgba(13,19,48,0.15)" /></svg></span>
+              <div class="yr">5 年+</div>
+              <div class="card cd"><b>策略型营销岗</b><small>就是开头那份 JD</small></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s12 · closing -->
+      <section id="s12" class="clip scene" data-start="233.344" data-duration="16.840" data-track-index="1">
+        <div class="inner center">
+          <div class="end-line e1">你写下的每一份复盘，做完的每一个小项目，</div>
+          <div class="end-line e2">都会成为未来那份营销方案的<em>第一页</em>。</div>
+          <div class="end-sub e3">今天好好备考，就是在</div>
+          <div class="cheer">为热爱，预热第一波声量</div>
+          <div class="wave">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+        </div>
+        <div class="credit">Made with Claude Opus 5.5 × HyperFrames in Cursor · 原神为米哈游旗下作品，本视频为非官方学习规划内容</div>
+      </section>
+
+      <div id="cap-000" class="clip caption" data-start="0.897" data-duration="1.274" data-track-index="20"><span>假如十年后</span></div>
+      <div id="cap-001" class="clip caption" data-start="2.171" data-duration="3.888" data-track-index="20"><span>你想坐进原神这样顶级游戏IP的营销团队</span></div>
+      <div id="cap-002" class="clip caption" data-start="6.059" data-duration="2.359" data-track-index="20"><span>先看一份真实的招聘要求</span></div>
+      <div id="cap-003" class="clip caption" data-start="8.418" data-duration="1.226" data-track-index="20"><span>本科及以上</span></div>
+      <div id="cap-004" class="clip caption" data-start="9.644" data-duration="3.114" data-track-index="20"><span>五年以上游戏或内容营销经验</span></div>
+      <div id="cap-005" class="clip caption" data-start="12.758" data-duration="1.002" data-track-index="20"><span>也就是说</span></div>
+      <div id="cap-006" class="clip caption" data-start="13.760" data-duration="1.651" data-track-index="20"><span>从今天到那张工位</span></div>
+      <div id="cap-007" class="clip caption" data-start="15.411" data-duration="1.474" data-track-index="20"><span>大约十年</span></div>
+      <div id="cap-008" class="clip caption" data-start="16.885" data-duration="1.049" data-track-index="20"><span>而这条路</span></div>
+      <div id="cap-009" class="clip caption" data-start="17.934" data-duration="1.427" data-track-index="20"><span>从你现在的备考</span></div>
+      <div id="cap-010" class="clip caption" data-start="19.361" data-duration="1.873" data-track-index="20"><span>就已经开始了</span></div>
+      <div id="cap-011" class="clip caption" data-start="22.831" data-duration="2.273" data-track-index="20"><span>先把这份工作拆开看</span></div>
+      <div id="cap-012" class="clip caption" data-start="25.104" data-duration="1.569" data-track-index="20"><span>它主要做四件事</span></div>
+      <div id="cap-013" class="clip caption" data-start="26.673" data-duration="1.509" data-track-index="20"><span>制定营销策略</span></div>
+      <div id="cap-014" class="clip caption" data-start="28.182" data-duration="2.547" data-track-index="20"><span>挖掘IP内容和联名活动</span></div>
+      <div id="cap-015" class="clip caption" data-start="30.729" data-duration="1.922" data-track-index="20"><span>协同研发与内容团队</span></div>
+      <div id="cap-016" class="clip caption" data-start="32.651" data-duration="2.383" data-track-index="20"><span>最后用数据复盘效果</span></div>
+      <div id="cap-017" class="clip caption" data-start="35.034" data-duration="1.214" data-track-index="20"><span>翻译成能力</span></div>
+      <div id="cap-018" class="clip caption" data-start="36.248" data-duration="3.396" data-track-index="20"><span>就是策略思维、创意执行、沟通协作和</span></div>
+      <div id="cap-019" class="clip caption" data-start="39.644" data-duration="1.628" data-track-index="20"><span>数据分析</span></div>
+      <div id="cap-020" class="clip caption" data-start="42.269" data-duration="1.179" data-track-index="20"><span>有意思的是</span></div>
+      <div id="cap-021" class="clip caption" data-start="43.448" data-duration="1.156" data-track-index="20"><span>这四种能力</span></div>
+      <div id="cap-022" class="clip caption" data-start="44.604" data-duration="2.580" data-track-index="20"><span>都能在你今天的课本里找到根</span></div>
+      <div id="cap-023" class="clip caption" data-start="47.184" data-duration="0.766" data-track-index="20"><span>语文</span></div>
+      <div id="cap-024" class="clip caption" data-start="47.950" data-duration="2.229" data-track-index="20"><span>练的是写方案、讲故事</span></div>
+      <div id="cap-025" class="clip caption" data-start="50.179" data-duration="0.802" data-track-index="20"><span>数学</span></div>
+      <div id="cap-026" class="clip caption" data-start="50.981" data-duration="2.123" data-track-index="20"><span>练的是算数据、控预算</span></div>
+      <div id="cap-027" class="clip caption" data-start="53.104" data-duration="0.660" data-track-index="20"><span>英语</span></div>
+      <div id="cap-028" class="clip caption" data-start="53.764" data-duration="3.396" data-track-index="20"><span>让你读懂一款全球发行游戏的海外市场</span></div>
+      <div id="cap-029" class="clip caption" data-start="57.160" data-duration="1.168" data-track-index="20"><span>历史和政治</span></div>
+      <div id="cap-030" class="clip caption" data-start="58.328" data-duration="2.134" data-track-index="20"><span>帮你理解文化与舆论</span></div>
+      <div id="cap-031" class="clip caption" data-start="60.462" data-duration="0.814" data-track-index="20"><span>备考</span></div>
+      <div id="cap-032" class="clip caption" data-start="61.276" data-duration="2.146" data-track-index="20"><span>不是和梦想无关的苦差事</span></div>
+      <div id="cap-033" class="clip caption" data-start="63.422" data-duration="1.896" data-track-index="20"><span>而是在打地基</span></div>
+      <div id="cap-034" class="clip caption" data-start="66.315" data-duration="2.639" data-track-index="20"><span>那就用营销人的方法来备考</span></div>
+      <div id="cap-035" class="clip caption" data-start="68.954" data-duration="0.778" data-track-index="20"><span>第一招</span></div>
+      <div id="cap-036" class="clip caption" data-start="69.732" data-duration="1.533" data-track-index="20"><span>做节奏规划</span></div>
+      <div id="cap-037" class="clip caption" data-start="71.265" data-duration="2.217" data-track-index="20"><span>营销有年度和阶段计划</span></div>
+      <div id="cap-038" class="clip caption" data-start="73.482" data-duration="0.955" data-track-index="20"><span>你也可以有</span></div>
+      <div id="cap-039" class="clip caption" data-start="74.437" data-duration="1.156" data-track-index="20"><span>学期定目标</span></div>
+      <div id="cap-040" class="clip caption" data-start="75.593" data-duration="1.191" data-track-index="20"><span>每月拆任务</span></div>
+      <div id="cap-041" class="clip caption" data-start="76.784" data-duration="2.099" data-track-index="20"><span>每周留出半天复盘</span></div>
+      <div id="cap-042" class="clip caption" data-start="78.883" data-duration="1.745" data-track-index="20"><span>目标人群是谁？</span></div>
+      <div id="cap-043" class="clip caption" data-start="80.628" data-duration="2.441" data-track-index="20"><span>就是你最薄弱的那一两科</span></div>
+      <div id="cap-044" class="clip caption" data-start="83.069" data-duration="2.215" data-track-index="20"><span>资源要向它倾斜</span></div>
+      <div id="cap-045" class="clip caption" data-start="86.281" data-duration="0.802" data-track-index="20"><span>第二招</span></div>
+      <div id="cap-046" class="clip caption" data-start="87.083" data-duration="1.459" data-track-index="20"><span>用数据说话</span></div>
+      <div id="cap-047" class="clip caption" data-start="88.542" data-duration="2.571" data-track-index="20"><span>营销看曝光、参与和转化</span></div>
+      <div id="cap-048" class="clip caption" data-start="91.113" data-duration="3.856" data-track-index="20"><span>备考就看练习量、正确率和提分幅度</span></div>
+      <div id="cap-049" class="clip caption" data-start="94.969" data-duration="2.359" data-track-index="20"><span>错题本就是你的复盘报告</span></div>
+      <div id="cap-050" class="clip caption" data-start="97.328" data-duration="1.120" data-track-index="20"><span>别只抄题</span></div>
+      <div id="cap-051" class="clip caption" data-start="98.448" data-duration="1.286" data-track-index="20"><span>要写清错因</span></div>
+      <div id="cap-052" class="clip caption" data-start="99.734" data-duration="2.641" data-track-index="20"><span>再归纳成一条可复用的方法</span></div>
+      <div id="cap-053" class="clip caption" data-start="102.375" data-duration="1.627" data-track-index="20"><span>这正是招聘里说的</span></div>
+      <div id="cap-054" class="clip caption" data-start="104.002" data-duration="1.776" data-track-index="20"><span>沉淀方法论</span></div>
+      <div id="cap-055" class="clip caption" data-start="106.775" data-duration="0.873" data-track-index="20"><span>第三招</span></div>
+      <div id="cap-056" class="clip caption" data-start="107.648" data-duration="2.179" data-track-index="20"><span>把AI变成你的助教</span></div>
+      <div id="cap-057" class="clip caption" data-start="109.827" data-duration="1.792" data-track-index="20"><span>招聘的加分项写着</span></div>
+      <div id="cap-058" class="clip caption" data-start="111.619" data-duration="1.580" data-track-index="20"><span>熟练运用AI</span></div>
+      <div id="cap-059" class="clip caption" data-start="113.199" data-duration="2.724" data-track-index="20"><span>并能把它接进自己的工作流程</span></div>
+      <div id="cap-060" class="clip caption" data-start="115.923" data-duration="1.474" data-track-index="20"><span>从现在就开始练</span></div>
+      <div id="cap-061" class="clip caption" data-start="117.397" data-duration="1.345" data-track-index="20"><span>先独立做题</span></div>
+      <div id="cap-062" class="clip caption" data-start="118.742" data-duration="3.396" data-track-index="20"><span>再让AI分析错因、出同类变式题</span></div>
+      <div id="cap-063" class="clip caption" data-start="122.138" data-duration="1.085" data-track-index="20"><span>写完作文</span></div>
+      <div id="cap-064" class="clip caption" data-start="123.223" data-duration="2.736" data-track-index="20"><span>让它从阅卷老师的角度挑刺</span></div>
+      <div id="cap-065" class="clip caption" data-start="125.959" data-duration="0.672" data-track-index="20"><span>记住</span></div>
+      <div id="cap-066" class="clip caption" data-start="126.631" data-duration="1.380" data-track-index="20"><span>是你主导流程</span></div>
+      <div id="cap-067" class="clip caption" data-start="128.011" data-duration="2.221" data-track-index="20"><span>AI只是加速器</span></div>
+      <div id="cap-068" class="clip caption" data-start="131.229" data-duration="1.062" data-track-index="20"><span>考上大学</span></div>
+      <div id="cap-069" class="clip caption" data-start="132.291" data-duration="1.565" data-track-index="20"><span>该选什么专业？</span></div>
+      <div id="cap-070" class="clip caption" data-start="133.856" data-duration="2.677" data-track-index="20"><span>其实营销没有唯一的入口</span></div>
+      <div id="cap-071" class="clip caption" data-start="136.533" data-duration="2.901" data-track-index="20"><span>市场营销、新闻传播、广告、</span></div>
+      <div id="cap-072" class="clip caption" data-start="139.434" data-duration="1.580" data-track-index="20"><span>数字媒体最对口</span></div>
+      <div id="cap-073" class="clip caption" data-start="141.014" data-duration="3.868" data-track-index="20"><span>中文、心理学、统计学同样有优势</span></div>
+      <div id="cap-074" class="clip caption" data-start="144.882" data-duration="1.403" data-track-index="20"><span>行业更看重的</span></div>
+      <div id="cap-075" class="clip caption" data-start="146.285" data-duration="1.274" data-track-index="20"><span>是你做过什么</span></div>
+      <div id="cap-076" class="clip caption" data-start="147.559" data-duration="2.231" data-track-index="20"><span>而不只是你学过什么</span></div>
+      <div id="cap-077" class="clip caption" data-start="150.787" data-duration="1.144" data-track-index="20"><span>大学四年</span></div>
+      <div id="cap-078" class="clip caption" data-start="151.931" data-duration="2.816" data-track-index="20"><span>最该攒的是完整的项目经验</span></div>
+      <div id="cap-079" class="clip caption" data-start="154.747" data-duration="3.160" data-track-index="20"><span>招聘要求从策划到落地的全流程</span></div>
+      <div id="cap-080" class="clip caption" data-start="157.907" data-duration="2.441" data-track-index="20"><span>你可以在社团里先演练一遍</span></div>
+      <div id="cap-081" class="clip caption" data-start="160.348" data-duration="1.533" data-track-index="20"><span>办一场校园漫展</span></div>
+      <div id="cap-082" class="clip caption" data-start="161.881" data-duration="3.927" data-track-index="20"><span>自己写方案、拉赞助、算预算、找供应商、</span></div>
+      <div id="cap-083" class="clip caption" data-start="165.808" data-duration="0.943" data-track-index="20"><span>盯现场</span></div>
+      <div id="cap-084" class="clip caption" data-start="166.751" data-duration="1.816" data-track-index="20"><span>最后写一份复盘</span></div>
+      <div id="cap-085" class="clip caption" data-start="168.567" data-duration="3.157" data-track-index="20"><span>再争取两到三段相关实习</span></div>
+      <div id="cap-086" class="clip caption" data-start="172.721" data-duration="2.205" data-track-index="20"><span>还有一条常被忽略的要求</span></div>
+      <div id="cap-087" class="clip caption" data-start="174.926" data-duration="2.710" data-track-index="20"><span>对内容真正的兴趣和敏感度</span></div>
+      <div id="cap-088" class="clip caption" data-start="177.636" data-duration="3.655" data-track-index="20"><span>动漫、游戏、影视、潮玩、文创</span></div>
+      <div id="cap-089" class="clip caption" data-start="181.291" data-duration="2.347" data-track-index="20"><span>你的爱好就是行业知识</span></div>
+      <div id="cap-090" class="clip caption" data-start="183.638" data-duration="2.323" data-track-index="20"><span>但要从玩家升级为拆解者</span></div>
+      <div id="cap-091" class="clip caption" data-start="185.961" data-duration="2.760" data-track-index="20"><span>一次版本更新为什么能刷屏？</span></div>
+      <div id="cap-092" class="clip caption" data-start="188.721" data-duration="2.747" data-track-index="20"><span>一个联名为什么让粉丝买单？</span></div>
+      <div id="cap-093" class="clip caption" data-start="191.468" data-duration="1.840" data-track-index="20"><span>如果你还能自己创作</span></div>
+      <div id="cap-094" class="clip caption" data-start="193.308" data-duration="1.862" data-track-index="20"><span>那就是加分项</span></div>
+      <div id="cap-095" class="clip caption" data-start="196.167" data-duration="1.345" data-track-index="20"><span>再说软实力</span></div>
+      <div id="cap-096" class="clip caption" data-start="197.512" data-duration="1.061" data-track-index="20"><span>责任心强</span></div>
+      <div id="cap-097" class="clip caption" data-start="198.573" data-duration="1.014" data-track-index="20"><span>有始有终</span></div>
+      <div id="cap-098" class="clip caption" data-start="199.587" data-duration="3.700" data-track-index="20"><span>能在多方协作和时间压力下按时交付</span></div>
+      <div id="cap-099" class="clip caption" data-start="203.287" data-duration="1.627" data-track-index="20"><span>其实你正在练习它</span></div>
+      <div id="cap-100" class="clip caption" data-start="204.914" data-duration="1.887" data-track-index="20"><span>小组作业主动当组长</span></div>
+      <div id="cap-101" class="clip caption" data-start="206.801" data-duration="1.333" data-track-index="20"><span>就是项目管理</span></div>
+      <div id="cap-102" class="clip caption" data-start="208.134" data-duration="1.155" data-track-index="20"><span>每一次考试</span></div>
+      <div id="cap-103" class="clip caption" data-start="209.289" data-duration="3.783" data-track-index="20"><span>都是一场有截止时间、不能延期的交付</span></div>
+      <div id="cap-104" class="clip caption" data-start="214.069" data-duration="1.628" data-track-index="20"><span>把这条路连起来看</span></div>
+      <div id="cap-105" class="clip caption" data-start="215.697" data-duration="1.898" data-track-index="20"><span>现在，备考打地基</span></div>
+      <div id="cap-106" class="clip caption" data-start="217.595" data-duration="1.038" data-track-index="20"><span>大学四年</span></div>
+      <div id="cap-107" class="clip caption" data-start="218.633" data-duration="2.945" data-track-index="20"><span>攒专业、社团、作品和实习</span></div>
+      <div id="cap-108" class="clip caption" data-start="221.578" data-duration="1.274" data-track-index="20"><span>毕业后前两年</span></div>
+      <div id="cap-109" class="clip caption" data-start="222.852" data-duration="2.995" data-track-index="20"><span>从活动执行或新媒体运营做起</span></div>
+      <div id="cap-110" class="clip caption" data-start="225.847" data-duration="1.002" data-track-index="20"><span>三到五年</span></div>
+      <div id="cap-111" class="clip caption" data-start="226.849" data-duration="1.404" data-track-index="20"><span>独立负责项目</span></div>
+      <div id="cap-112" class="clip caption" data-start="228.253" data-duration="0.931" data-track-index="20"><span>五年以后</span></div>
+      <div id="cap-113" class="clip caption" data-start="229.184" data-duration="3.710" data-track-index="20"><span>你就有资格去竞争这样一份策略型岗位</span></div>
+      <div id="cap-114" class="clip caption" data-start="234.041" data-duration="2.547" data-track-index="20"><span>你现在写下的每一份复盘、做完的</span></div>
+      <div id="cap-115" class="clip caption" data-start="236.588" data-duration="1.345" data-track-index="20"><span>每一个小项目</span></div>
+      <div id="cap-116" class="clip caption" data-start="237.933" data-duration="3.252" data-track-index="20"><span>都会成为未来那份营销方案的第一页</span></div>
+      <div id="cap-117" class="clip caption" data-start="241.185" data-duration="1.450" data-track-index="20"><span>今天好好备考</span></div>
+      <div id="cap-118" class="clip caption" data-start="242.635" data-duration="1.757" data-track-index="20"><span>就是在为热爱的事业</span></div>
+      <div id="cap-119" class="clip caption" data-start="244.392" data-duration="2.042" data-track-index="20"><span>预热第一波声量</span></div>
+
+      <audio id="narration" src="assets/narration.mp3" data-start="0" data-duration="250.184" data-track-index="30" data-volume="1"></audio>
+      <audio id="bgm" src="assets/bgm.mp3" data-start="0" data-duration="250.184" data-track-index="31" data-volume="0.13"></audio>
+    </div>
+
+    <script>
+      const T = {"s01": {"start": 0.0, "dur": 22.284, "end": 22.284, "vo": 0.8, "speech": 20.184, "cues": {"dream": 0.897, "jd": 7.298, "edu": 8.418, "exp": 9.644, "ten": 15.411, "start": 16.885}}, "s02": {"start": 22.284, "dur": 19.438, "end": 41.722, "vo": 22.734, "speech": 18.288, "cues": {"four": 25.659, "a": 26.673, "b": 28.182, "c": 30.729, "d": 33.111, "trans": 35.034}}, "s03": {"start": 41.722, "dur": 24.046, "end": 65.768, "vo": 42.172, "speech": 22.896, "cues": {"root": 45.63, "chn": 47.184, "math": 50.179, "eng": 53.104, "hist": 57.16, "base": 60.462}}, "s04": {"start": 65.768, "dur": 19.966, "end": 85.734, "vo": 66.218, "speech": 18.816, "cues": {"way": 66.81, "y": 74.437, "m": 75.593, "w": 76.784, "target": 78.883, "weak": 81.442}}, "s05": {"start": 85.734, "dur": 20.494, "end": 106.228, "vo": 86.184, "speech": 19.344, "cues": {"data": 87.083, "m1": 91.892, "m2": 92.646, "m3": 93.578, "book": 94.969, "method": 104.002}}, "s06": {"start": 106.228, "dur": 24.454, "end": 130.682, "vo": 106.678, "speech": 23.304, "cues": {"ai": 107.825, "plus": 110.334, "s1": 117.397, "s2": 120.699, "s3": 122.138, "lead": 126.631}}, "s07": {"start": 130.682, "dur": 19.558, "end": 150.24, "vo": 131.132, "speech": 18.408, "cues": {"major": 132.291, "one": 134.87, "g1": 136.533, "g2": 141.014, "key": 146.615}}, "s08": {"start": 150.24, "dur": 21.934, "end": 172.174, "vo": 150.69, "speech": 20.784, "cues": {"full": 152.981, "club": 158.202, "p1": 162.199, "p2": 163.037, "p3": 163.909, "p4": 164.794, "p5": 165.808, "rev": 167.129, "intern": 169.263}}, "s09": {"start": 172.174, "dur": 23.446, "end": 195.62, "vo": 172.624, "speech": 22.296, "cues": {"interest": 175.481, "fields": 177.636, "up": 183.909, "q1": 185.961, "q2": 188.721, "create": 192.27}}, "s10": {"start": 195.62, "dur": 17.902, "end": 213.522, "vo": 196.07, "speech": 16.752, "cues": {"soft": 196.556, "r": 197.512, "t": 200.837, "group": 204.914, "exam": 208.134}}, "s11": {"start": 213.522, "dur": 19.822, "end": 233.344, "vo": 213.972, "speech": 18.672, "cues": {"now": 215.697, "uni": 217.595, "e1": 221.578, "e2": 225.847, "e3": 228.253}}, "s12": {"start": 233.344, "dur": 16.84, "end": 250.184, "vo": 233.944, "speech": 12.24, "cues": {"l1": 234.041, "l2": 237.933, "l3": 241.185, "l4": 244.392}}};
+      const TOTAL = Number(document.getElementById("root").dataset.duration);
+      const tl = gsap.timeline({ paused: true });
+      const C = (s, k) => T[s].cues[k];
+
+      function reveal(sel, at, from, opts) {
+        tl.fromTo(sel, Object.assign({ opacity: 0 }, from || { y: 34 }), Object.assign({ opacity: 1, x: 0, y: 0, scale: 1, rotation: 0, duration: 0.6, ease: "power3.out" }, opts || {}), at);
+      }
+      function pop(sel, at) {
+        reveal(sel, at, { scale: 0.6, y: 0 }, { ease: "back.out(2)" });
+      }
+      function draw(sel, at, dur, to) {
+        tl.fromTo(sel, { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDasharray: 1, strokeDashoffset: to == null ? 0 : to, duration: dur || 0.8, ease: "power2.inOut" }, at);
+      }
+      function sceneIn(id, sel) {
+        tl.fromTo(sel || `#${id} .inner`, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, T[id].start + 0.02);
+      }
+      function sceneOut(id, sel) {
+        tl.to(sel || `#${id} .inner`, { opacity: 0, y: -18, duration: 0.42, ease: "power2.in" }, T[id].end - 0.44);
+      }
+
+      // persistent background
+      tl.fromTo(".glow.g1", { x: 0, y: 0 }, { x: 180, y: 110, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".glow.g2", { x: 0, y: 0 }, { x: -160, y: -120, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".glow.g3", { x: 0, y: 0 }, { x: 240, y: -80, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".stars", { y: 0 }, { y: 110, duration: TOTAL, ease: "none" }, 0);
+      tl.fromTo(".ring", { rotation: 0 }, { rotation: 60, duration: TOTAL, ease: "none" }, 0);
+      tl.fromTo(".progress-fill", { scaleX: 0 }, { scaleX: 1, duration: TOTAL, ease: "none" }, 0);
+
+      // s01
+      {
+        const s = T.s01;
+        tl.fromTo("#s01 .s01-a", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s.start);
+        reveal("#s01 .s01-lead", C("s01", "dream"), { y: 24 });
+        reveal("#s01 .jd", C("s01", "jd") - 0.6, { x: -50 }, { duration: 0.7 });
+        reveal("#s01 .ji1", C("s01", "edu") - 0.2, { x: -20 });
+        tl.fromTo("#s01 .ji1 .mk", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, C("s01", "edu") + 0.3);
+        reveal("#s01 .ji2", C("s01", "exp") - 0.2, { x: -20 });
+        tl.fromTo("#s01 .ji2 .mk", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power2.out" }, C("s01", "exp") + 0.4);
+        reveal("#s01 .ji3", C("s01", "exp") + 1.4, { x: -20 });
+        reveal("#s01 .ji4", C("s01", "exp") + 2.0, { x: -20 });
+        reveal("#s01 .s01-note", C("s01", "exp") + 2.4, { y: 10 });
+        reveal("#s01 .s01-ten", C("s01", "ten") - 1.6, { scale: 0.7, y: 0 }, { duration: 0.7, ease: "back.out(1.6)" });
+        const counter = { v: 0 };
+        const out = document.getElementById("ten-count");
+        tl.fromTo(counter, { v: 0 }, { v: 10, duration: 1.6, ease: "power2.out", onUpdate: () => { out.textContent = String(Math.round(counter.v)); } }, C("s01", "ten") - 1.4);
+        tl.fromTo("#s01 .ten-fill", { scaleX: 0 }, { scaleX: 1, duration: 1.6, ease: "power2.inOut" }, C("s01", "ten") - 1.2);
+        tl.to("#s01 .s01-a", { opacity: 0, y: -30, duration: 0.5, ease: "power2.in" }, C("s01", "start") - 0.5);
+        tl.fromTo("#s01 .s01-b", { opacity: 0 }, { opacity: 1, duration: 0.3 }, C("s01", "start") - 0.05);
+        reveal("#s01 .hero-kicker", C("s01", "start"), { y: 20 });
+        reveal("#s01 .hero", C("s01", "start") + 0.15, { y: 50, scale: 0.94 }, { duration: 0.9 });
+        tl.fromTo("#s01 .hero-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power3.out" }, C("s01", "start") + 0.7);
+        reveal("#s01 .hero-sub", C("s01", "start") + 1.0, { y: 20 });
+        sceneOut("s01", "#s01 .s01-b");
+      }
+
+      // s02
+      {
+        sceneIn("s02");
+        const cols = [["c-a", "a"], ["c-b", "b"], ["c-c", "c"], ["c-d", "d"]];
+        cols.forEach(([c, k], i) => {
+          reveal(`#s02 .${c} .duty`, C("s02", k) - 0.15, { y: 50 });
+          reveal(`#s02 .${c} .down`, C("s02", "trans") + 0.2 + i * 0.9, { y: -16 });
+          pop(`#s02 .${c} .abil`, C("s02", "trans") + 0.45 + i * 0.9);
+        });
+        sceneOut("s02");
+      }
+
+      // s03
+      {
+        sceneIn("s03");
+        [["r-chn", "chn"], ["r-math", "math"], ["r-eng", "eng"], ["r-hist", "hist"]].forEach(([r, k]) => {
+          reveal(`#s03 .${r} .subj`, C("s03", k) - 0.2, { x: -40 });
+          tl.fromTo(`#s03 .${r} .wire i`, { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power2.inOut" }, C("s03", k) + 0.3);
+          reveal(`#s03 .${r} .skill`, C("s03", k) + 0.75, { x: 40 });
+        });
+        pop("#s03 .s03-banner", C("s03", "base"));
+        sceneOut("s03");
+      }
+
+      // s04
+      {
+        sceneIn("s04");
+        reveal("#s04 .l1", C("s04", "y") - 0.2, { x: -50 });
+        reveal("#s04 .l2", C("s04", "m") - 0.2, { x: -50 });
+        reveal("#s04 .l3", C("s04", "w") - 0.2, { x: -50 });
+        reveal("#s04 .target", C("s04", "target") - 0.3, { x: 50 });
+        tl.fromTo("#s04 .dart", { x: 46, y: -46, opacity: 0 }, { x: 0, y: 0, opacity: 1, duration: 0.35, ease: "power4.in" }, C("s04", "weak") - 0.1);
+        tl.fromTo("#s04 .bull", { scale: 1 }, { scale: 1.06, duration: 0.15, yoyo: true, repeat: 1, ease: "power1.out" }, C("s04", "weak") + 0.25);
+        tl.fromTo("#s04 .alloc .bar", { scaleY: 0.2 }, { scaleY: 0.55, duration: 0.5, stagger: 0.08, ease: "power2.out" }, C("s04", "target") + 0.3);
+        tl.to("#s04 .alloc .bar.weak", { scaleY: 1.25, duration: 0.8, ease: "back.out(1.6)" }, C("s04", "weak") + 1.0);
+        sceneOut("s04");
+      }
+
+      // s05
+      {
+        sceneIn("s05");
+        reveal("#s05 .pa1", C("s05", "data") + 0.8, { y: 40 });
+        reveal("#s05 .pa2", C("s05", "data") + 1.5, { y: 40 });
+        reveal("#s05 .pa3", C("s05", "data") + 2.2, { y: 40 });
+        tl.set("#s05 .st", { opacity: 0 }, T.s05.start);
+        pop("#s05 .sa1", C("s05", "m1"));
+        pop("#s05 .sa2", C("s05", "m2"));
+        pop("#s05 .sa3", C("s05", "m3"));
+        reveal("#s05 .wrong", C("s05", "book") - 0.2, { x: -40 });
+        reveal("#s05 .chart", C("s05", "book") + 0.2, { x: 40 });
+        draw("#s05 .trend", C("s05", "book") + 0.6, 2.4);
+        pop("#s05 .tdot", C("s05", "book") + 2.9);
+        reveal("#s05 .tval", C("s05", "book") + 3.0, { y: 10 });
+        reveal("#s05 .st1", C("s05", "book") + 1.4, { x: -20 });
+        tl.fromTo("#s05 .st1 .strike", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power2.out" }, C("s05", "book") + 2.2);
+        reveal("#s05 .st2", C("s05", "book") + 2.8, { x: -20 });
+        reveal("#s05 .st3", C("s05", "book") + 4.6, { x: -20 });
+        reveal("#s05 .stamp", C("s05", "method"), { scale: 2.2, rotation: -20, y: 0 }, { rotation: -8, duration: 0.4, ease: "power4.in" });
+        sceneOut("s05");
+      }
+
+      // s06
+      {
+        sceneIn("s06");
+        reveal("#s06 .quote", C("s06", "plus") - 0.2, { y: 30 });
+        reveal("#s06 .n1", C("s06", "s1") - 0.1, { y: 40 });
+        reveal("#s06 .a1", C("s06", "s1") + 1.4, { x: -14 });
+        reveal("#s06 .n2", C("s06", "s1") + 1.6, { y: 40 });
+        reveal("#s06 .a2", C("s06", "s2") - 0.3, { x: -14 });
+        reveal("#s06 .n3", C("s06", "s2") - 0.1, { y: 40 });
+        reveal("#s06 .a3", C("s06", "s3") - 0.1, { x: -14 });
+        reveal("#s06 .n4", C("s06", "s3") + 0.1, { y: 40 });
+        pop("#s06 .s06-banner", C("s06", "lead"));
+        sceneOut("s06");
+      }
+
+      // s07
+      {
+        sceneIn("s07");
+        reveal("#s07 .goal", C("s07", "one") - 0.2, { scale: 0.5, y: 0 }, { duration: 0.8, ease: "back.out(1.7)" });
+        reveal("#s07 .ga", C("s07", "g1") - 0.4, { x: -20 });
+        tl.fromTo("#s07 .m-a", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.5, stagger: 0.5, ease: "power3.out" }, C("s07", "g1") - 0.1);
+        draw("#s07 .la", C("s07", "g1") + 0.3, 0.9);
+        reveal("#s07 .gb", C("s07", "g2") - 0.4, { x: -20 });
+        tl.fromTo("#s07 .m-b", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.5, stagger: 0.45, ease: "power3.out" }, C("s07", "g2") - 0.1);
+        draw("#s07 .lb", C("s07", "g2") + 0.3, 0.9);
+        tl.fromTo("#s07 .goal", { scale: 1 }, { scale: 1.07, duration: 0.3, yoyo: true, repeat: 1, ease: "power1.inOut" }, C("s07", "g2") + 1.3);
+        pop("#s07 .s07-key", C("s07", "key") - 0.3);
+        sceneOut("s07");
+      }
+
+      // s08
+      {
+        sceneIn("s08");
+        reveal("#s08 .club", C("s08", "club") - 0.2, { x: -40 });
+        const ks = ["p1", "p2", "p3", "p4", "p5", "rev"];
+        ks.forEach((k, i) => {
+          reveal(`#s08 .q${i + 1}`, C("s08", k) - 0.15, { y: 30, scale: 0.85 }, { duration: 0.45, ease: "back.out(1.8)" });
+        });
+        tl.fromTo("#s08 .proc-fill", { scaleX: 0 }, { scaleX: 1, duration: C("s08", "rev") - C("s08", "p1") + 0.2, ease: "none" }, C("s08", "p1"));
+        reveal("#s08 .intern", C("s08", "intern") - 0.2, { y: 30 });
+        sceneOut("s08");
+      }
+
+      // s09
+      {
+        sceneIn("s09");
+        tl.fromTo("#s09 .fields .chipc", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.45, stagger: 0.42, ease: "back.out(2)" }, C("s09", "fields") - 0.1);
+        reveal("#s09 .player", C("s09", "up") - 0.3, { x: -40 });
+        reveal("#s09 .up", C("s09", "up") + 0.5, { x: -20 });
+        reveal("#s09 .analyst", C("s09", "up") + 0.8, { x: 40 });
+        reveal("#s09 .qa", C("s09", "q1"), { x: 20 });
+        reveal("#s09 .qb", C("s09", "q2"), { x: 20 });
+        reveal("#s09 .create .plus", C("s09", "create") - 0.2, { scale: 0.6, y: 0 });
+        reveal("#s09 .create > span:nth-child(2)", C("s09", "create"), { x: -10 });
+        tl.fromTo("#s09 .create .c", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, stagger: 0.25, ease: "back.out(2)" }, C("s09", "create") + 0.4);
+        sceneOut("s09");
+      }
+
+      // s10
+      {
+        sceneIn("s10");
+        reveal("#s10 .reqs", C("s10", "soft") - 0.1, { x: -40 });
+        reveal("#s10 .rq1", C("s10", "r"), { x: -16 });
+        reveal("#s10 .rq2", C("s10", "r") + 1.3, { x: -16 });
+        reveal("#s10 .rq3", C("s10", "t") - 1.4, { x: -16 });
+        reveal("#s10 .rq4", C("s10", "t"), { x: -16 });
+        reveal("#s10 .pg", C("s10", "group") - 0.2, { x: 40 });
+        tl.fromTo("#s10 .kb", { x: 0 }, { x: 18, duration: 0.6, ease: "power2.inOut" }, C("s10", "group") + 1.2);
+        reveal("#s10 .pe", C("s10", "exam") - 0.2, { x: 40 });
+        tl.fromTo("#s10 .hand", { rotation: 0, svgOrigin: "30 33" }, { rotation: 300, svgOrigin: "30 33", duration: T.s10.end - C("s10", "exam"), ease: "none" }, C("s10", "exam"));
+        sceneOut("s10");
+      }
+
+      // s11
+      {
+        sceneIn("s11");
+        const ms = [["m1", "now", 0.25], ["m2", "uni", 0.5], ["m3", "e1", 0.75], ["m4", "e2", 1]];
+        tl.set("#s11 .route", { strokeDasharray: 1, strokeDashoffset: 1 }, T.s11.start);
+        reveal("#s11 .m1", C("s11", "now") - 0.2, { scale: 0.6, y: 0 }, { ease: "back.out(2)" });
+        ms.forEach(([m, k, frac], i) => {
+          const next = i < 3 ? ms[i + 1] : ["m5", "e3"];
+          tl.to("#s11 .route", { strokeDashoffset: 1 - frac, duration: 1.0, ease: "power2.inOut" }, C("s11", next[1]) - 1.0);
+          reveal(`#s11 .${next[0]}`, C("s11", next[1]) - 0.1, { scale: 0.6, y: 0 }, { ease: "back.out(2)" });
+        });
+        tl.fromTo("#s11 .m5 .d", { scale: 1 }, { scale: 1.25, duration: 0.5, yoyo: true, repeat: 3, ease: "sine.inOut" }, C("s11", "e3") + 0.8);
+        sceneOut("s11");
+      }
+
+      // s12
+      {
+        const s = T.s12;
+        tl.fromTo("#s12 .inner", { opacity: 0 }, { opacity: 1, duration: 0.4 }, s.start);
+        reveal("#s12 .e1", C("s12", "l1") - 0.1, { y: 30 }, { duration: 0.8 });
+        reveal("#s12 .e2", C("s12", "l2") - 0.1, { y: 30 }, { duration: 0.8 });
+        reveal("#s12 .e3", C("s12", "l3") - 0.1, { y: 24 }, { duration: 0.7 });
+        reveal("#s12 .cheer", C("s12", "l4") - 0.4, { scale: 0.7, y: 20 }, { duration: 0.9, ease: "back.out(1.8)" });
+        const bars = document.querySelectorAll("#s12 .wave i");
+        const waveStart = C("s12", "l4") + 0.2;
+        tl.fromTo("#s12 .wave", { opacity: 0 }, { opacity: 1, duration: 0.5 }, waveStart);
+        bars.forEach((b, i) => {
+          const peak = 0.35 + 0.65 * Math.abs(Math.sin(i * 0.9 + 0.4));
+          const d = 0.28 + (i % 5) * 0.05;
+          const reps = Math.max(1, Math.floor((s.end - waveStart - 0.3) / d) - 1);
+          tl.fromTo(b, { scaleY: 0.12 }, { scaleY: peak, duration: d, repeat: reps, yoyo: true, ease: "sine.inOut" }, waveStart + (i % 7) * 0.04);
+        });
+        reveal("#s12 .credit", C("s12", "l4") + 1.4, { y: 10 });
+      }
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

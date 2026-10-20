@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      /*@FONTS@*/
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #fbf5ec; }
+      :root { --ink: #22253a; --muted: #646a84; --paper: #fbf5ec; --card: #fffdf9; --coral: #e8553f; --mint: #17977f; --sky: #3470e0; --lav: #6b5be6; --line: rgba(34, 37, 58, 0.12); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); color: var(--ink); font-family: "Noto Sans SC", sans-serif; }
+      .bg { position: absolute; inset: 0; }
+      .dots { position: absolute; inset: 0; background-image: radial-gradient(rgba(34, 37, 58, 0.08) 2px, transparent 2.5px); background-size: 40px 40px; }
+      .progress { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: rgba(34, 37, 58, 0.06); }
+      .progress-fill { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, var(--coral), var(--lav)); transform-origin: 0 50%; }
+      .scene { position: absolute; inset: 0; }
+      .inner { position: absolute; inset: 0; padding: 96px 150px 210px; display: flex; flex-direction: column; }
+      .center { align-items: center; justify-content: center; text-align: center; }
+      .title { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 96px; line-height: 1.22; }
+      .title em { font-style: normal; color: var(--coral); }
+      .caption { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 54px; }
+      .caption span { display: block; max-width: 1500px; padding: 12px 34px; border-radius: 18px; background: rgba(34, 37, 58, 0.86); color: #fff; font-size: 40px; line-height: 1.4; letter-spacing: 0.04em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="{{TOTAL}}" data-width="1920" data-height="1080">
+      <div id="bg" class="clip bg" data-start="0" data-duration="{{TOTAL}}" data-track-index="0">
+        <div class="dots"></div>
+        <div class="progress"><div class="progress-fill"></div></div>
+      </div>
+
+      <section id="s01" class="clip scene" data-start="{{s01.start}}" data-duration="{{s01.dur}}" data-track-index="1">
+        <div class="inner center">
+          <div class="title">标题<em>重点</em></div>
+        </div>
+      </section>
+
+      <!--@CAPTIONS@-->
+
+      <!-- 片尾卡由 make_video.py 插在下一行之前，模板里不要再写第二张 -->
+      <!--@AUDIO@-->
+    </div>
+
+    <script>
+      /*@TIMING@*/
+      const TOTAL = Number(document.getElementById("root").dataset.duration);
+      const tl = gsap.timeline({ paused: true });
+      const C = (s, k) => T[s].cues[k];
+      function reveal(sel, at, from, opts) {
+        tl.fromTo(sel, Object.assign({ opacity: 0 }, from || { y: 34 }), Object.assign({ opacity: 1, x: 0, y: 0, scale: 1, rotation: 0, duration: 0.6, ease: "power3.out" }, opts || {}), at);
+      }
+      function sceneOut(id) {
+        tl.to(`#${id} .inner`, { opacity: 0, y: -18, duration: 0.42, ease: "power2.in" }, T[id].end - 0.44);
+      }
+
+      tl.fromTo(".progress-fill", { scaleX: 0 }, { scaleX: 1, duration: TOTAL, ease: "none" }, 0);
+
+      reveal("#s01 .title", C("s01", "hook"), { y: 40, scale: 0.95 }, { duration: 0.9 });
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

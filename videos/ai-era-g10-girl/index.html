@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="zh-CN" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Noto Sans SC"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-400.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Sans SC"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-700.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Sans SC"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-900.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Serif SC"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/noto-serif-sc-700.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Serif SC"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/noto-serif-sc-900.woff2") format("woff2"); }
+      @font-face { font-family: "Ma Shan Zheng"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/ma-shan-zheng-400.woff2") format("woff2"); }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #fbf5ec; }
+
+      :root {
+        --ink: #22253a;
+        --muted: #646a84;
+        --paper: #fbf5ec;
+        --card: #fffdf9;
+        --coral: #e8553f;
+        --peach: #ffb38a;
+        --mint: #17977f;
+        --sky: #3470e0;
+        --lav: #6b5be6;
+        --sun: #f2b01e;
+        --line: rgba(34, 37, 58, 0.12);
+      }
+
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: "Noto Sans SC", sans-serif;
+        font-weight: 400;
+      }
+
+      /* ---------- persistent layers ---------- */
+      .bg { position: absolute; inset: 0; }
+      .dots {
+        position: absolute; inset: 0;
+        background-image: radial-gradient(rgba(34, 37, 58, 0.08) 2px, transparent 2.5px);
+        background-size: 40px 40px;
+      }
+      .blob { position: absolute; display: block; border-radius: 50%; filter: blur(70px); opacity: 0.38; }
+      .blob.b1 { width: 620px; height: 620px; left: -160px; top: -180px; background: var(--peach); }
+      .blob.b2 { width: 560px; height: 560px; right: -140px; top: 260px; background: #b9ecd9; }
+      .blob.b3 { width: 520px; height: 520px; left: 620px; bottom: -300px; background: #d8d1ff; }
+
+      .brand {
+        position: absolute; top: 44px; right: 64px;
+        font-size: 24px; font-weight: 700; letter-spacing: 0.12em; color: rgba(34, 37, 58, 0.62);
+      }
+      .progress { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: rgba(34, 37, 58, 0.06); }
+      .progress-fill { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, var(--coral), var(--lav)); transform-origin: 0 50%; }
+
+      /* ---------- scene scaffold ---------- */
+      .scene { position: absolute; inset: 0; }
+      .inner {
+        position: absolute; inset: 0;
+        padding: 96px 150px 210px;
+        display: flex; flex-direction: column;
+      }
+      .center { align-items: center; justify-content: center; text-align: center; }
+      .tag {
+        align-self: flex-start;
+        display: inline-flex; align-items: center; gap: 14px;
+        padding: 10px 26px; border-radius: 999px;
+        background: var(--ink); color: #fff;
+        font-size: 26px; font-weight: 700; letter-spacing: 0.08em;
+      }
+      .tag b { color: var(--peach); font-weight: 900; }
+      .title {
+        margin-top: 26px;
+        font-family: "Noto Serif SC", serif; font-weight: 900;
+        font-size: 78px; line-height: 1.22; letter-spacing: 0.01em;
+      }
+      .title em { font-style: normal; color: var(--coral); }
+      .card {
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 28px;
+        box-shadow: 0 18px 40px rgba(34, 37, 58, 0.08);
+      }
+      .muted { color: var(--muted); }
+      svg.ico { display: block; fill: none; stroke: currentColor; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+
+      /* ---------- captions ---------- */
+      .caption { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 54px; pointer-events: none; }
+      .caption span {
+        display: block; max-width: 1500px;
+        padding: 12px 34px; border-radius: 18px;
+        background: rgba(34, 37, 58, 0.86); color: #fff;
+        font-size: 40px; line-height: 1.4; font-weight: 400; letter-spacing: 0.04em;
+      }
+
+      /* ---------- s01 hook ---------- */
+      .s01-age { display: flex; align-items: baseline; gap: 10px; font-family: "Noto Serif SC", serif; font-weight: 900; color: var(--coral); }
+      .s01-age .big { font-size: 230px; line-height: 1; }
+      .s01-age .unit { font-size: 96px; }
+      .s01-lead { font-size: 40px; color: var(--muted); margin-bottom: 8px; }
+      .tl { position: relative; width: 1300px; margin-top: 54px; }
+      .tl-line { position: absolute; left: 130px; right: 130px; top: 22px; height: 6px; border-radius: 3px; background: var(--line); }
+      .tl-fill { display: block; width: 100%; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--coral), var(--lav)); transform-origin: 0 50%; }
+      .tl-nodes { position: relative; display: flex; justify-content: space-between; }
+      .node { width: 260px; display: flex; flex-direction: column; align-items: center; }
+      .node .dot { width: 50px; height: 50px; border-radius: 50%; background: var(--card); border: 6px solid var(--coral); }
+      .node.n2 .dot { border-color: #c070c8; }
+      .node.n3 .dot { border-color: var(--lav); }
+      .node .yr { margin-top: 18px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 54px; }
+      .node .lbl { margin-top: 4px; font-size: 34px; color: var(--muted); font-weight: 700; }
+      .s01-ai {
+        margin-top: 56px; padding: 18px 40px; border-radius: 20px;
+        background: var(--ink); color: #fff; font-size: 42px; font-weight: 700;
+      }
+      .s01-ai b { color: var(--peach); font-weight: 900; }
+      .hero-kicker { font-size: 34px; letter-spacing: 0.4em; color: #c9432f; font-weight: 900; }
+      .hero {
+        margin-top: 26px;
+        font-family: "Noto Serif SC", serif; font-weight: 900;
+        font-size: 128px; line-height: 1.18; letter-spacing: 0.02em;
+      }
+      .hero .hl { color: var(--coral); }
+      .hero-rule { display: block; width: 180px; height: 8px; border-radius: 4px; margin: 40px auto 0; background: linear-gradient(90deg, var(--coral), var(--lav)); transform-origin: 50% 50%; }
+      .hero-sub { margin-top: 34px; font-size: 44px; color: var(--muted); font-weight: 700; letter-spacing: 0.06em; }
+
+      /* ---------- s02 ---------- */
+      .s02-row { display: flex; align-items: center; gap: 40px; margin-top: 46px; }
+      .s02-past, .s02-now { padding: 26px 40px; font-size: 40px; font-weight: 700; display: flex; align-items: center; gap: 22px; }
+      .s02-past .k, .s02-now .k { font-size: 26px; padding: 6px 16px; border-radius: 10px; color: #fff; font-weight: 700; }
+      .s02-past .k { background: #9aa0b8; }
+      .s02-now .k { background: var(--coral); }
+      .s02-past .txt { position: relative; color: var(--muted); }
+      .strike { position: absolute; left: -6px; right: -6px; top: 52%; height: 6px; border-radius: 3px; background: var(--coral); display: block; transform-origin: 0 50%; }
+      .s02-arrow { width: 70px; height: 70px; color: var(--muted); }
+      .s02-cards { display: flex; gap: 40px; margin-top: 54px; }
+      .vcard { flex: 1; padding: 36px 36px 40px; }
+      .vcard .num { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 38px; }
+      .vcard h3 { margin-top: 24px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 54px; }
+      .vcard p { margin-top: 12px; font-size: 32px; color: var(--muted); line-height: 1.5; }
+
+      /* ---------- s03 ---------- */
+      .s03-pillars { display: flex; gap: 46px; margin-top: 50px; }
+      .pillar { flex: 1; padding: 40px 36px; display: flex; flex-direction: column; align-items: flex-start; }
+      .pillar .glyph { width: 104px; height: 104px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: #fff; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 60px; }
+      .pillar h3 { margin-top: 26px; font-size: 50px; font-weight: 900; }
+      .pillar p { margin-top: 10px; font-size: 34px; color: var(--muted); }
+      .pillar p b { color: var(--ink); font-weight: 900; }
+      .s03-calc { margin-top: 44px; display: flex; align-items: center; gap: 28px; padding: 24px 40px; align-self: flex-start; }
+      .s03-calc .ico { width: 64px; height: 64px; color: var(--sky); }
+      .s03-calc .txt { font-size: 38px; font-weight: 700; }
+      .s03-calc .txt em { font-style: normal; color: var(--coral); }
+
+      /* ---------- s04 ---------- */
+      .s04-body { display: flex; gap: 70px; margin-top: 40px; flex: 1; min-height: 0; }
+      .rules { flex: 1; display: flex; flex-direction: column; gap: 30px; justify-content: center; }
+      .rule { display: flex; align-items: center; gap: 26px; padding: 26px 32px; }
+      .rule .n { flex: none; width: 62px; height: 62px; border-radius: 50%; background: var(--mint); color: #fff; font-weight: 900; font-size: 34px; display: flex; align-items: center; justify-content: center; }
+      .rule .t { font-size: 38px; font-weight: 700; line-height: 1.35; }
+      .rule .t small { display: block; font-size: 28px; color: var(--muted); font-weight: 400; }
+      .chat { width: 720px; flex: none; padding: 26px 30px; display: flex; flex-direction: column; gap: 16px; justify-content: center; }
+      .chat-head { display: flex; align-items: center; gap: 14px; font-size: 26px; color: var(--muted); font-weight: 700; padding-bottom: 14px; border-bottom: 2px dashed var(--line); }
+      .chat-head .ico { width: 36px; height: 36px; color: var(--lav); }
+      .bubble { max-width: 88%; padding: 16px 24px; border-radius: 24px; font-size: 28px; line-height: 1.45; }
+      .bubble.me { align-self: flex-end; background: var(--coral); color: #fff; border-bottom-right-radius: 6px; }
+      .bubble.ai { align-self: flex-start; background: #eeebff; color: var(--ink); border-bottom-left-radius: 6px; }
+      .gap-note { align-self: center; margin-top: 6px; padding: 10px 24px; border-radius: 999px; background: var(--sun); color: var(--ink); font-size: 28px; font-weight: 900; }
+
+      /* ---------- s05 ---------- */
+      .s05-body { display: flex; gap: 80px; margin-top: 50px; align-items: center; }
+      .fake { position: relative; width: 680px; flex: none; padding: 36px 40px 96px; }
+      .fake .who { display: flex; align-items: center; gap: 14px; font-size: 26px; color: var(--muted); font-weight: 700; }
+      .fake .who .ico { width: 36px; height: 36px; color: var(--lav); }
+      .fake .msg { margin-top: 18px; font-size: 38px; line-height: 1.5; font-weight: 700; }
+      .stamp {
+        position: absolute; right: -24px; bottom: -30px;
+        padding: 12px 28px; border: 6px solid var(--coral); border-radius: 16px;
+        color: var(--coral); font-size: 46px; font-weight: 900; letter-spacing: 0.08em;
+        background: rgba(255, 253, 249, 0.92);
+      }
+      .checks { flex: 1; display: flex; flex-direction: column; gap: 28px; }
+      .check { display: flex; align-items: center; gap: 24px; padding: 22px 30px; }
+      .check .ico { width: 54px; height: 54px; color: var(--mint); flex: none; }
+      .check .t { font-size: 42px; font-weight: 900; }
+      .check .t small { font-size: 28px; font-weight: 400; color: var(--muted); margin-left: 14px; }
+      .s05-end { margin-top: 46px; font-size: 40px; font-weight: 700; align-self: center; }
+      .s05-end em { font-style: normal; color: var(--mint); font-weight: 900; }
+
+      /* ---------- s06 ---------- */
+      .s06-stage { position: relative; flex: 1; margin-top: 34px; }
+      .s06-p { position: absolute; inset: 0; display: flex; flex-direction: column; }
+      .formula { display: flex; align-items: center; gap: 26px; }
+      .fbox { padding: 22px 34px; display: flex; flex-direction: column; align-items: center; }
+      .fbox .d { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 72px; line-height: 1.1; }
+      .fbox .l { font-size: 30px; color: var(--muted); font-weight: 700; margin-top: 4px; }
+      .fop { font-size: 64px; font-weight: 900; color: var(--muted); }
+      .fnote { margin-top: 16px; font-size: 24px; color: var(--muted); }
+      .crit { display: flex; gap: 30px; margin-top: 40px; }
+      .chip { display: flex; align-items: center; gap: 16px; padding: 18px 34px; border-radius: 999px; font-size: 38px; font-weight: 900; color: #fff; }
+      .chip .i { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.28); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+      .myth { align-self: center; position: relative; margin-top: 10px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 84px; color: var(--muted); }
+      .myth .strike { top: 50%; height: 10px; }
+      .myth-sub { align-self: center; margin-top: 20px; font-size: 36px; font-weight: 700; }
+      .myth-sub em { font-style: normal; color: var(--coral); }
+      .both { display: flex; gap: 46px; margin-top: 40px; justify-content: center; }
+      .both .card { width: 520px; padding: 30px 36px; display: flex; align-items: center; gap: 26px; }
+      .both .ico { width: 70px; height: 70px; flex: none; }
+      .both .t { font-size: 44px; font-weight: 900; }
+
+      /* ---------- s07 ---------- */
+      .s07-body { display: flex; gap: 70px; margin-top: 30px; align-items: center; flex: 1; }
+      .mc { width: 560px; flex: none; display: flex; flex-direction: column; gap: 30px; }
+      .mc .card { display: flex; align-items: center; gap: 26px; padding: 26px 32px; }
+      .mc .ico { width: 84px; height: 84px; flex: none; }
+      .mc .t { font-size: 40px; font-weight: 900; }
+      .mc .t small { display: block; font-size: 28px; font-weight: 400; color: var(--muted); }
+      .mc .map { position: relative; }
+      .mc .map .x { position: absolute; right: 30px; top: 50%; margin-top: -32px; width: 64px; height: 64px; color: var(--coral); }
+      .needle { transform-origin: 50% 50%; }
+      .venn { position: relative; flex: none; width: 560px; height: 530px; margin: 0 auto; }
+      .vc { position: absolute; width: 340px; height: 340px; border-radius: 50%; mix-blend-mode: multiply; display: flex; justify-content: center; font-size: 38px; font-weight: 900; }
+      .vc span { display: block; }
+      .vc.c1 { left: 0; top: 0; background: rgba(255, 107, 90, 0.42); align-items: flex-start; padding-top: 84px; padding-right: 64px; }
+      .vc.c2 { left: 220px; top: 0; background: rgba(63, 127, 240, 0.36); align-items: flex-start; padding-top: 84px; padding-left: 64px; }
+      .vc.c3 { left: 110px; top: 190px; background: rgba(34, 168, 142, 0.4); align-items: flex-end; padding-bottom: 70px; }
+      .venn-core { position: absolute; left: 280px; top: 214px; width: 0; height: 0; }
+      .venn-core span { position: absolute; left: -90px; top: 0; width: 180px; padding: 10px 0; border-radius: 999px; background: var(--ink); color: #fff; text-align: center; font-size: 28px; font-weight: 900; display: block; }
+
+      /* ---------- s08 ---------- */
+      .s08-try { display: flex; gap: 40px; margin-top: 50px; }
+      .try { flex: 1; padding: 30px 34px; display: flex; align-items: center; gap: 24px; }
+      .try .ico { width: 68px; height: 68px; flex: none; }
+      .try .t { font-size: 44px; font-weight: 900; }
+      .s08-eg { display: flex; align-items: center; gap: 24px; margin-top: 44px; }
+      .s08-eg .lead { font-size: 34px; color: var(--muted); font-weight: 700; }
+      .eg { padding: 16px 30px; border-radius: 20px; border: 3px dashed rgba(124, 108, 240, 0.55); background: rgba(124, 108, 240, 0.08); font-size: 36px; font-weight: 700; color: var(--lav); }
+      .s08-cal { margin-top: 50px; align-self: center; display: flex; align-items: center; gap: 24px; font-size: 42px; font-weight: 900; }
+      .s08-cal .ico { width: 70px; height: 70px; color: var(--coral); }
+
+      /* ---------- s09 ---------- */
+      .orbit { position: relative; flex: 1; margin-top: 10px; }
+      .core { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+      .core span { position: absolute; left: -150px; top: -150px; width: 300px; height: 300px; border-radius: 50%; background: var(--ink); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 40px; font-weight: 900; line-height: 1.3; text-align: center; }
+      .core span small { font-size: 26px; font-weight: 400; color: var(--peach); margin-top: 6px; }
+      .petal { position: absolute; width: 0; height: 0; }
+      .petal span { position: absolute; left: -125px; top: -55px; width: 250px; height: 110px; border-radius: 999px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 44px; font-weight: 900; }
+      .s09-far { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font-size: 40px; font-weight: 700; }
+      .s09-far em { font-style: normal; color: var(--coral); font-weight: 900; }
+
+      /* ---------- s10 ---------- */
+      .care { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 46px; }
+      .care .card { padding: 30px 32px; display: flex; align-items: center; gap: 24px; }
+      .care .ico { width: 64px; height: 64px; flex: none; }
+      .care .t { font-size: 36px; font-weight: 900; line-height: 1.3; }
+      .care .t small { display: block; font-size: 26px; font-weight: 400; color: var(--muted); }
+
+      /* ---------- s11 ---------- */
+      .note {
+        position: relative; margin-top: 34px; align-self: center; width: 1300px; padding: 28px 60px 28px 120px;
+        background-color: #fffdf6;
+        background-image: repeating-linear-gradient(180deg, transparent 0, transparent 97px, rgba(63, 127, 240, 0.18) 97px, rgba(63, 127, 240, 0.18) 99px);
+        border-radius: 24px; border: 2px solid var(--line);
+        box-shadow: 0 18px 40px rgba(34, 37, 58, 0.08);
+      }
+      .note::before { content: ""; position: absolute; left: 86px; top: 0; bottom: 0; width: 3px; background: rgba(255, 107, 90, 0.45); }
+      .item { display: flex; align-items: center; gap: 28px; height: 99px; }
+      .item .when { flex: none; width: 128px; padding: 6px 0; border-radius: 12px; text-align: center; color: #fff; font-size: 30px; font-weight: 900; }
+      .item .what { flex: 1; font-family: "Ma Shan Zheng", cursive; font-size: 50px; color: var(--ink); white-space: nowrap; }
+      .box { flex: none; width: 52px; height: 52px; border-radius: 12px; border: 4px solid var(--ink); position: relative; }
+      .box svg { position: absolute; left: -4px; top: -10px; width: 64px; height: 64px; color: var(--mint); }
+      .tick { stroke-dasharray: 60; }
+
+      /* ---------- s12 ---------- */
+      .end-line { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 76px; line-height: 1.35; }
+      .end-line em { font-style: normal; color: var(--coral); }
+      .end-line.small { margin-top: 40px; font-size: 48px; font-weight: 700; color: var(--muted); }
+      .end-line.small em { color: var(--lav); }
+      .cheer { margin-top: 46px; font-family: "Ma Shan Zheng", cursive; font-size: 110px; color: var(--coral); }
+      .credit { position: absolute; left: 0; right: 0; bottom: 140px; text-align: center; font-size: 24px; color: rgba(34, 37, 58, 0.62); letter-spacing: 0.1em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="236.504" data-width="1920" data-height="1080">
+      <div id="bg" class="clip bg" data-start="0" data-duration="236.504" data-track-index="0">
+        <div class="dots"></div>
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
+        <div class="blob b3"></div>
+        <div class="brand">AI 时代 · 高一成长指南</div>
+        <div class="progress"><div class="progress-fill"></div></div>
+      </div>
+
+      <!-- s01 · hook + title -->
+      <section id="s01" class="clip scene" data-start="0.000" data-duration="20.944" data-track-index="1">
+        <div class="inner center s01-a">
+          <div class="s01-lead">如果你今年读高一</div>
+          <div class="s01-age"><span class="big">15</span><span class="unit">岁</span></div>
+          <div class="tl">
+            <div class="tl-line"><div class="tl-fill"></div></div>
+            <div class="tl-nodes">
+              <div class="node n1"><div class="dot"></div><div class="yr">2026</div><div class="lbl">高一</div></div>
+              <div class="node n2"><div class="dot"></div><div class="yr">2029</div><div class="lbl">高考</div></div>
+              <div class="node n3"><div class="dot"></div><div class="yr">2033</div><div class="lbl">大学毕业</div></div>
+            </div>
+          </div>
+          <div class="s01-ai">到那时，<b>AI</b> 已深度改变几乎每一个行业</div>
+        </div>
+        <div class="inner center s01-b">
+          <div class="hero-kicker">AI 时代</div>
+          <div class="hero">高一女生的<br /><span class="hl">学习与人生规划</span></div>
+          <div class="hero-rule"></div>
+          <div class="hero-sub">该怎么学？又该怎么规划人生？</div>
+        </div>
+      </section>
+
+      <!-- s02 · what AI changes -->
+      <section id="s02" class="clip scene" data-start="20.944" data-duration="22.560" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>00</b> 先想清楚</div>
+          <div class="title">AI 到底改变了<em>什么</em>？</div>
+          <div class="s02-row">
+            <div class="card s02-past"><span class="k">过去</span><span class="txt">记得多 · 算得快<span class="strike"></span></span></div>
+            <svg class="ico s02-arrow" viewBox="0 0 48 48"><path d="M8 24h30M28 14l10 10-10 10" /></svg>
+            <div class="card s02-now"><span class="k">现在</span><span>答案越来越便宜，随手一问就有</span></div>
+          </div>
+          <div class="s02-cards">
+            <div class="card vcard v-q"><div class="num" style="background: var(--coral)">1</div><h3>提出好问题</h3><p>会问，比会答更难</p></div>
+            <div class="card vcard v-j"><div class="num" style="background: var(--sky)">2</div><h3>判断对与好</h3><p>分辨真假，也分辨高下</p></div>
+            <div class="card vcard v-c"><div class="num" style="background: var(--mint)">3</div><h3>与 AI 协作</h3><p>把想法真正变成作品</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s03 · fundamentals -->
+      <section id="s03" class="clip scene" data-start="43.504" data-duration="20.784" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>01</b> 学习</div>
+          <div class="title">地基，比以往<em>更重要</em></div>
+          <div class="s03-pillars">
+            <div class="card pillar p-math"><div class="glyph" style="background: var(--sky)">数</div><h3>数学</h3><p>训练 <b>逻辑</b></p></div>
+            <div class="card pillar p-chn"><div class="glyph" style="background: var(--coral)">语</div><h3>语文</h3><p>训练 <b>思考与表达</b></p></div>
+            <div class="card pillar p-eng"><div class="glyph" style="background: var(--mint)">英</div><h3>英语</h3><p>直达 <b>世界前沿</b></p></div>
+          </div>
+          <div class="card s03-calc">
+            <svg class="ico" viewBox="0 0 48 48"><rect x="10" y="5" width="28" height="38" rx="5" /><rect x="15" y="10" width="18" height="8" rx="2" /><path d="M16 25h.1M24 25h.1M32 25h.1M16 31h.1M24 31h.1M32 31h.1M16 37h.1M24 37h.1M32 37h.1" stroke-width="4.5" /></svg>
+            <div class="txt">有了计算器，仍要学算术——<em>你得知道答案对不对</em></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s04 · AI as coach -->
+      <section id="s04" class="clip scene" data-start="64.288" data-duration="25.920" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>02</b> 学习</div>
+          <div class="title">把 AI 当<em>教练</em>，而不是枪手</div>
+          <div class="s04-body">
+            <div class="rules">
+              <div class="card rule r1"><div class="n">1</div><div class="t">先自己想，再问 AI</div></div>
+              <div class="card rule r2"><div class="n">2</div><div class="t">作业独立完成<small>再用 AI 复盘错题、找漏洞</small></div></div>
+              <div class="card rule r3"><div class="n">3</div><div class="t">讲给 AI 听<small>让它像老师一样追问你</small></div></div>
+            </div>
+            <div class="card chat">
+              <div class="chat-head">
+                <svg class="ico" viewBox="0 0 48 48"><path d="M8 12a4 4 0 0 1 4-4h24a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H20l-8 7v-7h0a4 4 0 0 1-4-4z" /></svg>
+                费曼学习法 · 和 AI 对话
+              </div>
+              <div class="bubble me b1">我来讲牛顿第二定律：F = ma，合力越大，加速度越大。</div>
+              <div class="bubble ai b2">很好！那如果合力为零，物体一定是静止的吗？</div>
+              <div class="bubble me b3">呃……好像不一定？</div>
+              <div class="gap-note">讲不清的地方 = 你的知识漏洞</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s05 · question & verify -->
+      <section id="s05" class="clip scene" data-start="90.208" data-duration="16.440" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>03</b> 学习</div>
+          <div class="title">学会提问，也学会<em>怀疑</em></div>
+          <div class="s05-body">
+            <div class="card fake">
+              <div class="who"><svg class="ico" viewBox="0 0 48 48"><rect x="9" y="14" width="30" height="24" rx="6" /><path d="M24 6v8M18 26h.1M30 26h.1" stroke-width="4.5" /></svg>AI 回答</div>
+              <div class="msg">“《静夜思》是宋代诗人苏轼的代表作，写于他被贬黄州期间。”</div>
+              <div class="stamp" data-layout-allow-overlap>一本正经·胡说</div>
+            </div>
+            <div class="checks">
+              <div class="card check h1"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><path d="M16 24l6 6 11-12" /></svg><div class="t">看来源<small>出处可靠吗</small></div></div>
+              <div class="card check h2"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><path d="M16 24l6 6 11-12" /></svg><div class="t">查逻辑<small>说得通吗</small></div></div>
+              <div class="card check h3"><svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" /><path d="M16 24l6 6 11-12" /></svg><div class="t">多方验证<small>别处也这么说吗</small></div></div>
+            </div>
+          </div>
+          <div class="s05-end">能分辨真假的人，<em>才不会被信息淹没</em></div>
+        </div>
+      </section>
+
+      <!-- s06 · choosing subjects -->
+      <section id="s06" class="clip scene" data-start="106.648" data-duration="23.448" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>04</b> 高一大事</div>
+          <div class="title">选科，看三件事</div>
+          <div class="s06-stage">
+            <div class="s06-p p1">
+              <div class="formula">
+                <div class="card fbox"><div class="d">3</div><div class="l">语 · 数 · 外</div></div>
+                <div class="fop">+</div>
+                <div class="card fbox"><div class="d" style="color: var(--sky)">1</div><div class="l">物理 / 历史</div></div>
+                <div class="fop">+</div>
+                <div class="card fbox"><div class="d" style="color: var(--mint)">2</div><div class="l">化 · 生 · 政 · 地 选二</div></div>
+              </div>
+              <div class="fnote">* 多数省份为“3+1+2”模式，具体以本省政策为准</div>
+              <div class="crit">
+                <div class="chip c-i" style="background: var(--coral)"><span class="i">1</span>兴趣</div>
+                <div class="chip c-a" style="background: var(--sky)"><span class="i">2</span>能力</div>
+                <div class="chip c-m" style="background: var(--mint)"><span class="i">3</span>专业要求</div>
+              </div>
+            </div>
+            <div class="s06-p p2">
+              <div class="myth">“女生学不好理科”<span class="strike"></span></div>
+              <div class="myth-sub">别让<em>刻板印象</em>替你做选择——热爱文史，也请大胆去选</div>
+              <div class="both">
+                <div class="card b-tech">
+                  <svg class="ico" viewBox="0 0 48 48" style="color: var(--sky)"><path d="M17 15L7 24l10 9M31 15l10 9-10 9M27 9l-6 30" /></svg>
+                  <div class="t">懂技术的人</div>
+                </div>
+                <div class="card b-human">
+                  <svg class="ico" viewBox="0 0 48 48" style="color: var(--coral)"><path d="M24 40S7 30 7 18a8.5 8.5 0 0 1 17-2 8.5 8.5 0 0 1 17 2c0 12-17 22-17 22z" /></svg>
+                  <div class="t">懂人的人</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s07 · compass not map -->
+      <section id="s07" class="clip scene" data-start="130.096" data-duration="16.848" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>05</b> 人生规划</div>
+          <div class="title">与其画地图，不如装<em>指南针</em></div>
+          <div class="s07-body">
+            <div class="mc">
+              <div class="card map">
+                <svg class="ico" viewBox="0 0 48 48" style="color: var(--muted)"><path d="M6 11l11-4 14 5 11-4v30l-11 4-14-5-11 4zM17 7v30M31 12v30" /></svg>
+                <div class="t">精确的地图<small>世界变太快，很快就过时</small></div>
+                <svg class="ico x" viewBox="0 0 48 48"><path d="M12 12l24 24M36 12L12 36" stroke-width="5" /></svg>
+              </div>
+              <div class="card comp">
+                <svg class="ico" viewBox="0 0 48 48" style="color: var(--coral)"><circle cx="24" cy="24" r="19" /><g class="needle"><path d="M24 10l5 14-5 14-5-14z" fill="rgba(255,107,90,0.25)" /></g><circle cx="24" cy="24" r="2" fill="currentColor" /></svg>
+                <div class="t">内心的指南针<small>知道自己往哪儿走</small></div>
+              </div>
+            </div>
+            <div class="venn">
+              <div class="vc c1"><span>我喜欢</span></div>
+              <div class="vc c2"><span>我擅长</span></div>
+              <div class="vc c3"><span>世界需要</span></div>
+              <div class="venn-core"><span>你的方向</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s08 · try things -->
+      <section id="s08" class="clip scene" data-start="146.944" data-duration="17.136" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>05</b> 人生规划</div>
+          <div class="title">高中，是<em>试错成本最低</em>的时候</div>
+          <div class="s08-try">
+            <div class="card try t-club"><svg class="ico" viewBox="0 0 48 48" style="color: var(--coral)"><circle cx="17" cy="17" r="6" /><circle cx="33" cy="17" r="6" /><path d="M6 38c0-6 5-10 11-10s11 4 11 10M22 38c0-6 5-10 11-10s9 4 9 10" /></svg><div class="t">参加社团</div></div>
+            <div class="card try t-comp"><svg class="ico" viewBox="0 0 48 48" style="color: var(--sun)"><path d="M15 7h18v10a9 9 0 0 1-18 0zM15 11H8v3a7 7 0 0 0 7 7M33 11h7v3a7 7 0 0 1-7 7M24 26v8M16 41h16M19 34h10v7H19z" /></svg><div class="t">试试竞赛</div></div>
+            <div class="card try t-proj"><svg class="ico" viewBox="0 0 48 48" style="color: var(--lav)"><path d="M24 6l3 9 9 3-9 3-3 9-3-9-9-3 9-3zM37 30l1.6 4.4L43 36l-4.4 1.6L37 42l-1.6-4.4L31 36l4.4-1.6z" /></svg><div class="t">做个小项目</div></div>
+          </div>
+          <div class="s08-eg">
+            <span class="lead">比如：</span>
+            <span class="eg eg1">用 AI 做个小程序</span>
+            <span class="eg eg2">拍一部短片</span>
+            <span class="eg eg3">写一份研究报告</span>
+          </div>
+          <div class="s08-cal">
+            <svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="24" r="19" /><g class="needle"><path d="M24 10l5 14-5 14-5-14z" fill="rgba(255,107,90,0.25)" /></g></svg>
+            每一次尝试，都是一次方向校准
+          </div>
+        </div>
+      </section>
+
+      <!-- s09 · irreplaceable -->
+      <section id="s09" class="clip scene" data-start="164.080" data-duration="14.784" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>06</b> 不可替代</div>
+          <div class="orbit">
+            <div class="core"><span>AI 很难替代<small>的五种能力</small></span></div>
+            <div class="petal pt1" style="left: 50%; top: 4%"><span style="background: var(--coral)">好奇心</span></div>
+            <div class="petal pt2" style="left: 80%; top: 32%"><span style="background: var(--lav)">审美</span></div>
+            <div class="petal pt3" style="left: 70%; top: 74%"><span style="background: var(--mint)">同理心</span></div>
+            <div class="petal pt4" style="left: 30%; top: 74%"><span style="background: var(--sky)">表达</span></div>
+            <div class="petal pt5" style="left: 20%; top: 32%"><span style="background: var(--sun); color: var(--ink)">韧性</span></div>
+            <div class="s09-far">它们不在考纲里，却决定了<em>你能走多远</em></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s10 · take care of yourself -->
+      <section id="s10" class="clip scene" data-start="178.864" data-duration="20.712" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>07</b> 照顾自己</div>
+          <div class="title">你，是最重要的<em>项目</em></div>
+          <div class="care">
+            <div class="card k-sleep"><svg class="ico" viewBox="0 0 48 48" style="color: var(--lav)"><path d="M38 30A16 16 0 1 1 20 9a13 13 0 0 0 18 21z" /></svg><div class="t">睡够觉<small>大脑在睡眠中整理记忆</small></div></div>
+            <div class="card k-sport"><svg class="ico" viewBox="0 0 48 48" style="color: var(--mint)"><path d="M5 24h8l5-12 8 24 6-16 3 4h8" /></svg><div class="t">多运动<small>身体是一切的底盘</small></div></div>
+            <div class="card k-focus"><svg class="ico" viewBox="0 0 48 48" style="color: var(--coral)"><circle cx="24" cy="24" r="18" /><circle cx="24" cy="24" r="10" /><circle cx="24" cy="24" r="2.5" fill="currentColor" /></svg><div class="t">抢回注意力<small>从刷不完的短视频里</small></div></div>
+            <div class="card k-self"><svg class="ico" viewBox="0 0 48 48" style="color: var(--sky)"><path d="M6 38l12-12 8 8 16-18M32 16h10v10" /></svg><div class="t">和昨天的自己比<small>不和别人比</small></div></div>
+            <div class="card k-priv"><svg class="ico" viewBox="0 0 48 48" style="color: var(--sun)"><rect x="10" y="21" width="28" height="20" rx="4" /><path d="M16 21v-6a8 8 0 0 1 16 0v6M24 29v5" /></svg><div class="t">保护隐私<small>照片和个人信息</small></div></div>
+            <div class="card k-voice"><svg class="ico" viewBox="0 0 48 48" style="color: var(--coral)"><path d="M8 20v8h7l13 9V11l-13 9zM34 18a8 8 0 0 1 0 12M38 13a14 14 0 0 1 0 22" /></svg><div class="t">敢于表达<small>你的声音值得被听见</small></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s11 · action checklist -->
+      <section id="s11" class="clip scene" data-start="199.576" data-duration="21.144" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>08</b> 行动清单</div>
+          <div class="title">从明天就能开始</div>
+          <div class="note">
+            <div class="item i-d"><span class="when" style="background: var(--coral)">每天</span><span class="what">留一段不碰手机的专注时间</span><span class="box"><svg class="ico" viewBox="0 0 48 48"><path class="tick" d="M10 26l10 10 20-24" stroke-width="5" /></svg></span></div>
+            <div class="item i-w"><span class="when" style="background: var(--sky)">每周</span><span class="what">用 AI 复盘错题，读一篇好文章</span><span class="box"><svg class="ico" viewBox="0 0 48 48"><path class="tick" d="M10 26l10 10 20-24" stroke-width="5" /></svg></span></div>
+            <div class="item i-t"><span class="when" style="background: var(--mint)">每学期</span><span class="what">尝试一件从没做过的事</span><span class="box"><svg class="ico" viewBox="0 0 48 48"><path class="tick" d="M10 26l10 10 20-24" stroke-width="5" /></svg></span></div>
+            <div class="item i-y"><span class="when" style="background: var(--lav)">今年</span><span class="what">给十八岁的自己写一封信</span><span class="box"><svg class="ico" viewBox="0 0 48 48"><path class="tick" d="M10 26l10 10 20-24" stroke-width="5" /></svg></span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- s12 · closing -->
+      <section id="s12" class="clip scene" data-start="220.720" data-duration="15.784" data-track-index="1">
+        <div class="inner center">
+          <div class="end-line e1">AI 可以给你答案，</div>
+          <div class="end-line e2">但只有<em>你</em>，能决定自己想成为谁。</div>
+          <div class="end-line small e3">未来不是被预测的，而是被你<em>一点一点创造</em>的。</div>
+          <div class="cheer">加油，女孩！</div>
+        </div>
+        <div class="credit">Made with Claude Opus 5.5 × HyperFrames in Cursor</div>
+      </section>
+
+      <div id="cap-000" class="clip caption" data-start="0.898" data-duration="1.623" data-track-index="20"><span>如果你今年读高一</span></div>
+      <div id="cap-001" class="clip caption" data-start="2.521" data-duration="1.729" data-track-index="20"><span>大概十五六岁</span></div>
+      <div id="cap-002" class="clip caption" data-start="4.250" data-duration="0.925" data-track-index="20"><span>三年后</span></div>
+      <div id="cap-003" class="clip caption" data-start="5.175" data-duration="1.274" data-track-index="20"><span>你参加高考</span></div>
+      <div id="cap-004" class="clip caption" data-start="6.449" data-duration="0.877" data-track-index="20"><span>七年后</span></div>
+      <div id="cap-005" class="clip caption" data-start="7.326" data-duration="1.214" data-track-index="20"><span>你大学毕业</span></div>
+      <div id="cap-006" class="clip caption" data-start="8.540" data-duration="2.236" data-track-index="20"><span>那是2033年左右</span></div>
+      <div id="cap-007" class="clip caption" data-start="10.776" data-duration="0.962" data-track-index="20"><span>到那时</span></div>
+      <div id="cap-008" class="clip caption" data-start="11.738" data-duration="3.293" data-track-index="20"><span>AI已经深度改变了几乎每一个行业</span></div>
+      <div id="cap-009" class="clip caption" data-start="15.031" data-duration="1.755" data-track-index="20"><span>所以，今天的你</span></div>
+      <div id="cap-010" class="clip caption" data-start="16.786" data-duration="0.949" data-track-index="20"><span>该怎么学</span></div>
+      <div id="cap-011" class="clip caption" data-start="17.735" data-duration="2.059" data-track-index="20"><span>又该怎么规划人生？</span></div>
+      <div id="cap-012" class="clip caption" data-start="21.492" data-duration="1.154" data-track-index="20"><span>先想清楚</span></div>
+      <div id="cap-013" class="clip caption" data-start="22.646" data-duration="2.137" data-track-index="20"><span>AI到底改变了什么</span></div>
+      <div id="cap-014" class="clip caption" data-start="24.783" data-duration="0.770" data-track-index="20"><span>过去</span></div>
+      <div id="cap-015" class="clip caption" data-start="25.553" data-duration="1.779" data-track-index="20"><span>谁记得多、算得快</span></div>
+      <div id="cap-016" class="clip caption" data-start="27.332" data-duration="2.331" data-track-index="20"><span>谁就有优势。现在</span></div>
+      <div id="cap-017" class="clip caption" data-start="29.663" data-duration="1.431" data-track-index="20"><span>答案越来越便宜</span></div>
+      <div id="cap-018" class="clip caption" data-start="31.094" data-duration="1.586" data-track-index="20"><span>随手一问就有</span></div>
+      <div id="cap-019" class="clip caption" data-start="32.680" data-duration="1.478" data-track-index="20"><span>真正变得值钱的</span></div>
+      <div id="cap-020" class="clip caption" data-start="34.158" data-duration="1.298" data-track-index="20"><span>是三样东西</span></div>
+      <div id="cap-021" class="clip caption" data-start="35.456" data-duration="1.623" data-track-index="20"><span>提出好问题的能力</span></div>
+      <div id="cap-022" class="clip caption" data-start="37.079" data-duration="1.983" data-track-index="20"><span>判断对错与好坏的能力</span></div>
+      <div id="cap-023" class="clip caption" data-start="39.062" data-duration="3.942" data-track-index="20"><span>以及和AI协作、把事情做成的能力</span></div>
+      <div id="cap-024" class="clip caption" data-start="44.052" data-duration="1.959" data-track-index="20"><span>学习上，第一件事</span></div>
+      <div id="cap-025" class="clip caption" data-start="46.011" data-duration="2.114" data-track-index="20"><span>地基比以往更重要</span></div>
+      <div id="cap-026" class="clip caption" data-start="48.125" data-duration="1.742" data-track-index="20"><span>数学训练的是逻辑</span></div>
+      <div id="cap-027" class="clip caption" data-start="49.867" data-duration="2.525" data-track-index="20"><span>语文训练的是思考和表达</span></div>
+      <div id="cap-028" class="clip caption" data-start="52.392" data-duration="3.870" data-track-index="20"><span>英语让你直接读到世界最前沿的信息</span></div>
+      <div id="cap-029" class="clip caption" data-start="56.262" data-duration="1.550" data-track-index="20"><span>计算器发明以后</span></div>
+      <div id="cap-030" class="clip caption" data-start="57.812" data-duration="1.671" data-track-index="20"><span>我们依然要学算术</span></div>
+      <div id="cap-031" class="clip caption" data-start="59.483" data-duration="2.440" data-track-index="20"><span>因为你得知道答案对不对</span></div>
+      <div id="cap-032" class="clip caption" data-start="61.923" data-duration="1.865" data-track-index="20"><span>AI也一样</span></div>
+      <div id="cap-033" class="clip caption" data-start="64.836" data-duration="1.046" data-track-index="20"><span>第二件事</span></div>
+      <div id="cap-034" class="clip caption" data-start="65.882" data-duration="1.466" data-track-index="20"><span>把AI当教练</span></div>
+      <div id="cap-035" class="clip caption" data-start="67.348" data-duration="1.525" data-track-index="20"><span>而不是枪手</span></div>
+      <div id="cap-036" class="clip caption" data-start="68.873" data-duration="1.286" data-track-index="20"><span>原则很简单</span></div>
+      <div id="cap-037" class="clip caption" data-start="70.159" data-duration="1.057" data-track-index="20"><span>先自己想</span></div>
+      <div id="cap-038" class="clip caption" data-start="71.216" data-duration="1.539" data-track-index="20"><span>再问AI</span></div>
+      <div id="cap-039" class="clip caption" data-start="72.755" data-duration="1.791" data-track-index="20"><span>作业先独立完成</span></div>
+      <div id="cap-040" class="clip caption" data-start="74.546" data-duration="2.404" data-track-index="20"><span>再让AI帮你复盘错题</span></div>
+      <div id="cap-041" class="clip caption" data-start="76.950" data-duration="2.403" data-track-index="20"><span>找到错误背后的知识漏洞</span></div>
+      <div id="cap-042" class="clip caption" data-start="79.353" data-duration="1.262" data-track-index="20"><span>更厉害的用法</span></div>
+      <div id="cap-043" class="clip caption" data-start="80.615" data-duration="2.464" data-track-index="20"><span>是你把一个概念讲给AI听</span></div>
+      <div id="cap-044" class="clip caption" data-start="83.079" data-duration="2.188" data-track-index="20"><span>让它像老师一样追问你</span></div>
+      <div id="cap-045" class="clip caption" data-start="85.267" data-duration="1.382" data-track-index="20"><span>哪里讲不清楚</span></div>
+      <div id="cap-046" class="clip caption" data-start="86.649" data-duration="3.059" data-track-index="20"><span>哪里就是你还没真正懂的地方</span></div>
+      <div id="cap-047" class="clip caption" data-start="90.756" data-duration="1.094" data-track-index="20"><span>第三件事</span></div>
+      <div id="cap-048" class="clip caption" data-start="91.850" data-duration="1.021" data-track-index="20"><span>学会提问</span></div>
+      <div id="cap-049" class="clip caption" data-start="92.871" data-duration="1.537" data-track-index="20"><span>也学会怀疑</span></div>
+      <div id="cap-050" class="clip caption" data-start="94.408" data-duration="3.293" data-track-index="20"><span>AI有时会一本正经地胡说八道</span></div>
+      <div id="cap-051" class="clip caption" data-start="97.701" data-duration="1.443" data-track-index="20"><span>养成三个习惯</span></div>
+      <div id="cap-052" class="clip caption" data-start="99.144" data-duration="1.790" data-track-index="20"><span>看来源，查逻辑</span></div>
+      <div id="cap-053" class="clip caption" data-start="100.934" data-duration="1.383" data-track-index="20"><span>多方验证</span></div>
+      <div id="cap-054" class="clip caption" data-start="102.317" data-duration="1.550" data-track-index="20"><span>能分辨真假的人</span></div>
+      <div id="cap-055" class="clip caption" data-start="103.867" data-duration="2.281" data-track-index="20"><span>才不会被信息淹没</span></div>
+      <div id="cap-056" class="clip caption" data-start="107.196" data-duration="1.731" data-track-index="20"><span>高一还有一件大事</span></div>
+      <div id="cap-057" class="clip caption" data-start="108.927" data-duration="1.080" data-track-index="20"><span>选科</span></div>
+      <div id="cap-058" class="clip caption" data-start="110.007" data-duration="1.418" data-track-index="20"><span>依据只有三个</span></div>
+      <div id="cap-059" class="clip caption" data-start="111.425" data-duration="0.925" data-track-index="20"><span>你的兴趣</span></div>
+      <div id="cap-060" class="clip caption" data-start="112.350" data-duration="0.902" data-track-index="20"><span>你的能力</span></div>
+      <div id="cap-061" class="clip caption" data-start="113.252" data-duration="2.524" data-track-index="20"><span>和你未来想读的专业要求</span></div>
+      <div id="cap-062" class="clip caption" data-start="115.776" data-duration="3.413" data-track-index="20"><span>请不要因为“女生学不好理科”这种刻板印象</span></div>
+      <div id="cap-063" class="clip caption" data-start="119.189" data-duration="1.803" data-track-index="20"><span>就放弃物理和化学</span></div>
+      <div id="cap-064" class="clip caption" data-start="120.992" data-duration="0.685" data-track-index="20"><span>同样</span></div>
+      <div id="cap-065" class="clip caption" data-start="121.677" data-duration="1.803" data-track-index="20"><span>如果你真心热爱文史</span></div>
+      <div id="cap-066" class="clip caption" data-start="123.480" data-duration="1.755" data-track-index="20"><span>也请大胆选择</span></div>
+      <div id="cap-067" class="clip caption" data-start="125.235" data-duration="2.404" data-track-index="20"><span>AI时代既需要懂技术的人</span></div>
+      <div id="cap-068" class="clip caption" data-start="127.639" data-duration="1.957" data-track-index="20"><span>也需要懂人的人</span></div>
+      <div id="cap-069" class="clip caption" data-start="130.644" data-duration="1.825" data-track-index="20"><span>再说人生规划</span></div>
+      <div id="cap-070" class="clip caption" data-start="132.469" data-duration="1.827" data-track-index="20"><span>在变化这么快的时代</span></div>
+      <div id="cap-071" class="clip caption" data-start="134.296" data-duration="2.115" data-track-index="20"><span>与其画一张精确的地图</span></div>
+      <div id="cap-072" class="clip caption" data-start="136.411" data-duration="2.404" data-track-index="20"><span>不如给自己装一个指南针</span></div>
+      <div id="cap-073" class="clip caption" data-start="138.815" data-duration="1.827" data-track-index="20"><span>指南针怎么校准？</span></div>
+      <div id="cap-074" class="clip caption" data-start="140.642" data-duration="1.683" data-track-index="20"><span>找到三个圆的交集</span></div>
+      <div id="cap-075" class="clip caption" data-start="142.325" data-duration="1.106" data-track-index="20"><span>我喜欢什么</span></div>
+      <div id="cap-076" class="clip caption" data-start="143.431" data-duration="1.141" data-track-index="20"><span>我擅长什么</span></div>
+      <div id="cap-077" class="clip caption" data-start="144.572" data-duration="1.872" data-track-index="20"><span>世界需要什么</span></div>
+      <div id="cap-078" class="clip caption" data-start="147.492" data-duration="0.709" data-track-index="20"><span>高中</span></div>
+      <div id="cap-079" class="clip caption" data-start="148.201" data-duration="2.955" data-track-index="20"><span>是人生中试错成本最低的时候</span></div>
+      <div id="cap-080" class="clip caption" data-start="151.156" data-duration="1.238" data-track-index="20"><span>去参加社团</span></div>
+      <div id="cap-081" class="clip caption" data-start="152.394" data-duration="1.046" data-track-index="20"><span>试试竞赛</span></div>
+      <div id="cap-082" class="clip caption" data-start="153.440" data-duration="1.322" data-track-index="20"><span>做一个小项目</span></div>
+      <div id="cap-083" class="clip caption" data-start="154.762" data-duration="2.416" data-track-index="20"><span>比如用AI做一个小程序</span></div>
+      <div id="cap-084" class="clip caption" data-start="157.178" data-duration="1.117" data-track-index="20"><span>拍一部短片</span></div>
+      <div id="cap-085" class="clip caption" data-start="158.295" data-duration="1.899" data-track-index="20"><span>写一份研究报告</span></div>
+      <div id="cap-086" class="clip caption" data-start="160.194" data-duration="1.202" data-track-index="20"><span>每一次尝试</span></div>
+      <div id="cap-087" class="clip caption" data-start="161.396" data-duration="2.184" data-track-index="20"><span>都在帮你校准方向</span></div>
+      <div id="cap-088" class="clip caption" data-start="164.628" data-duration="1.226" data-track-index="20"><span>还有一些能力</span></div>
+      <div id="cap-089" class="clip caption" data-start="165.854" data-duration="1.935" data-track-index="20"><span>是AI很难替代的</span></div>
+      <div id="cap-090" class="clip caption" data-start="167.789" data-duration="1.491" data-track-index="20"><span>好奇心，审美</span></div>
+      <div id="cap-091" class="clip caption" data-start="169.280" data-duration="1.560" data-track-index="20"><span>同理心，表达</span></div>
+      <div id="cap-092" class="clip caption" data-start="170.840" data-duration="3.005" data-track-index="20"><span>以及跌倒后还能爬起来的韧性</span></div>
+      <div id="cap-093" class="clip caption" data-start="173.845" data-duration="1.731" data-track-index="20"><span>它们不在考试大纲里</span></div>
+      <div id="cap-094" class="clip caption" data-start="175.576" data-duration="2.788" data-track-index="20"><span>却决定了你能走多远</span></div>
+      <div id="cap-095" class="clip caption" data-start="179.412" data-duration="2.065" data-track-index="20"><span>也请好好照顾自己</span></div>
+      <div id="cap-096" class="clip caption" data-start="181.477" data-duration="1.815" data-track-index="20"><span>睡够觉，多运动</span></div>
+      <div id="cap-097" class="clip caption" data-start="183.292" data-duration="3.378" data-track-index="20"><span>把注意力从刷不完的短视频里抢回来</span></div>
+      <div id="cap-098" class="clip caption" data-start="186.670" data-duration="1.430" data-track-index="20"><span>不要总和别人比</span></div>
+      <div id="cap-099" class="clip caption" data-start="188.100" data-duration="2.428" data-track-index="20"><span>和昨天的自己比就好</span></div>
+      <div id="cap-100" class="clip caption" data-start="190.528" data-duration="0.889" data-track-index="20"><span>在网上</span></div>
+      <div id="cap-101" class="clip caption" data-start="191.417" data-duration="2.536" data-track-index="20"><span>保护好自己的照片和隐私</span></div>
+      <div id="cap-102" class="clip caption" data-start="193.953" data-duration="1.755" data-track-index="20"><span>还有，敢于举手</span></div>
+      <div id="cap-103" class="clip caption" data-start="195.708" data-duration="1.094" data-track-index="20"><span>敢于表达</span></div>
+      <div id="cap-104" class="clip caption" data-start="196.802" data-duration="2.274" data-track-index="20"><span>你的声音值得被听见</span></div>
+      <div id="cap-105" class="clip caption" data-start="200.124" data-duration="0.793" data-track-index="20"><span>最后</span></div>
+      <div id="cap-106" class="clip caption" data-start="200.917" data-duration="2.619" data-track-index="20"><span>送你一份明天就能开始的清单</span></div>
+      <div id="cap-107" class="clip caption" data-start="203.536" data-duration="0.829" data-track-index="20"><span>每天</span></div>
+      <div id="cap-108" class="clip caption" data-start="204.365" data-duration="2.800" data-track-index="20"><span>留出一段不碰手机的专注时间</span></div>
+      <div id="cap-109" class="clip caption" data-start="207.165" data-duration="0.758" data-track-index="20"><span>每周</span></div>
+      <div id="cap-110" class="clip caption" data-start="207.923" data-duration="2.139" data-track-index="20"><span>用AI复盘一次错题</span></div>
+      <div id="cap-111" class="clip caption" data-start="210.062" data-duration="1.563" data-track-index="20"><span>读一篇好文章</span></div>
+      <div id="cap-112" class="clip caption" data-start="211.625" data-duration="0.949" data-track-index="20"><span>每学期</span></div>
+      <div id="cap-113" class="clip caption" data-start="212.574" data-duration="2.332" data-track-index="20"><span>尝试一件从没做过的事</span></div>
+      <div id="cap-114" class="clip caption" data-start="214.906" data-duration="0.721" data-track-index="20"><span>今年</span></div>
+      <div id="cap-115" class="clip caption" data-start="215.627" data-duration="2.187" data-track-index="20"><span>给十八岁的自己写一封信</span></div>
+      <div id="cap-116" class="clip caption" data-start="217.814" data-duration="2.406" data-track-index="20"><span>写下你想成为的样子</span></div>
+      <div id="cap-117" class="clip caption" data-start="221.418" data-duration="1.599" data-track-index="20"><span>AI可以给你答案</span></div>
+      <div id="cap-118" class="clip caption" data-start="223.017" data-duration="1.033" data-track-index="20"><span>但只有你</span></div>
+      <div id="cap-119" class="clip caption" data-start="224.050" data-duration="2.162" data-track-index="20"><span>能决定自己想成为谁</span></div>
+      <div id="cap-120" class="clip caption" data-start="226.212" data-duration="2.031" data-track-index="20"><span>未来不是被预测出来的</span></div>
+      <div id="cap-121" class="clip caption" data-start="228.243" data-duration="2.584" data-track-index="20"><span>而是被你一点一点创造出来的</span></div>
+      <div id="cap-122" class="clip caption" data-start="230.827" data-duration="1.927" data-track-index="20"><span>加油，女孩！</span></div>
+
+      <audio id="narration" src="assets/narration.mp3" data-start="0" data-duration="236.504" data-track-index="30" data-volume="1"></audio>
+      <audio id="bgm" src="assets/bgm.mp3" data-start="0" data-duration="236.504" data-track-index="31" data-volume="0.14"></audio>
+    </div>
+
+    <script>
+      const T = {"s01": {"start": 0.0, "dur": 20.944, "end": 20.944, "vo": 0.8, "speech": 18.744, "cues": {"g1": 1.848, "gk": 4.25, "grad": 6.449, "ai": 10.776, "q": 15.031}}, "s02": {"start": 20.944, "dur": 22.56, "end": 43.504, "vo": 21.394, "speech": 21.36, "cues": {"past": 24.783, "now": 28.87, "three": 32.68, "q": 35.456, "j": 37.079, "c": 39.459}}, "s03": {"start": 43.504, "dur": 20.784, "end": 64.288, "vo": 43.954, "speech": 19.584, "cues": {"math": 48.125, "chn": 49.867, "eng": 52.392, "calc": 56.262, "ai": 61.923}}, "s04": {"start": 64.288, "dur": 25.92, "end": 90.208, "vo": 64.738, "speech": 24.72, "cues": {"r1": 70.159, "r2": 72.755, "r3": 81.625, "ask": 84.161, "gap": 85.267}}, "s05": {"start": 90.208, "dur": 16.44, "end": 106.648, "vo": 90.658, "speech": 15.24, "cues": {"wrong": 95.61, "h1": 99.144, "h2": 100.021, "h3": 100.934, "end": 102.317}}, "s06": {"start": 106.648, "dur": 23.448, "end": 130.096, "vo": 107.098, "speech": 22.248, "cues": {"subj": 108.927, "i": 111.425, "a": 112.35, "m": 114.37, "st": 115.776, "wen": 122.447, "both": 126.1}}, "s07": {"start": 130.096, "dur": 16.848, "end": 146.944, "vo": 130.546, "speech": 15.648, "cues": {"map": 135.702, "comp": 137.637, "v1": 142.325, "v2": 143.431, "v3": 144.572}}, "s08": {"start": 146.944, "dur": 17.136, "end": 164.08, "vo": 147.394, "speech": 15.936, "cues": {"club": 151.661, "comp": 152.718, "proj": 153.812, "e1": 156.252, "e2": 157.574, "e3": 158.872, "cal": 160.194}}, "s09": {"start": 164.08, "dur": 14.784, "end": 178.864, "vo": 164.53, "speech": 13.584, "cues": {"cur": 167.789, "aes": 168.594, "emp": 169.28, "exp": 170.169, "grit": 170.84, "far": 173.845}}, "s10": {"start": 178.864, "dur": 20.712, "end": 199.576, "vo": 179.314, "speech": 19.512, "cues": {"sleep": 181.477, "sport": 182.391, "focus": 183.292, "self": 186.67, "priv": 190.528, "voice": 194.687}}, "s11": {"start": 199.576, "dur": 21.144, "end": 220.72, "vo": 200.026, "speech": 19.944, "cues": {"d": 203.536, "w": 207.165, "t": 211.625, "y": 214.906}}, "s12": {"start": 220.72, "dur": 15.784, "end": 236.504, "vo": 221.32, "speech": 11.184, "cues": {"l1": 221.418, "l2": 223.017, "l3": 226.212, "l4": 230.827}}};
+      const TOTAL = Number(document.getElementById("root").dataset.duration);
+      const tl = gsap.timeline({ paused: true });
+      const C = (s, k) => T[s].cues[k];
+
+      function reveal(sel, at, from, opts) {
+        tl.fromTo(sel, Object.assign({ opacity: 0 }, from || { y: 34 }), Object.assign({ opacity: 1, x: 0, y: 0, scale: 1, rotation: 0, duration: 0.6, ease: "power3.out" }, opts || {}), at);
+      }
+      function sceneIn(id, sel) {
+        const s = T[id];
+        tl.fromTo(sel || `#${id} .inner`, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, s.start + 0.02);
+      }
+      function sceneOut(id, sel) {
+        const s = T[id];
+        tl.to(sel || `#${id} .inner`, { opacity: 0, y: -18, duration: 0.42, ease: "power2.in" }, s.end - 0.44);
+      }
+
+      // persistent background drift + progress bar
+      tl.fromTo(".blob.b1", { x: 0, y: 0 }, { x: 160, y: 90, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".blob.b2", { x: 0, y: 0 }, { x: -140, y: -120, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".blob.b3", { x: 0, y: 0 }, { x: 220, y: -60, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".progress-fill", { scaleX: 0 }, { scaleX: 1, duration: TOTAL, ease: "none" }, 0);
+
+      // s01
+      {
+        const s = T.s01;
+        tl.fromTo("#s01 .s01-a", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s.start);
+        reveal("#s01 .s01-lead", s.start + 0.2);
+        reveal("#s01 .s01-age", s.start + 0.5, { scale: 0.6, y: 0 }, { duration: 0.8, ease: "back.out(1.8)" });
+        reveal("#s01 .n1", C("s01", "g1"), { y: 24, scale: 0.8 });
+        tl.fromTo("#s01 .tl-fill", { scaleX: 0 }, { scaleX: 0.5, duration: 0.8, ease: "power2.inOut" }, C("s01", "gk") - 0.3);
+        reveal("#s01 .n2", C("s01", "gk"), { y: 24, scale: 0.8 });
+        tl.to("#s01 .tl-fill", { scaleX: 1, duration: 0.8, ease: "power2.inOut" }, C("s01", "grad") - 0.3);
+        reveal("#s01 .n3", C("s01", "grad"), { y: 24, scale: 0.8 });
+        reveal("#s01 .s01-ai", C("s01", "ai"), { y: 30 });
+        tl.to("#s01 .s01-a", { opacity: 0, y: -30, duration: 0.5, ease: "power2.in" }, C("s01", "q") - 0.5);
+        tl.fromTo("#s01 .s01-b", { opacity: 0 }, { opacity: 1, duration: 0.3 }, C("s01", "q") - 0.05);
+        reveal("#s01 .hero-kicker", C("s01", "q"), { y: 20 });
+        reveal("#s01 .hero", C("s01", "q") + 0.15, { y: 50, scale: 0.94 }, { duration: 0.9 });
+        tl.fromTo("#s01 .hero-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power3.out" }, C("s01", "q") + 0.7);
+        reveal("#s01 .hero-sub", C("s01", "q") + 1.0, { y: 20 });
+        sceneOut("s01", "#s01 .s01-b");
+      }
+
+      // s02
+      {
+        sceneIn("s02");
+        reveal("#s02 .s02-past", C("s02", "past"), { x: -40 });
+        tl.fromTo("#s02 .s02-past .strike", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, C("s02", "now") - 0.5);
+        reveal("#s02 .s02-arrow", C("s02", "now") - 0.2, { x: -20 });
+        reveal("#s02 .s02-now", C("s02", "now"), { x: 40 });
+        reveal("#s02 .v-q", C("s02", "q"), { y: 50 });
+        reveal("#s02 .v-j", C("s02", "j"), { y: 50 });
+        reveal("#s02 .v-c", C("s02", "c"), { y: 50 });
+        sceneOut("s02");
+      }
+
+      // s03
+      {
+        sceneIn("s03");
+        reveal("#s03 .p-math", C("s03", "math") - 0.1, { y: 60 });
+        reveal("#s03 .p-chn", C("s03", "chn") - 0.1, { y: 60 });
+        reveal("#s03 .p-eng", C("s03", "eng") - 0.1, { y: 60 });
+        reveal("#s03 .s03-calc", C("s03", "calc"), { x: -40 });
+        tl.fromTo("#s03 .s03-calc", { scale: 1 }, { scale: 1.05, duration: 0.35, yoyo: true, repeat: 1, ease: "power1.inOut" }, C("s03", "ai"));
+        sceneOut("s03");
+      }
+
+      // s04
+      {
+        sceneIn("s04");
+        reveal("#s04 .r1", C("s04", "r1"), { x: -40 });
+        reveal("#s04 .r2", C("s04", "r2"), { x: -40 });
+        reveal("#s04 .r3", C("s04", "r3") - 0.2, { x: -40 });
+        reveal("#s04 .chat", C("s04", "r3") - 0.2, { x: 50 });
+        reveal("#s04 .b1", C("s04", "r3") + 0.4, { y: 20, scale: 0.9 });
+        reveal("#s04 .b2", C("s04", "ask"), { y: 20, scale: 0.9 });
+        reveal("#s04 .b3", C("s04", "gap") - 0.4, { y: 20, scale: 0.9 });
+        reveal("#s04 .gap-note", C("s04", "gap") + 0.5, { scale: 0.6, y: 0 }, { ease: "back.out(2)" });
+        sceneOut("s04");
+      }
+
+      // s05
+      {
+        sceneIn("s05");
+        reveal("#s05 .fake", T.s05.vo + 0.6, { x: -40 });
+        reveal("#s05 .stamp", C("s05", "wrong") + 0.3, { scale: 2.2, rotation: -24, y: 0 }, { rotation: -10, duration: 0.45, ease: "power4.in" });
+        reveal("#s05 .h1", C("s05", "h1"), { x: 40 });
+        reveal("#s05 .h2", C("s05", "h2"), { x: 40 });
+        reveal("#s05 .h3", C("s05", "h3"), { x: 40 });
+        reveal("#s05 .s05-end", C("s05", "end"), { y: 24 });
+        sceneOut("s05");
+      }
+
+      // s06
+      {
+        sceneIn("s06");
+        reveal("#s06 .formula", C("s06", "subj"), { y: 30 });
+        reveal("#s06 .fnote", C("s06", "subj") + 0.4, { y: 10 });
+        reveal("#s06 .c-i", C("s06", "i"), { scale: 0.6, y: 0 }, { ease: "back.out(2)" });
+        reveal("#s06 .c-a", C("s06", "a"), { scale: 0.6, y: 0 }, { ease: "back.out(2)" });
+        reveal("#s06 .c-m", C("s06", "m"), { scale: 0.6, y: 0 }, { ease: "back.out(2)" });
+        tl.to("#s06 .p1", { opacity: 0, y: -24, duration: 0.4, ease: "power2.in" }, C("s06", "st") - 0.45);
+        reveal("#s06 .myth", C("s06", "st"), { y: 30 });
+        tl.fromTo("#s06 .myth .strike", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, C("s06", "st") + 2.2);
+        reveal("#s06 .myth-sub", C("s06", "wen") - 0.6, { y: 20 });
+        reveal("#s06 .b-tech", C("s06", "both"), { y: 40 });
+        reveal("#s06 .b-human", C("s06", "both") + 1.6, { y: 40 });
+        sceneOut("s06");
+      }
+
+      // s07
+      {
+        sceneIn("s07");
+        reveal("#s07 .map", C("s07", "map") - 0.3, { x: -40 });
+        reveal("#s07 .map .x", C("s07", "comp") - 0.6, { scale: 0.3, y: 0 }, { ease: "back.out(2.4)" });
+        tl.to("#s07 .map", { opacity: 0.5, duration: 0.4 }, C("s07", "comp") - 0.3);
+        reveal("#s07 .comp", C("s07", "comp"), { x: -40 });
+        tl.fromTo("#s07 .comp .needle", { rotation: -140, svgOrigin: "24 24" }, { rotation: 18, svgOrigin: "24 24", duration: 1.6, ease: "elastic.out(1, 0.35)" }, C("s07", "comp") + 0.2);
+        reveal("#s07 .c1", C("s07", "v1"), { scale: 0.5, y: 0 }, { duration: 0.7, ease: "back.out(1.6)" });
+        reveal("#s07 .c2", C("s07", "v2"), { scale: 0.5, y: 0 }, { duration: 0.7, ease: "back.out(1.6)" });
+        reveal("#s07 .c3", C("s07", "v3"), { scale: 0.5, y: 0 }, { duration: 0.7, ease: "back.out(1.6)" });
+        reveal("#s07 .venn-core", C("s07", "v3") + 1.1, { scale: 0.3, y: 0 }, { ease: "back.out(2.2)" });
+        sceneOut("s07");
+      }
+
+      // s08
+      {
+        sceneIn("s08");
+        reveal("#s08 .t-club", C("s08", "club"), { y: 40 });
+        reveal("#s08 .t-comp", C("s08", "comp"), { y: 40 });
+        reveal("#s08 .t-proj", C("s08", "proj"), { y: 40 });
+        reveal("#s08 .s08-eg .lead", C("s08", "e1") - 0.6, { x: -20 });
+        reveal("#s08 .eg1", C("s08", "e1") - 0.4, { scale: 0.7, y: 0 }, { ease: "back.out(2)" });
+        reveal("#s08 .eg2", C("s08", "e2"), { scale: 0.7, y: 0 }, { ease: "back.out(2)" });
+        reveal("#s08 .eg3", C("s08", "e3"), { scale: 0.7, y: 0 }, { ease: "back.out(2)" });
+        reveal("#s08 .s08-cal", C("s08", "cal"), { y: 30 });
+        tl.fromTo("#s08 .s08-cal .needle", { rotation: 120, svgOrigin: "24 24" }, { rotation: -12, svgOrigin: "24 24", duration: 1.8, ease: "elastic.out(1, 0.3)" }, C("s08", "cal") + 0.2);
+        sceneOut("s08");
+      }
+
+      // s09
+      {
+        sceneIn("s09");
+        reveal("#s09 .core", T.s09.vo, { scale: 0.4, y: 0 }, { duration: 0.8, ease: "back.out(1.7)" });
+        reveal("#s09 .pt1", C("s09", "cur"), { scale: 0.3, y: 0 }, { ease: "back.out(2.2)" });
+        reveal("#s09 .pt2", C("s09", "aes"), { scale: 0.3, y: 0 }, { ease: "back.out(2.2)" });
+        reveal("#s09 .pt3", C("s09", "emp"), { scale: 0.3, y: 0 }, { ease: "back.out(2.2)" });
+        reveal("#s09 .pt4", C("s09", "exp"), { scale: 0.3, y: 0 }, { ease: "back.out(2.2)" });
+        reveal("#s09 .pt5", C("s09", "grit") + 0.5, { scale: 0.3, y: 0 }, { ease: "back.out(2.2)" });
+        tl.fromTo("#s09 .core span", { scale: 1 }, { scale: 1.08, duration: 0.4, yoyo: true, repeat: 1, ease: "power1.inOut" }, C("s09", "far"));
+        reveal("#s09 .s09-far", C("s09", "far") + 0.2, { y: 24 });
+        reveal("#s09 .s09-far", C("s09", "far") + 0.2, { y: 24 });
+        sceneOut("s09");
+      }
+
+      // s10
+      {
+        sceneIn("s10");
+        reveal("#s10 .k-sleep", C("s10", "sleep"), { y: 40 });
+        reveal("#s10 .k-sport", C("s10", "sport"), { y: 40 });
+        reveal("#s10 .k-focus", C("s10", "focus"), { y: 40 });
+        reveal("#s10 .k-self", C("s10", "self"), { y: 40 });
+        reveal("#s10 .k-priv", C("s10", "priv"), { y: 40 });
+        reveal("#s10 .k-voice", C("s10", "voice"), { y: 40 });
+        sceneOut("s10");
+      }
+
+      // s11
+      {
+        sceneIn("s11");
+        reveal("#s11 .note", T.s11.vo + 0.3, { y: 40 });
+        const keys = ["d", "w", "t", "y"];
+        const rows = [".i-d", ".i-w", ".i-t", ".i-y"];
+        keys.forEach((k, i) => {
+          reveal(`#s11 ${rows[i]}`, C("s11", k) - 0.1, { x: -30 });
+          const tickAt = i < 3 ? C("s11", keys[i + 1]) - 0.7 : T.s11.end - 1.6;
+          tl.fromTo(`#s11 ${rows[i]} .tick`, { strokeDashoffset: 60 }, { strokeDashoffset: 0, duration: 0.45, ease: "power2.out" }, tickAt);
+        });
+        sceneOut("s11");
+      }
+
+      // s12
+      {
+        const s = T.s12;
+        tl.fromTo("#s12 .inner", { opacity: 0 }, { opacity: 1, duration: 0.4 }, s.start);
+        reveal("#s12 .e1", C("s12", "l1") - 0.1, { y: 30 }, { duration: 0.8 });
+        reveal("#s12 .e2", C("s12", "l2") - 0.1, { y: 30 }, { duration: 0.8 });
+        reveal("#s12 .e3", C("s12", "l3") - 0.1, { y: 24 }, { duration: 0.8 });
+        reveal("#s12 .cheer", C("s12", "l4") - 0.1, { scale: 0.7, y: 20 }, { duration: 0.9, ease: "back.out(1.8)" });
+        reveal("#s12 .credit", C("s12", "l4") + 1.2, { y: 10 });
+      }
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

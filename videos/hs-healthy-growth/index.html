@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="zh-CN" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Noto Sans SC"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-400.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Sans SC"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-700.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Sans SC"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-900.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Serif SC"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/noto-serif-sc-700.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Serif SC"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/noto-serif-sc-900.woff2") format("woff2"); }
+      @font-face { font-family: "Ma Shan Zheng"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/ma-shan-zheng-400.woff2") format("woff2"); }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #f7f4ee; }
+
+      :root {
+        --ink: #22253a;
+        --muted: #646a84;
+        --paper: #f7f4ee;
+        --card: #fffdf9;
+        --coral: #d63c28;
+        --peach: #ffb38a;
+        --mint: #17977f;
+        --sky: #3470e0;
+        --lav: #6b5be6;
+        --sun: #f2b01e;
+        --line: rgba(34, 37, 58, 0.12);
+      }
+
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: "Noto Sans SC", sans-serif;
+        font-weight: 400;
+      }
+
+      .bg { position: absolute; inset: 0; }
+      .dots {
+        position: absolute; inset: 0;
+        background-image: radial-gradient(rgba(34, 37, 58, 0.07) 1.6px, transparent 2px);
+        background-size: 28px 28px;
+      }
+      .glow { position: absolute; border-radius: 50%; }
+      .g1 { width: 760px; height: 760px; left: -220px; top: -260px; background: radial-gradient(circle, rgba(255, 179, 138, 0.55) 0%, rgba(255, 179, 138, 0) 68%); }
+      .g2 { width: 680px; height: 680px; right: -200px; top: 280px; background: radial-gradient(circle, rgba(185, 220, 255, 0.5) 0%, rgba(185, 220, 255, 0) 70%); }
+      .g3 { width: 620px; height: 620px; left: 540px; bottom: -320px; background: radial-gradient(circle, rgba(196, 232, 214, 0.55) 0%, rgba(196, 232, 214, 0) 70%); }
+
+      .brand {
+        position: absolute; top: 36px; right: 64px;
+        font-size: 22px; font-weight: 700; letter-spacing: 0.14em; color: rgba(34, 37, 58, 0.55);
+      }
+      .progress { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: rgba(34, 37, 58, 0.06); }
+      .progress-fill { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, var(--coral), var(--lav)); transform-origin: 0 50%; }
+
+      .scene { position: absolute; inset: 0; }
+      .inner {
+        position: absolute; inset: 0;
+        padding: 78px 120px 200px;
+        display: flex; flex-direction: column;
+      }
+      .center { align-items: center; justify-content: center; text-align: center; }
+      .tag {
+        align-self: flex-start;
+        display: inline-flex; align-items: center; gap: 12px;
+        padding: 8px 22px; border-radius: 999px;
+        background: var(--ink); color: #fff;
+        font-size: 24px; font-weight: 700; letter-spacing: 0.08em;
+      }
+      .tag b { color: var(--peach); font-weight: 900; }
+      .title {
+        margin-top: 18px;
+        font-family: "Noto Serif SC", serif; font-weight: 900;
+        font-size: 64px; line-height: 1.2;
+      }
+      .title em { font-style: normal; color: var(--coral); }
+      .card {
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 24px;
+        box-shadow: 0 14px 34px rgba(34, 37, 58, 0.07);
+      }
+      svg.ico { display: block; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+      .caption { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 48px; pointer-events: none; }
+      .caption span {
+        display: block; max-width: 1560px;
+        padding: 12px 32px; border-radius: 16px;
+        background: rgba(34, 37, 58, 0.88); color: #fff;
+        font-size: 38px; line-height: 1.35; font-weight: 400; letter-spacing: 0.03em;
+      }
+
+      /* s01 */
+      .title-slot { position: relative; height: 92px; margin-top: 16px; }
+      .title-slot .title { position: absolute; left: 0; top: 0; margin: 0; white-space: nowrap; }
+      .page {
+        margin-top: 28px; height: 520px;
+        display: flex; overflow: hidden; padding: 0;
+      }
+      .page-main { flex: 1; padding: 36px 40px; display: flex; flex-direction: column; justify-content: center; gap: 22px; }
+      .row {
+        display: flex; align-items: baseline; justify-content: space-between;
+        padding: 18px 28px; border-radius: 18px; background: rgba(34, 37, 58, 0.04);
+      }
+      .row .k { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 54px; }
+      .row .v { font-size: 32px; font-weight: 700; color: var(--muted); }
+      .page-margin {
+        width: 460px; flex: none;
+        border-left: 3px solid rgba(232, 85, 63, 0.45);
+        padding: 36px 32px;
+        display: flex; flex-direction: column; gap: 18px;
+        background: rgba(255, 253, 249, 0.5);
+      }
+      .margin-label { font-size: 24px; font-weight: 700; letter-spacing: 0.12em; color: var(--coral); }
+      .note {
+        font-family: "Ma Shan Zheng", cursive; font-size: 46px; line-height: 1.25; color: var(--ink);
+      }
+      .lens-row { margin-top: auto; display: flex; align-items: center; gap: 16px; }
+      .lens { width: 92px; height: 120px; color: var(--coral); flex: none; }
+      .lens-cap { font-size: 28px; font-weight: 900; color: var(--ink); }
+
+      /* s02 */
+      .s02-body { display: flex; gap: 64px; margin-top: 36px; align-items: center; flex: 1; }
+      .s02-col { flex: 1; display: flex; flex-direction: column; gap: 22px; }
+      .quote { position: relative; padding: 22px 32px; font-size: 36px; font-weight: 700; }
+      .quote small { display: block; margin-bottom: 6px; font-size: 22px; font-weight: 700; letter-spacing: 0.08em; }
+      .quote.sharp { color: var(--muted); }
+      .quote.sharp small { color: var(--coral); }
+      .quote .hit { position: relative; display: inline-block; }
+      .quote .strike { position: absolute; left: -2px; right: -2px; top: 54%; height: 6px; border-radius: 3px; background: var(--coral); transform-origin: 0 50%; }
+      .quote.fire small { color: #c9432f; }
+      .quote.kind { background: #e7f6f2; border-color: rgba(23, 151, 127, 0.35); }
+      .quote.kind small { color: var(--mint); }
+      .timer { width: 340px; flex: none; display: flex; flex-direction: column; align-items: center; }
+      .ring-wrap { position: relative; width: 250px; height: 250px; }
+      .ring-wrap svg { width: 250px; height: 250px; }
+      .ring-bg { fill: none; stroke: rgba(34, 37, 58, 0.1); stroke-width: 10; }
+      .ring-fg { fill: none; stroke: var(--coral); stroke-width: 10; stroke-linecap: round; stroke-dasharray: 340; }
+      .sec {
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 96px; color: var(--ink);
+      }
+      .sec span { font-size: 36px; margin-left: 4px; font-family: "Noto Sans SC", sans-serif; }
+      .hint { margin-top: 8px; font-size: 32px; font-weight: 900; color: var(--mint); }
+      .s02-foot { margin-top: 8px; font-size: 32px; font-weight: 700; color: var(--ink); }
+      .s02-foot em { font-style: normal; color: var(--coral); font-weight: 900; }
+
+      /* s03 */
+      .signals { display: flex; gap: 28px; margin-top: 36px; }
+      .sig { flex: 1; padding: 28px 28px 32px; }
+      .sig .dot { width: 18px; height: 18px; border-radius: 50%; background: var(--coral); }
+      .sig h3 { margin-top: 18px; font-size: 40px; font-weight: 900; line-height: 1.25; }
+      .sig p { margin-top: 8px; font-size: 28px; color: var(--muted); font-weight: 700; }
+      .carry-line { margin-top: 28px; font-size: 36px; font-weight: 900; }
+      .carry-line em { font-style: normal; color: var(--coral); }
+      .base { margin-top: 22px; }
+      .base-track { height: 18px; border-radius: 9px; background: rgba(34, 37, 58, 0.08); overflow: hidden; }
+      .base-fill { display: block; width: 100%; height: 100%; border-radius: 9px; background: linear-gradient(90deg, var(--mint), var(--sky)); transform-origin: 0 50%; }
+      .base-label { margin-top: 16px; font-size: 34px; font-weight: 900; }
+      .base-label em { font-style: normal; color: var(--mint); }
+
+      /* s04 */
+      .chips { display: flex; gap: 22px; margin-top: 32px; }
+      .chip {
+        padding: 16px 28px; border-radius: 999px;
+        font-size: 32px; font-weight: 900; color: #fff;
+      }
+      .mood { position: relative; height: 130px; margin-top: 18px; }
+      .mood-base { position: absolute; left: 0; width: 56%; top: 28px; height: 6px; border-radius: 3px; background: rgba(34, 37, 58, 0.2); transform-origin: 0 50%; }
+      .mood-dot { position: absolute; left: 56%; top: 12px; width: 36px; height: 36px; margin-left: -18px; border-radius: 50%; background: var(--coral); }
+      .mood-tag {
+        position: absolute; left: calc(56% + 36px); top: 62px;
+        padding: 8px 20px; border-radius: 999px;
+        background: var(--sun); color: var(--ink);
+        font-size: 30px; font-weight: 900;
+      }
+      .cmp { display: flex; gap: 28px; margin-top: 8px; }
+      .cmp .card { flex: 1; padding: 26px 32px; }
+      .cmp h3 { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 42px; }
+      .cmp p { margin-top: 8px; font-size: 28px; font-weight: 700; color: var(--muted); }
+      .cmp .mine { border-color: rgba(23, 151, 127, 0.45); background: #f3fbf8; }
+      .cmp .mine h3 { color: var(--mint); }
+      .ask {
+        margin-top: 22px; align-self: flex-start;
+        padding: 14px 28px; border-radius: 16px;
+        background: var(--ink); color: #fff;
+        font-size: 32px; font-weight: 700;
+      }
+      .ask b { color: var(--peach); font-weight: 900; }
+
+      /* s05 */
+      .s05-body { display: flex; gap: 70px; margin-top: 28px; align-items: center; flex: 1; }
+      .rail { position: relative; width: 340px; height: 480px; flex: none; }
+      .rail-track { position: absolute; left: 168px; top: 28px; bottom: 28px; width: 8px; border-radius: 4px; background: rgba(34, 37, 58, 0.12); }
+      .mark { position: absolute; left: 0; width: 120px; text-align: right; font-size: 28px; font-weight: 900; color: var(--muted); }
+      .m-top { top: 16px; }
+      .m-mid { top: 206px; }
+      .m-bot { top: 392px; }
+      .hand {
+        position: absolute; left: 132px; top: 364px;
+        width: 80px; height: 80px; border-radius: 50%;
+        background: var(--coral); color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 40px;
+      }
+      .s05-copy { flex: 1; display: flex; flex-direction: column; gap: 22px; }
+      .s05-copy .card { padding: 22px 28px; font-size: 36px; font-weight: 900; }
+      .s05-copy .card small { display: block; font-size: 22px; font-weight: 700; color: var(--muted); letter-spacing: 0.06em; margin-bottom: 4px; }
+      .ok {
+        align-self: flex-start; margin-top: 6px;
+        padding: 12px 26px; border-radius: 999px;
+        background: var(--mint); color: #fff;
+        font-size: 32px; font-weight: 900;
+      }
+
+      /* s06 */
+      .clock {
+        align-self: flex-start; margin-top: 16px;
+        padding: 8px 18px; border-radius: 999px;
+        background: var(--lav); color: #fff;
+        font-size: 26px; font-weight: 900; letter-spacing: 0.06em;
+      }
+      .papers { display: flex; gap: 36px; margin-top: 22px; }
+      .paper { flex: 1; height: 300px; position: relative; padding: 32px 36px; }
+      .face { position: absolute; left: 32px; right: 32px; top: 32px; }
+      .paper .big { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 64px; }
+      .paper .sub { margin-top: 10px; font-size: 30px; font-weight: 700; color: var(--muted); }
+      .paper.left .back .sub { color: var(--peach); }
+      .xmark { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 72px; color: var(--coral); line-height: 1; }
+      .why {
+        margin-top: 18px;
+        font-family: "Ma Shan Zheng", cursive; font-size: 48px; color: var(--ink); line-height: 1.3;
+      }
+      .why small { display: block; font-family: "Noto Sans SC", sans-serif; font-size: 24px; font-weight: 700; color: var(--muted); letter-spacing: 0.08em; }
+      .map-line { margin-top: 22px; font-size: 36px; font-weight: 900; }
+      .map-line em { font-style: normal; color: var(--sky); }
+
+      /* s07 */
+      .table-scene { margin-top: 28px; display: flex; flex-direction: column; align-items: center; }
+      .seats { display: flex; gap: 80px; align-items: flex-end; }
+      .seat { width: 220px; display: flex; flex-direction: column; align-items: center; position: relative; }
+      .who {
+        width: 120px; height: 120px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 48px; color: #fff;
+      }
+      .seat .name { margin-top: 12px; font-size: 30px; font-weight: 900; }
+      .quiet-tag {
+        position: absolute; top: -18px; right: -10px;
+        padding: 6px 14px; border-radius: 999px;
+        background: var(--sun); color: var(--ink);
+        font-size: 24px; font-weight: 900;
+      }
+      .table {
+        width: 860px; height: 28px; margin-top: 22px; border-radius: 14px;
+        background: #e7d3b0; border: 2px solid rgba(34, 37, 58, 0.12);
+      }
+      .thanks {
+        margin-top: 26px; padding: 12px 28px; border-radius: 999px;
+        background: var(--coral); color: #fff; font-size: 32px; font-weight: 900;
+      }
+      .soil { margin-top: 28px; width: 980px; }
+      .soil-bar { height: 16px; border-radius: 8px; background: linear-gradient(90deg, #8a5a34, var(--mint)); }
+      .soil-label { margin-top: 12px; text-align: center; font-size: 32px; font-weight: 900; }
+      .soil-label em { font-style: normal; color: var(--mint); }
+      .day-line { margin-top: 16px; font-size: 30px; font-weight: 700; color: var(--muted); text-align: center; }
+
+      /* s08 */
+      .steps { display: flex; gap: 18px; margin-top: 26px; align-items: center; }
+      .step { padding: 12px 22px; border-radius: 14px; background: var(--card); border: 2px solid var(--line); font-size: 30px; font-weight: 900; }
+      .step-arrow { color: var(--muted); font-size: 28px; font-weight: 900; }
+      .count-row { display: flex; align-items: flex-end; gap: 28px; margin-top: 18px; }
+      .count-num { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 132px; line-height: 0.9; color: var(--coral); }
+      .count-unit { font-size: 36px; font-weight: 900; margin-bottom: 12px; }
+      .attn { margin-top: 8px; width: 100%; }
+      .attn-name { font-size: 24px; font-weight: 700; color: var(--muted); letter-spacing: 0.08em; }
+      .attn-track { margin-top: 8px; height: 16px; border-radius: 8px; background: rgba(34, 37, 58, 0.08); overflow: hidden; }
+      .attn-fill { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, var(--sky), var(--coral)); transform-origin: 0 50%; }
+      .desk { position: relative; height: 200px; margin-top: 16px; }
+      .hw {
+        position: absolute; left: 0; top: 24px; width: 460px; height: 160px;
+        padding: 22px 26px; display: flex; flex-direction: column; gap: 12px;
+      }
+      .hw-line { height: 10px; border-radius: 5px; background: rgba(34, 37, 58, 0.1); }
+      .hw-line.short { width: 62%; }
+      .hw b { font-size: 26px; font-weight: 900; color: var(--muted); }
+      .phone {
+        position: absolute; left: 560px; top: 8px;
+        width: 120px; height: 184px; border-radius: 18px;
+        background: var(--ink); padding: 10px;
+      }
+      .screen { height: 100%; border-radius: 12px; background: linear-gradient(180deg, #d7e4ff, #fff); }
+      .away-mark {
+        position: absolute; left: 1040px; top: 62px;
+        padding: 14px 22px; border-radius: 16px;
+        background: var(--mint); color: #fff;
+        font-size: 32px; font-weight: 900;
+      }
+
+      /* s09 */
+      .note-book {
+        position: relative; margin-top: 28px; align-self: center; width: 1280px;
+        padding: 18px 48px 18px 110px;
+        background-color: #fffdf8;
+        background-image: repeating-linear-gradient(180deg, transparent 0, transparent 108px, rgba(52, 112, 224, 0.16) 108px, rgba(52, 112, 224, 0.16) 110px);
+        border-radius: 24px; border: 2px solid var(--line);
+        box-shadow: 0 16px 36px rgba(34, 37, 58, 0.07);
+      }
+      .note-book::before { content: ""; position: absolute; left: 78px; top: 0; bottom: 0; width: 3px; background: rgba(232, 85, 63, 0.4); }
+      .item { display: flex; align-items: center; gap: 24px; height: 110px; }
+      .item .when { flex: none; width: 140px; padding: 6px 0; border-radius: 12px; text-align: center; color: #fff; font-size: 28px; font-weight: 900; }
+      .item .what { flex: 1; font-family: "Ma Shan Zheng", cursive; font-size: 46px; white-space: nowrap; }
+      .box { flex: none; width: 48px; height: 48px; border-radius: 12px; border: 4px solid var(--ink); position: relative; }
+      .box svg { position: absolute; left: -6px; top: -8px; width: 64px; height: 64px; color: var(--mint); }
+      .tick { stroke-dasharray: 60; fill: none; stroke: currentColor; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+      .small-end { margin-top: 26px; text-align: center; font-size: 34px; font-weight: 900; }
+      .small-end em { font-style: normal; color: var(--coral); }
+
+      /* s10 */
+      .end { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 68px; line-height: 1.35; }
+      .end em { font-style: normal; color: var(--coral); }
+      .end.sub { margin-top: 28px; font-size: 44px; font-weight: 700; color: var(--muted); }
+      .end.sub em { color: var(--lav); }
+      .handwrite { margin-top: 36px; font-family: "Ma Shan Zheng", cursive; font-size: 72px; color: var(--coral); font-weight: 400; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="215.766" data-width="1920" data-height="1080">
+      <div id="bg" class="clip bg" data-start="0" data-duration="215.766" data-track-index="0">
+        <div class="dots"></div>
+        <div class="glow g1"></div>
+        <div class="glow g2"></div>
+        <div class="glow g3"></div>
+        <div class="brand">高中 · 看不见的细节</div>
+        <div class="progress"><div class="progress-fill"></div></div>
+      </div>
+
+      <section id="s01" class="clip scene" data-start="0.000" data-duration="18.878" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>00</b> 先看显眼的</div>
+          <div class="title-slot" data-layout-allow-overlap>
+            <div class="title t-loud">分数、排名、身高</div>
+            <div class="title t-quiet">显眼的，往往<em>不是成长</em></div>
+          </div>
+          <div class="card page">
+            <div class="page-main">
+              <div class="row r1"><span class="k">分数</span><span class="v">被放大的数字</span></div>
+              <div class="row r2"><span class="k">排名</span><span class="v">被拿来比较的位置</span></div>
+              <div class="row r3"><span class="k">身高</span><span class="v">量得出的变化</span></div>
+            </div>
+            <div class="page-margin">
+              <div class="margin-label">页边 · 没人打分</div>
+              <div class="note n1">今天没举手</div>
+              <div class="note n2">早饭空着</div>
+              <div class="note n3">心里空了一下</div>
+              <div class="lens-row">
+                <svg class="lens" viewBox="0 0 92 120">
+                  <circle cx="40" cy="40" r="26" fill="none" stroke="currentColor" stroke-width="6"/>
+                  <path d="M60 60l22 28" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+                </svg>
+                <div class="lens-cap">对准这里</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s02" class="clip scene" data-start="18.878" data-duration="21.756" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>01</b> 脾气</div>
+          <div class="title">开口之前的<em>三秒</em></div>
+          <div class="s02-body">
+            <div class="s02-col">
+              <div class="card quote sharp">
+                <small>差点脱口而出</small>
+                <span class="hit">这都不会？<span class="strike"></span></span>
+              </div>
+              <div class="card quote fire">
+                <small>插队的时候</small>
+                火气已经到了嗓子眼
+              </div>
+              <div class="card quote kind">
+                <small>停三秒之后</small>
+                你卡在哪一步？
+              </div>
+            </div>
+            <div class="timer">
+              <div class="ring-wrap">
+                <svg viewBox="0 0 160 160">
+                  <circle class="ring-bg" cx="80" cy="80" r="54"/>
+                  <circle class="ring-fg" cx="80" cy="80" r="54" transform="rotate(-90 80 80)"/>
+                </svg>
+                <div class="sec">3<span>秒</span></div>
+              </div>
+              <div class="hint">先停一下</div>
+            </div>
+          </div>
+          <div class="s02-foot">别人看不见，<em>你的性子看得见</em></div>
+        </div>
+      </section>
+
+      <section id="s03" class="clip scene" data-start="40.634" data-duration="26.200" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>02</b> 身体</div>
+          <div class="title">身体比你<em>先开口</em></div>
+          <div class="signals">
+            <div class="card sig s-tired"><div class="dot"></div><h3>醒来就觉得累</h3><p>连续三天</p></div>
+            <div class="card sig s-skip"><div class="dot" style="background: var(--sun)"></div><h3>早饭说不饿</h3><p>其实是来不及</p></div>
+            <div class="card sig s-shoulder"><div class="dot" style="background: var(--lav)"></div><h3>肩膀一直耸着</h3><p>上课时没放松</p></div>
+          </div>
+          <div class="carry-line">这些信号很轻，可成长需要<em>扛得住</em>的身体</div>
+          <div class="base">
+            <div class="base-track"><div class="base-fill"></div></div>
+            <div class="base-label">睡够，吃上，让肩膀落下 —— 这是努力的<em>底座</em></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s04" class="clip scene" data-start="66.834" data-duration="23.322" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>03</b> 比较</div>
+          <div class="title">合上之后，心里<em>塌一下</em></div>
+          <div class="chips">
+            <div class="chip c-award" style="background: var(--coral)">奖状</div>
+            <div class="chip c-trip" style="background: var(--sky)">旅行</div>
+            <div class="chip c-study" style="background: var(--lav)">深夜刷题</div>
+          </div>
+          <div class="mood">
+            <div class="mood-base"></div>
+            <div class="mood-dot"></div>
+            <div class="mood-tag">那一下</div>
+          </div>
+          <div class="cmp">
+            <div class="card theirs"><h3>别人的高光</h3><p>用来量自己的普通日子</p></div>
+            <div class="card mine"><h3>昨天的自己</h3><p>健康的比较，只有这一种</p></div>
+          </div>
+          <div class="ask">先问一句：<b>我刚刚是不是又开始比了？</b></div>
+        </div>
+      </section>
+
+      <section id="s05" class="clip scene" data-start="90.156" data-duration="23.124" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>04</b> 勇气</div>
+          <div class="title">那只<em>举到一半</em>的手</div>
+          <div class="s05-body">
+            <div class="rail">
+              <div class="rail-track"></div>
+              <div class="mark m-top">举完</div>
+              <div class="mark m-mid">抬起</div>
+              <div class="mark m-bot">放下</div>
+              <div class="hand">手</div>
+            </div>
+            <div class="s05-copy">
+              <div class="card line-miss"><small>别人看见</small>你没回答</div>
+              <div class="card line-half"><small>那半秒里</small>成长停了一下</div>
+              <div class="card line-full"><small>下次只做一件小事</small>把手举完</div>
+              <div class="ok">说错了也没关系</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s06" class="clip scene" data-start="113.280" data-duration="19.620" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>05</b> 失败</div>
+          <div class="title">发下试卷之后</div>
+          <div class="clock">接下来的二十分钟</div>
+          <div class="papers">
+            <div class="card paper left" data-layout-allow-overlap>
+              <div class="face front">
+                <div class="big">分数很刺眼</div>
+                <div class="sub">第一反应，往往是躲开</div>
+              </div>
+              <div class="face back">
+                <div class="big">卷子扣过去了</div>
+                <div class="sub">假装没这回事</div>
+              </div>
+            </div>
+            <div class="card paper open">
+              <div class="xmark">×</div>
+              <div class="sub">红叉还在</div>
+              <div class="why"><small>错题旁边写一句</small>我错在哪：审题漏了条件</div>
+            </div>
+          </div>
+          <div class="map-line">这一句，让失败变成<em>地图</em>，而不是伤口</div>
+        </div>
+      </section>
+
+      <section id="s07" class="clip scene" data-start="132.900" data-duration="22.140" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>06</b> 关系</div>
+          <div class="title">午饭桌上的<em>小事</em></div>
+          <div class="table-scene">
+            <div class="seats">
+              <div class="seat s-me"><div class="who" style="background: var(--sky)">你</div><div class="name">你</div></div>
+              <div class="seat s-friend">
+                <div class="quiet-tag" data-layout-allow-overlap>话少了</div>
+                <div class="who" style="background: var(--coral)">友</div>
+                <div class="name">朋友</div>
+              </div>
+              <div class="seat s-mate"><div class="who" style="background: var(--mint)">桌</div><div class="name">同桌</div></div>
+            </div>
+            <div class="table"></div>
+            <div class="thanks">递东西时，说一声谢谢</div>
+            <div class="soil">
+              <div class="soil-bar"></div>
+              <div class="soil-label">这些小事，是关系的<em>土壤</em></div>
+              <div class="day-line">记得别人有一天不好过，本身就是在长大</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s08" class="clip scene" data-start="155.040" data-duration="24.060" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>07</b> 注意力</div>
+          <div class="title">没决定，<em>手却先动了</em></div>
+          <div class="steps">
+            <div class="step st-light">手机亮一下</div>
+            <div class="step-arrow ar1">→</div>
+            <div class="step st-open">划开</div>
+            <div class="step-arrow ar2">→</div>
+            <div class="step st-lock">再锁上</div>
+          </div>
+          <div class="count-row">
+            <div class="count-num" id="lock-n">0</div>
+            <div class="count-unit">次 · 一个晚上能攒下</div>
+          </div>
+          <div class="attn">
+            <div class="attn-name">注意力</div>
+            <div class="attn-track"><div class="attn-fill"></div></div>
+          </div>
+          <div class="desk">
+            <div class="card hw"><b>作业还摊着</b><div class="hw-line"></div><div class="hw-line"></div><div class="hw-line short"></div></div>
+            <div class="phone"><div class="screen"></div></div>
+            <div class="away-mark">放到够不着</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s09" class="clip scene" data-start="179.100" data-duration="21.108" data-track-index="1">
+        <div class="inner">
+          <div class="tag"><b>08</b> 这周</div>
+          <div class="title">只做<em>三件小事</em></div>
+          <div class="note-book">
+            <div class="item i1"><span class="when" style="background: var(--coral)">今晚</span><span class="what">留意醒来时累不累</span><span class="box"><svg viewBox="0 0 48 48"><path class="tick" d="M10 26l10 10 20-24"/></svg></span></div>
+            <div class="item i2"><span class="when" style="background: var(--sky)">一次</span><span class="what">快说重话，先停三秒</span><span class="box"><svg viewBox="0 0 48 48"><path class="tick" d="M10 26l10 10 20-24"/></svg></span></div>
+            <div class="item i3"><span class="when" style="background: var(--mint)">做错</span><span class="what">旁边写下：我错在哪</span><span class="box"><svg viewBox="0 0 48 48"><path class="tick" d="M10 26l10 10 20-24"/></svg></span></div>
+          </div>
+          <div class="small-end">三件都很小。<em>小，才做得成。</em></div>
+        </div>
+      </section>
+
+      <section id="s10" class="clip scene" data-start="200.208" data-duration="15.558" data-track-index="1">
+        <div class="inner center">
+          <div class="end e1">健康的成长，不是变得更完美。</div>
+          <div class="end sub e2">是你开始<em>停下来</em>，看见那些没被认真看过的细节。</div>
+          <div class="handwrite e3">看见了，你就已经在长了。</div>
+        </div>
+      </section>
+
+      <div id="cap-000" class="clip caption" data-start="0.798" data-duration="1.490" data-track-index="20"><span>如果你正在读高中</span></div>
+      <div id="cap-001" class="clip caption" data-start="2.288" data-duration="1.130" data-track-index="20"><span>说到成长</span></div>
+      <div id="cap-002" class="clip caption" data-start="3.418" data-duration="2.981" data-track-index="20"><span>脑子里多半先跳出分数、排名</span></div>
+      <div id="cap-003" class="clip caption" data-start="6.399" data-duration="1.284" data-track-index="20"><span>还有身高</span></div>
+      <div id="cap-004" class="clip caption" data-start="7.683" data-duration="1.442" data-track-index="20"><span>可健康地长大</span></div>
+      <div id="cap-005" class="clip caption" data-start="9.125" data-duration="2.549" data-track-index="20"><span>往往不写在这些显眼的地方</span></div>
+      <div id="cap-006" class="clip caption" data-start="11.674" data-duration="3.641" data-track-index="20"><span>它藏在不容易看见、却很要紧的细节里</span></div>
+      <div id="cap-007" class="clip caption" data-start="15.315" data-duration="0.734" data-track-index="20"><span>今天</span></div>
+      <div id="cap-008" class="clip caption" data-start="16.049" data-duration="2.229" data-track-index="20"><span>把放大镜对准它们</span></div>
+      <div id="cap-009" class="clip caption" data-start="19.396" data-duration="1.106" data-track-index="20"><span>第一个细节</span></div>
+      <div id="cap-010" class="clip caption" data-start="20.502" data-duration="1.873" data-track-index="20"><span>藏在你开口之前</span></div>
+      <div id="cap-011" class="clip caption" data-start="22.375" data-duration="2.019" data-track-index="20"><span>同学问了个简单的问题</span></div>
+      <div id="cap-012" class="clip caption" data-start="24.394" data-duration="2.404" data-track-index="20"><span>你差点说出一句刺人的话</span></div>
+      <div id="cap-013" class="clip caption" data-start="26.798" data-duration="1.070" data-track-index="20"><span>有人插队</span></div>
+      <div id="cap-014" class="clip caption" data-start="27.868" data-duration="2.175" data-track-index="20"><span>火气已经到了嗓子眼</span></div>
+      <div id="cap-015" class="clip caption" data-start="30.043" data-duration="1.250" data-track-index="20"><span>健康的脾气</span></div>
+      <div id="cap-016" class="clip caption" data-start="31.293" data-duration="2.212" data-track-index="20"><span>常常就长在这三秒里</span></div>
+      <div id="cap-017" class="clip caption" data-start="33.505" data-duration="1.093" data-track-index="20"><span>先停一下</span></div>
+      <div id="cap-018" class="clip caption" data-start="34.598" data-duration="1.551" data-track-index="20"><span>再决定怎么说</span></div>
+      <div id="cap-019" class="clip caption" data-start="36.149" data-duration="1.959" data-track-index="20"><span>这三秒别人看不见</span></div>
+      <div id="cap-020" class="clip caption" data-start="38.108" data-duration="2.056" data-track-index="20"><span>你的性子却看得见</span></div>
+      <div id="cap-021" class="clip caption" data-start="41.152" data-duration="1.070" data-track-index="20"><span>第二个细节</span></div>
+      <div id="cap-022" class="clip caption" data-start="42.222" data-duration="2.282" data-track-index="20"><span>是身体比你先开口</span></div>
+      <div id="cap-023" class="clip caption" data-start="44.504" data-duration="2.079" data-track-index="20"><span>连续三天醒来就觉得累</span></div>
+      <div id="cap-024" class="clip caption" data-start="46.583" data-duration="1.226" data-track-index="20"><span>早饭说不饿</span></div>
+      <div id="cap-025" class="clip caption" data-start="47.809" data-duration="1.622" data-track-index="20"><span>其实是来不及</span></div>
+      <div id="cap-026" class="clip caption" data-start="49.431" data-duration="2.705" data-track-index="20"><span>上课时肩膀一直耸着</span></div>
+      <div id="cap-027" class="clip caption" data-start="52.136" data-duration="3.101" data-track-index="20"><span>这些信号轻到你会当成没发生</span></div>
+      <div id="cap-028" class="clip caption" data-start="55.237" data-duration="2.896" data-track-index="20"><span>可成长需要一具扛得住的身体</span></div>
+      <div id="cap-029" class="clip caption" data-start="58.133" data-duration="1.407" data-track-index="20"><span>睡够，吃上</span></div>
+      <div id="cap-030" class="clip caption" data-start="59.540" data-duration="1.646" data-track-index="20"><span>让肩膀落下来</span></div>
+      <div id="cap-031" class="clip caption" data-start="61.186" data-duration="1.214" data-track-index="20"><span>这不是偷懒</span></div>
+      <div id="cap-032" class="clip caption" data-start="62.400" data-duration="2.784" data-track-index="20"><span>是在给后面的努力留底座</span></div>
+      <div id="cap-033" class="clip caption" data-start="67.352" data-duration="1.250" data-track-index="20"><span>第三个细节</span></div>
+      <div id="cap-034" class="clip caption" data-start="68.602" data-duration="2.775" data-track-index="20"><span>发生在你合上别人动态的那一下</span></div>
+      <div id="cap-035" class="clip caption" data-start="71.377" data-duration="2.944" data-track-index="20"><span>看完奖状、旅行、深夜刷题</span></div>
+      <div id="cap-036" class="clip caption" data-start="74.321" data-duration="1.947" data-track-index="20"><span>心里会轻轻塌一下</span></div>
+      <div id="cap-037" class="clip caption" data-start="76.268" data-duration="1.311" data-track-index="20"><span>那一下很轻</span></div>
+      <div id="cap-038" class="clip caption" data-start="77.579" data-duration="2.319" data-track-index="20"><span>却说明你在拿别人的高光</span></div>
+      <div id="cap-039" class="clip caption" data-start="79.898" data-duration="1.947" data-track-index="20"><span>量自己的普通日子</span></div>
+      <div id="cap-040" class="clip caption" data-start="81.845" data-duration="1.767" data-track-index="20"><span>健康的比较只有一种</span></div>
+      <div id="cap-041" class="clip caption" data-start="83.612" data-duration="1.827" data-track-index="20"><span>和昨天的自己比</span></div>
+      <div id="cap-042" class="clip caption" data-start="85.439" data-duration="1.106" data-track-index="20"><span>先问一句</span></div>
+      <div id="cap-043" class="clip caption" data-start="86.545" data-duration="2.511" data-track-index="20"><span>我刚刚是不是又开始比了</span></div>
+      <div id="cap-044" class="clip caption" data-start="90.674" data-duration="1.226" data-track-index="20"><span>第四个细节</span></div>
+      <div id="cap-045" class="clip caption" data-start="91.900" data-duration="2.101" data-track-index="20"><span>是那只举到一半的手</span></div>
+      <div id="cap-046" class="clip caption" data-start="94.001" data-duration="1.130" data-track-index="20"><span>老师提问</span></div>
+      <div id="cap-047" class="clip caption" data-start="95.131" data-duration="1.334" data-track-index="20"><span>你其实知道一点</span></div>
+      <div id="cap-048" class="clip caption" data-start="96.465" data-duration="0.962" data-track-index="20"><span>手抬起来</span></div>
+      <div id="cap-049" class="clip caption" data-start="97.427" data-duration="1.322" data-track-index="20"><span>又放下去</span></div>
+      <div id="cap-050" class="clip caption" data-start="98.749" data-duration="2.176" data-track-index="20"><span>别人只看见你没回答</span></div>
+      <div id="cap-051" class="clip caption" data-start="100.925" data-duration="1.189" data-track-index="20"><span>你自己知道</span></div>
+      <div id="cap-052" class="clip caption" data-start="102.114" data-duration="2.597" data-track-index="20"><span>那半秒里成长停了一下</span></div>
+      <div id="cap-053" class="clip caption" data-start="104.711" data-duration="1.803" data-track-index="20"><span>下次只做一件小事</span></div>
+      <div id="cap-054" class="clip caption" data-start="106.514" data-duration="1.382" data-track-index="20"><span>把手举完</span></div>
+      <div id="cap-055" class="clip caption" data-start="107.896" data-duration="1.947" data-track-index="20"><span>说错了也没关系</span></div>
+      <div id="cap-056" class="clip caption" data-start="109.843" data-duration="0.913" data-track-index="20"><span>说出来</span></div>
+      <div id="cap-057" class="clip caption" data-start="110.756" data-duration="2.054" data-track-index="20"><span>漏洞才会被看见</span></div>
+      <div id="cap-058" class="clip caption" data-start="113.798" data-duration="1.202" data-track-index="20"><span>第五个细节</span></div>
+      <div id="cap-059" class="clip caption" data-start="115.000" data-duration="3.051" data-track-index="20"><span>在试卷发下来之后的二十分钟</span></div>
+      <div id="cap-060" class="clip caption" data-start="118.051" data-duration="1.322" data-track-index="20"><span>分数刺眼时</span></div>
+      <div id="cap-061" class="clip caption" data-start="119.373" data-duration="2.536" data-track-index="20"><span>人很容易把卷子扣过去</span></div>
+      <div id="cap-062" class="clip caption" data-start="121.909" data-duration="1.226" data-track-index="20"><span>真正有用的</span></div>
+      <div id="cap-063" class="clip caption" data-start="123.135" data-duration="1.683" data-track-index="20"><span>不是盯着红叉生气</span></div>
+      <div id="cap-064" class="clip caption" data-start="124.818" data-duration="2.163" data-track-index="20"><span>而是在错题旁边写下一句</span></div>
+      <div id="cap-065" class="clip caption" data-start="126.981" data-duration="1.346" data-track-index="20"><span>我错在哪</span></div>
+      <div id="cap-066" class="clip caption" data-start="128.327" data-duration="2.320" data-track-index="20"><span>这一句让失败变成地图</span></div>
+      <div id="cap-067" class="clip caption" data-start="130.647" data-duration="1.783" data-track-index="20"><span>而不是伤口</span></div>
+      <div id="cap-068" class="clip caption" data-start="133.418" data-duration="1.118" data-track-index="20"><span>第六个细节</span></div>
+      <div id="cap-069" class="clip caption" data-start="134.536" data-duration="1.536" data-track-index="20"><span>在午饭桌上</span></div>
+      <div id="cap-070" class="clip caption" data-start="136.072" data-duration="1.310" data-track-index="20"><span>你坐在谁旁边</span></div>
+      <div id="cap-071" class="clip caption" data-start="137.382" data-duration="1.154" data-track-index="20"><span>注意到没有</span></div>
+      <div id="cap-072" class="clip caption" data-start="138.536" data-duration="1.960" data-track-index="20"><span>朋友今天话变少了</span></div>
+      <div id="cap-073" class="clip caption" data-start="140.496" data-duration="1.093" data-track-index="20"><span>递东西时</span></div>
+      <div id="cap-074" class="clip caption" data-start="141.589" data-duration="1.563" data-track-index="20"><span>说没说谢谢</span></div>
+      <div id="cap-075" class="clip caption" data-start="143.152" data-duration="1.911" data-track-index="20"><span>这些小事进不了评比</span></div>
+      <div id="cap-076" class="clip caption" data-start="145.063" data-duration="1.803" data-track-index="20"><span>却是关系的土壤</span></div>
+      <div id="cap-077" class="clip caption" data-start="146.866" data-duration="1.178" data-track-index="20"><span>健康地长大</span></div>
+      <div id="cap-078" class="clip caption" data-start="148.044" data-duration="1.574" data-track-index="20"><span>不是谁都不需要</span></div>
+      <div id="cap-079" class="clip caption" data-start="149.618" data-duration="2.380" data-track-index="20"><span>而是你愿意为别人停一下</span></div>
+      <div id="cap-080" class="clip caption" data-start="151.998" data-duration="2.572" data-track-index="20"><span>也记得别人有一天不好过</span></div>
+      <div id="cap-081" class="clip caption" data-start="155.558" data-duration="1.202" data-track-index="20"><span>第七个细节</span></div>
+      <div id="cap-082" class="clip caption" data-start="156.760" data-duration="3.544" data-track-index="20"><span>是那些你没决定、手却先动了的解锁</span></div>
+      <div id="cap-083" class="clip caption" data-start="160.304" data-duration="2.187" data-track-index="20"><span>写作业时手机亮一下</span></div>
+      <div id="cap-084" class="clip caption" data-start="162.491" data-duration="1.659" data-track-index="20"><span>你划开，看两眼</span></div>
+      <div id="cap-085" class="clip caption" data-start="164.150" data-duration="2.320" data-track-index="20"><span>再锁上。一次很短</span></div>
+      <div id="cap-086" class="clip caption" data-start="166.470" data-duration="2.644" data-track-index="20"><span>一个晚上却能攒下几十次</span></div>
+      <div id="cap-087" class="clip caption" data-start="169.114" data-duration="0.889" data-track-index="20"><span>每一次</span></div>
+      <div id="cap-088" class="clip caption" data-start="170.003" data-duration="2.392" data-track-index="20"><span>都是注意力漏出去一点</span></div>
+      <div id="cap-089" class="clip caption" data-start="172.395" data-duration="1.262" data-track-index="20"><span>健康的专注</span></div>
+      <div id="cap-090" class="clip caption" data-start="173.657" data-duration="1.791" data-track-index="20"><span>不是发誓戒掉手机</span></div>
+      <div id="cap-091" class="clip caption" data-start="175.448" data-duration="3.182" data-track-index="20"><span>而是把手机放到够不着的地方</span></div>
+      <div id="cap-092" class="clip caption" data-start="179.618" data-duration="2.428" data-track-index="20"><span>所以这周不必立很大的旗</span></div>
+      <div id="cap-093" class="clip caption" data-start="182.046" data-duration="1.801" data-track-index="20"><span>只做三件小事</span></div>
+      <div id="cap-094" class="clip caption" data-start="183.847" data-duration="1.106" data-track-index="20"><span>今晚留意</span></div>
+      <div id="cap-095" class="clip caption" data-start="184.953" data-duration="1.959" data-track-index="20"><span>自己醒来时累不累</span></div>
+      <div id="cap-096" class="clip caption" data-start="186.912" data-duration="1.454" data-track-index="20"><span>有一次快说重话</span></div>
+      <div id="cap-097" class="clip caption" data-start="188.366" data-duration="1.454" data-track-index="20"><span>先停三秒</span></div>
+      <div id="cap-098" class="clip caption" data-start="189.820" data-duration="1.335" data-track-index="20"><span>一次做错之后</span></div>
+      <div id="cap-099" class="clip caption" data-start="191.155" data-duration="1.646" data-track-index="20"><span>写下我错在哪</span></div>
+      <div id="cap-100" class="clip caption" data-start="192.801" data-duration="2.272" data-track-index="20"><span>三件都很小。小</span></div>
+      <div id="cap-101" class="clip caption" data-start="195.073" data-duration="2.296" data-track-index="20"><span>才做得成。做成了</span></div>
+      <div id="cap-102" class="clip caption" data-start="197.369" data-duration="2.369" data-track-index="20"><span>细节才会变成习惯</span></div>
+      <div id="cap-103" class="clip caption" data-start="200.856" data-duration="1.202" data-track-index="20"><span>健康的成长</span></div>
+      <div id="cap-104" class="clip caption" data-start="202.058" data-duration="1.765" data-track-index="20"><span>不是变得更完美</span></div>
+      <div id="cap-105" class="clip caption" data-start="203.823" data-duration="1.562" data-track-index="20"><span>是你开始停下来</span></div>
+      <div id="cap-106" class="clip caption" data-start="205.385" data-duration="4.039" data-track-index="20"><span>看见那些以前走过、却没被认真看过的细节</span></div>
+      <div id="cap-107" class="clip caption" data-start="209.424" data-duration="0.901" data-track-index="20"><span>看见了</span></div>
+      <div id="cap-108" class="clip caption" data-start="210.325" data-duration="1.891" data-track-index="20"><span>你就已经在长了</span></div>
+
+      <audio id="narration" src="assets/narration.mp3" data-start="0" data-duration="215.766" data-track-index="30" data-volume="1"></audio>
+      <audio id="bgm" src="assets/bgm.mp3" data-start="0" data-duration="215.766" data-track-index="31" data-volume="0.12"></audio>
+    </div>
+
+    <script>
+      const T = {"s01": {"start": 0.0, "dur": 18.878, "end": 18.878, "vo": 0.7, "speech": 17.328, "cues": {"score": 4.957, "rank": 5.63, "height": 6.399, "hide": 9.45, "detail": 12.202, "lens": 16.205}}, "s02": {"start": 18.878, "dur": 21.756, "end": 40.634, "vo": 19.298, "speech": 20.616, "cues": {"open": 20.983, "sting": 25.524, "fire": 27.868, "three": 32.207, "pause": 33.505, "self": 38.108}}, "s03": {"start": 40.634, "dur": 26.2, "end": 66.834, "vo": 41.054, "speech": 23.88, "cues": {"body": 42.354, "tired": 45.285, "skip": 47.148, "shoulder": 50.357, "ignore": 53.722, "carry": 56.511, "sleep": 58.133, "base": 64.083}}, "s04": {"start": 66.834, "dur": 23.322, "end": 90.156, "vo": 67.254, "speech": 21.552, "cues": {"award": 71.737, "trip": 72.434, "study": 73.119, "drop": 74.814, "hi": 78.804, "me": 83.768, "ask": 87.338}}, "s05": {"start": 90.156, "dur": 23.124, "end": 113.28, "vo": 90.576, "speech": 21.984, "cues": {"hand": 92.381, "up": 96.465, "down": 97.427, "miss": 99.735, "half": 102.114, "full": 106.514, "wrong": 107.896}}, "s06": {"start": 113.28, "dur": 19.62, "end": 132.9, "vo": 113.7, "speech": 18.48, "cues": {"paper": 115.18, "min": 116.755, "shut": 120.707, "red": 123.664, "why": 126.981, "map": 129.938}}, "s07": {"start": 132.9, "dur": 22.14, "end": 155.04, "vo": 133.32, "speech": 21.0, "cues": {"lunch": 134.716, "quiet": 139.125, "thanks": 142.082, "soil": 145.832, "stop": 150.652, "day": 152.815}}, "s08": {"start": 155.04, "dur": 24.06, "end": 179.1, "vo": 155.46, "speech": 22.92, "cues": {"unlock": 159.212, "light": 161.313, "open": 162.599, "lock": 164.15, "times": 167.912, "leak": 171.097, "away": 176.782}}, "s09": {"start": 179.1, "dur": 21.108, "end": 200.208, "vo": 179.52, "speech": 19.968, "cues": {"flag": 182.394, "a": 185.253, "b": 188.366, "c": 191.503, "small": 192.801}}, "s10": {"start": 200.208, "dur": 15.558, "end": 215.766, "vo": 200.758, "speech": 11.208, "cues": {"l1": 200.856, "l2": 204.46, "l3": 209.424}}};
+      const TOTAL = Number(document.getElementById("root").dataset.duration);
+      const tl = gsap.timeline({ paused: true });
+      const C = (s, k) => T[s].cues[k];
+
+      function reveal(sel, at, from, opts) {
+        tl.fromTo(
+          sel,
+          Object.assign({ opacity: 0 }, from || { y: 28 }),
+          Object.assign({ opacity: 1, x: 0, y: 0, scale: 1, rotation: 0, duration: 0.55, ease: "power3.out" }, opts || {}),
+          at
+        );
+      }
+      function sceneIn(id) {
+        const s = T[id];
+        tl.fromTo("#" + id + " .inner", { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.48, ease: "power2.out" }, s.start + 0.02);
+      }
+      function sceneOut(id) {
+        const s = T[id];
+        tl.to("#" + id + " .inner", { opacity: 0, y: -16, duration: 0.38, ease: "power2.in" }, s.end - 0.4);
+      }
+
+      tl.fromTo(".g1", { x: 0, y: 0 }, { x: 140, y: 80, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".g2", { x: 0, y: 0 }, { x: -120, y: -90, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".g3", { x: 0, y: 0 }, { x: 80, y: -70, duration: TOTAL, ease: "sine.inOut" }, 0);
+      tl.fromTo(".progress-fill", { scaleX: 0 }, { scaleX: 1, duration: TOTAL, ease: "none" }, 0);
+
+      {
+        sceneIn("s01");
+        reveal("#s01 .page", T.s01.vo + 0.15, { y: 36 });
+        reveal("#s01 .r1", C("s01", "score"), { x: -24 });
+        reveal("#s01 .r2", C("s01", "rank"), { x: -24 });
+        reveal("#s01 .r3", C("s01", "height"), { x: -24 });
+        tl.to("#s01 .t-loud", { opacity: 0, duration: 0.28, ease: "power2.in" }, C("s01", "hide") - 0.32);
+        reveal("#s01 .t-quiet", C("s01", "hide"), { y: 16 });
+        tl.to("#s01 .page-main", { opacity: 0.55, duration: 0.45 }, C("s01", "hide"));
+        reveal("#s01 .margin-label", C("s01", "hide") + 0.1, { y: 12 });
+        reveal("#s01 .n1", C("s01", "hide") + 0.2, { x: 18 });
+        reveal("#s01 .n2", C("s01", "detail"), { x: 18 });
+        reveal("#s01 .n3", C("s01", "detail") + 0.28, { x: 18 });
+        tl.to("#s01 .page-margin", { backgroundColor: "#fff1ec", duration: 0.4 }, C("s01", "detail"));
+        reveal("#s01 .lens-row", C("s01", "lens"), { scale: 0.6, y: 0 }, { duration: 0.6, ease: "back.out(1.7)" });
+        sceneOut("s01");
+      }
+
+      {
+        sceneIn("s02");
+        reveal("#s02 .sharp", C("s02", "sting"), { x: -30 });
+        reveal("#s02 .fire", C("s02", "fire"), { x: -30 });
+        reveal("#s02 .ring-wrap", C("s02", "three"), { scale: 0.7, y: 0 }, { duration: 0.55, ease: "back.out(1.6)" });
+        tl.fromTo("#s02 .ring-fg", { strokeDashoffset: 340 }, { strokeDashoffset: 0, duration: 0.9, ease: "power2.out" }, C("s02", "three"));
+        reveal("#s02 .hint", C("s02", "pause"), { y: 12 });
+        tl.fromTo("#s02 .strike", { scaleX: 0 }, { scaleX: 1, duration: 0.35, ease: "power2.out" }, C("s02", "pause"));
+        reveal("#s02 .kind", C("s02", "pause") + 0.25, { y: 20 });
+        reveal("#s02 .s02-foot", C("s02", "self"), { y: 16 });
+        sceneOut("s02");
+      }
+
+      {
+        sceneIn("s03");
+        reveal("#s03 .s-tired", C("s03", "tired"), { y: 36 });
+        reveal("#s03 .s-skip", C("s03", "skip"), { y: 36 });
+        reveal("#s03 .s-shoulder", C("s03", "shoulder"), { y: 36 });
+        tl.to("#s03 .signals", { opacity: 0.4, duration: 0.4 }, C("s03", "ignore"));
+        tl.to("#s03 .signals", { opacity: 1, duration: 0.35 }, C("s03", "carry"));
+        reveal("#s03 .carry-line", C("s03", "carry"), { y: 16 });
+        reveal("#s03 .base", C("s03", "sleep"), { y: 18 });
+        tl.fromTo("#s03 .base-fill", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power2.out" }, C("s03", "base"));
+        sceneOut("s03");
+      }
+
+      {
+        sceneIn("s04");
+        reveal("#s04 .c-award", C("s04", "award"), { y: 16, scale: 0.85 });
+        reveal("#s04 .c-trip", C("s04", "trip"), { y: 16, scale: 0.85 });
+        reveal("#s04 .c-study", C("s04", "study"), { y: 16, scale: 0.85 });
+        reveal("#s04 .mood-base", C("s04", "award"), { scaleX: 0, y: 0 }, { duration: 0.45 });
+        tl.fromTo("#s04 .mood-dot", { y: 0, opacity: 0 }, { y: 52, opacity: 1, duration: 0.55, ease: "power3.in" }, C("s04", "drop"));
+        reveal("#s04 .mood-tag", C("s04", "drop") + 0.35, { scale: 0.7, y: 0 }, { ease: "back.out(1.8)" });
+        reveal("#s04 .theirs", C("s04", "hi"), { x: -28 });
+        reveal("#s04 .mine", C("s04", "me"), { x: 28 });
+        reveal("#s04 .ask", C("s04", "ask"), { y: 16 });
+        sceneOut("s04");
+      }
+
+      {
+        sceneIn("s05");
+        reveal("#s05 .rail", C("s05", "hand"), { x: -20 });
+        tl.fromTo("#s05 .hand", { y: 0 }, { y: -158, duration: 0.45, ease: "power2.out" }, C("s05", "up"));
+        tl.fromTo("#s05 .hand", { y: -158 }, { y: 0, duration: 0.4, ease: "power2.in", immediateRender: false }, C("s05", "down"));
+        reveal("#s05 .line-miss", C("s05", "miss"), { x: 24 });
+        reveal("#s05 .line-half", C("s05", "half"), { x: 24 });
+        tl.fromTo("#s05 .hand", { y: 0 }, { y: -330, duration: 0.55, ease: "back.out(1.4)", immediateRender: false }, C("s05", "full"));
+        reveal("#s05 .line-full", C("s05", "full"), { x: 24 });
+        reveal("#s05 .ok", C("s05", "wrong"), { scale: 0.8, y: 0 }, { ease: "back.out(1.7)" });
+        sceneOut("s05");
+      }
+
+      {
+        sceneIn("s06");
+        reveal("#s06 .clock", C("s06", "min"), { scale: 0.8, y: 0 }, { ease: "back.out(1.6)" });
+        reveal("#s06 .papers", C("s06", "paper"), { y: 30 });
+        tl.to("#s06 .front", { opacity: 0, duration: 0.28 }, C("s06", "shut"));
+        tl.to("#s06 .left", { backgroundColor: "#22253a", color: "#ffffff", borderColor: "#22253a", duration: 0.35 }, C("s06", "shut"));
+        reveal("#s06 .back", C("s06", "shut") + 0.12, { y: 8 });
+        tl.fromTo("#s06 .xmark", { scale: 1 }, { scale: 1.12, duration: 0.22, yoyo: true, repeat: 1, ease: "power1.inOut" }, C("s06", "red"));
+        reveal("#s06 .why", C("s06", "why"), { y: 16 });
+        reveal("#s06 .map-line", C("s06", "map"), { y: 14 });
+        sceneOut("s06");
+      }
+
+      {
+        sceneIn("s07");
+        reveal("#s07 .s-me", C("s07", "lunch"), { y: 24 });
+        reveal("#s07 .s-friend", C("s07", "lunch") + 0.12, { y: 24 });
+        reveal("#s07 .s-mate", C("s07", "lunch") + 0.24, { y: 24 });
+        reveal("#s07 .table", C("s07", "lunch") + 0.2, { scaleX: 0.6, y: 0 });
+        reveal("#s07 .quiet-tag", C("s07", "quiet"), { scale: 0.6, y: 0 }, { ease: "back.out(1.8)" });
+        reveal("#s07 .thanks", C("s07", "thanks"), { y: 16 });
+        reveal("#s07 .soil", C("s07", "soil"), { y: 16 });
+        reveal("#s07 .day-line", C("s07", "stop"), { y: 12 });
+        tl.to("#s07 .day-line", { color: "#22253a", duration: 0.35 }, C("s07", "day"));
+        sceneOut("s07");
+      }
+
+      {
+        const lock = { n: 0 };
+        const lockEl = document.getElementById("lock-n");
+        sceneIn("s08");
+        reveal("#s08 .st-light", C("s08", "light"), { y: 16 });
+        reveal("#s08 .ar1", C("s08", "open") - 0.15, { x: -8 });
+        reveal("#s08 .st-open", C("s08", "open"), { y: 16 });
+        reveal("#s08 .ar2", C("s08", "lock") - 0.15, { x: -8 });
+        reveal("#s08 .st-lock", C("s08", "lock"), { y: 16 });
+        reveal("#s08 .count-row", C("s08", "times") - 0.1, { scale: 0.86, y: 0 }, { duration: 0.45, ease: "back.out(1.5)" });
+        tl.fromTo(lock, { n: 0 }, {
+          n: 36, duration: 1.05, ease: "power2.out",
+          onUpdate: function () { lockEl.textContent = String(Math.round(lock.n)); }
+        }, C("s08", "times") - 0.05);
+        reveal("#s08 .attn", C("s08", "leak") - 0.15, { y: 12 });
+        tl.fromTo("#s08 .attn-fill", { scaleX: 1 }, { scaleX: 0.32, duration: 0.75, ease: "power2.inOut", immediateRender: false }, C("s08", "leak"));
+        reveal("#s08 .hw", C("s08", "light") - 0.2, { y: 16 });
+        reveal("#s08 .phone", C("s08", "light"), { y: 16 });
+        tl.fromTo("#s08 .phone", { x: 0 }, { x: 250, duration: 0.7, ease: "power3.inOut", immediateRender: false }, C("s08", "away"));
+        reveal("#s08 .away-mark", C("s08", "away"), { x: 16 });
+        sceneOut("s08");
+      }
+
+      {
+        sceneIn("s09");
+        reveal("#s09 .note-book", C("s09", "flag"), { y: 28 });
+        const keys = ["a", "b", "c"];
+        const rows = [".i1", ".i2", ".i3"];
+        keys.forEach(function (k, i) {
+          reveal("#s09 " + rows[i], C("s09", k) - 0.05, { x: -22 });
+          const tickAt = i < 2 ? C("s09", keys[i + 1]) - 0.35 : C("s09", "small") + 0.5;
+          tl.fromTo("#s09 " + rows[i] + " .tick", { strokeDashoffset: 60 }, { strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }, tickAt);
+        });
+        reveal("#s09 .small-end", C("s09", "small"), { y: 14 });
+        sceneOut("s09");
+      }
+
+      {
+        const s = T.s10;
+        tl.fromTo("#s10 .inner", { opacity: 0 }, { opacity: 1, duration: 0.4 }, s.start);
+        reveal("#s10 .e1", C("s10", "l1"), { y: 26 }, { duration: 0.7 });
+        reveal("#s10 .e2", C("s10", "l2"), { y: 22 }, { duration: 0.7 });
+        reveal("#s10 .e3", C("s10", "l3"), { y: 18, scale: 0.92 }, { duration: 0.8, ease: "power3.out" });
+      }
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

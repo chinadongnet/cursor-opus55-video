@@ -1,0 +1,20 @@
+{
+  "title": "视频标题",
+  "voice": "zh-CN-XiaoxiaoNeural",
+  "style": "gentle",
+  "rate": "0.95",
+  "pitch": "0%",
+  "lead": 0.45,
+  "pause": 0.75,
+  "outro": 3.6,
+  "bgm": { "volume": 0.14 },
+  "scenes": [
+    {
+      "id": "s01",
+      "lead": 0.8,
+      "pause": 3.0,
+      "text": "这里写第一段旁白。提示点用旁白里的原文短语来定位。",
+      "cues": { "hook": "第一段旁白" }
+    }
+  ]
+}

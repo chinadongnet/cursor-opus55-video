@@ -1,0 +1,11 @@
+{
+  "name": "midlife-men-fitness-start",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.8.143 preview --browser-gpu",
+    "check": "npx --yes hyperframes@0.8.143 check --browser-gpu",
+    "render": "npx --yes hyperframes@0.8.143 render --browser-gpu --gpu --quality delivery",
+    "publish": "npx --yes hyperframes@0.8.143 publish"
+  }
+}

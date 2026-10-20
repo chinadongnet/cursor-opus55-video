@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="zh-CN" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Noto Sans SC"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-400.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Sans SC"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-700.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Sans SC"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/noto-sans-sc-900.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Serif SC"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/noto-serif-sc-700.woff2") format("woff2"); }
+      @font-face { font-family: "Noto Serif SC"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/noto-serif-sc-900.woff2") format("woff2"); }
+      @font-face { font-family: "Ma Shan Zheng"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/ma-shan-zheng-400.woff2") format("woff2"); }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #12100e; }
+      :root {
+        --bg: #12100e; --ink: #f6f1e8; --muted: #e7d9c8; --dim: #d5c4b0;
+        --gold: #f0c14b; --skin: #d7a184; --hair: #241c18; --coral: #e8553f;
+        --cool: #d5e2ef; --paper: #f4efe6; --line: rgba(246, 241, 232, 0.16);
+      }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: "Noto Sans SC", sans-serif; font-weight: 400; }
+      .bg { position: absolute; inset: 0; }
+      .glow { position: absolute; inset: 0; background:
+        radial-gradient(900px 620px at 12% 18%, rgba(227, 154, 69, 0.16), transparent 62%),
+        radial-gradient(800px 560px at 88% 78%, rgba(120, 150, 180, 0.10), transparent 64%),
+        radial-gradient(1400px 900px at 50% 46%, #1a1612, #0c0a08 78%); }
+      .dots { position: absolute; inset: 0; background-image: radial-gradient(rgba(246, 241, 232, 0.045) 1.2px, transparent 1.6px); background-size: 28px 28px; }
+      .topbar { position: absolute; left: 72px; top: 36px; font-size: 18px; letter-spacing: 0.28em; color: var(--dim); }
+      .topbar b { color: var(--gold); font-weight: 700; }
+      .progress { position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: rgba(246, 241, 232, 0.08); }
+      .progress-fill { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, var(--coral), var(--gold)); transform-origin: 0 50%; }
+      .scene { position: absolute; inset: 0; }
+      .inner { position: absolute; inset: 0; }
+      .kicker { font-size: 18px; letter-spacing: 0.34em; color: var(--gold); font-weight: 700; }
+      .h2 { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 60px; line-height: 1.25; letter-spacing: 0.02em; }
+      .h2 em, .serif em { font-style: normal; color: var(--gold); }
+      .head { position: absolute; left: 120px; top: 108px; }
+      .head .h2 { margin-top: 14px; }
+
+      .portrait { position: relative; width: 220px; height: 270px; }
+      .portrait .shoulder { position: absolute; left: 24px; right: 24px; bottom: 0; height: 62px; background: #2a231e; border-radius: 70px 70px 18px 18px; }
+      .portrait .neck { position: absolute; left: 78px; top: 176px; width: 64px; height: 48px; background: #c48468; }
+      .portrait .headface { position: absolute; left: 30px; top: 6px; width: 160px; height: 198px; border-radius: 80px 80px 72px 72px; background: var(--skin); overflow: hidden; }
+      .portrait .light { position: absolute; inset: 0; }
+      .portrait .hair { position: absolute; left: -4px; right: -4px; top: -4px; height: 70px; background: var(--hair); border-radius: 76px 76px 34px 34px; z-index: 2; }
+      .portrait .eye { position: absolute; top: 100px; width: 26px; height: 14px; border-radius: 50%; background: #1a120e; z-index: 5; }
+      .portrait .eye.l { left: 36px; }
+      .portrait .eye.r { right: 36px; }
+      .portrait .eye b { position: absolute; left: 5px; top: 2px; width: 7px; height: 7px; border-radius: 50%; background: #fff8ee; }
+      .portrait .nose { position: absolute; left: 76px; top: 116px; width: 8px; height: 24px; border-left: 2px solid rgba(92, 48, 36, 0.55); border-radius: 8px; z-index: 5; }
+      .portrait .mouth { position: absolute; left: 58px; top: 154px; width: 44px; height: 12px; border-bottom: 3px solid #8d4034; border-radius: 0 0 20px 20px; z-index: 5; }
+      .p-front .light { background: radial-gradient(circle at 50% 42%, rgba(255, 236, 220, 0.7), transparent 64%); }
+      .p-side .light { background: linear-gradient(102deg, rgba(255, 214, 176, 0.5) 0%, rgba(255, 214, 176, 0.05) 42%, rgba(42, 18, 12, 0.72) 100%); }
+      .p-top .light { background: linear-gradient(180deg, rgba(255, 228, 196, 0.55) 0 26%, rgba(28, 12, 8, 0.78) 70%); }
+      .p-flat .light { background: rgba(255, 244, 232, 0.22); }
+      .p-flat .headface { background: #c9b4a4; }
+      .portrait.tight .mouth { width: 34px; left: 63px; top: 160px; height: 0; border-radius: 0; border-bottom-width: 3px; }
+      .portrait.soft .mouth { width: 50px; left: 55px; border-bottom-width: 4px; }
+      .portrait.soft .eye b { width: 9px; height: 9px; background: #ffe7a8; }
+
+      .caption { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 36px; pointer-events: none; }
+      .caption span { display: block; max-width: 1480px; padding: 10px 28px; border-radius: 14px; background: rgba(8, 6, 5, 0.82); color: #f6f1e8; font-size: 34px; line-height: 1.4; letter-spacing: 0.05em; text-align: center; }
+
+      /* s01 */
+      .s01-copy { position: absolute; left: 120px; top: 150px; width: 820px; }
+      .s01-copy .h1 { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 92px; line-height: 1.18; }
+      .s01-copy .h1 em { font-style: normal; color: var(--coral); }
+      .s01-thesis { margin-top: 28px; font-size: 32px; letter-spacing: 0.06em; color: var(--gold); font-weight: 700; }
+      .s01-param { margin-top: 18px; font-size: 26px; letter-spacing: 0.12em; color: var(--muted); }
+      .checks { position: absolute; left: 120px; top: 620px; width: 760px; }
+      .check { display: flex; align-items: center; gap: 18px; margin-bottom: 16px; font-size: 32px; font-weight: 700; letter-spacing: 0.08em; }
+      .check i { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--gold); position: relative; flex: none; }
+      .check i::after { content: ""; position: absolute; left: 9px; top: 5px; width: 10px; height: 16px; border-right: 3px solid var(--gold); border-bottom: 3px solid var(--gold); transform: rotate(40deg); }
+      .check.bad { color: #fff; }
+      .check.bad span { background: var(--coral); padding: 4px 16px; border-radius: 8px; }
+      .check.bad i { border-color: var(--coral); }
+      .check.bad i::after { left: 7px; top: 15px; width: 18px; height: 0; border: none; border-top: 3px solid var(--coral); transform: rotate(-28deg); }
+      .frame-shot { position: absolute; left: 1080px; top: 150px; width: 680px; height: 680px; border: 2px solid rgba(246, 241, 232, 0.2); background: #1a1612; overflow: hidden; }
+      .frame-shot .portrait { position: absolute; left: 210px; top: 150px; width: 260px; height: 320px; }
+      .frame-shot .portrait .headface { left: 36px; width: 188px; height: 230px; }
+      .frame-shot .portrait .neck { left: 92px; top: 210px; }
+      .frame-shot .portrait .eye { top: 116px; }
+      .frame-shot .portrait .nose { top: 136px; left: 88px; }
+      .frame-shot .portrait .mouth { top: 178px; left: 70px; }
+      .frame-shot .portrait .hair { height: 82px; }
+      .bokeh { position: absolute; border-radius: 50%; }
+      .bokeh.a { width: 180px; height: 180px; left: 40px; top: 80px; background: radial-gradient(circle, rgba(213, 226, 239, 0.45), rgba(213, 226, 239, 0.02) 70%); }
+      .bokeh.b { width: 120px; height: 120px; right: 50px; top: 160px; background: radial-gradient(circle, rgba(240, 193, 75, 0.4), rgba(240, 193, 75, 0) 70%); }
+      .bokeh.c { width: 90px; height: 90px; left: 80px; bottom: 90px; background: radial-gradient(circle, rgba(246, 241, 232, 0.28), rgba(246, 241, 232, 0) 70%); }
+      .wash { position: absolute; inset: 0; background: #6f6862; z-index: 4; opacity: 0; }
+      .stamp { position: absolute; right: 48px; top: 48px; width: 132px; height: 132px; border-radius: 50%; background: var(--coral); color: #fff; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 64px; display: flex; align-items: center; justify-content: center; }
+
+      /* s02 */
+      .moods { position: absolute; left: 120px; top: 300px; width: 1680px; display: flex; justify-content: space-between; }
+      .mood { width: 390px; height: 430px; border: 2px solid var(--line); border-radius: 18px; background: rgba(246, 241, 232, 0.03); display: flex; flex-direction: column; align-items: center; padding-top: 28px; }
+      .mood .lab { margin-top: 8px; font-size: 36px; font-weight: 700; letter-spacing: 0.14em; }
+      .mood.on { border-color: rgba(240, 193, 75, 0.7); }
+      .mood.on .lab { color: var(--gold); }
+      .s02-twist { position: absolute; left: 120px; right: 120px; top: 770px; text-align: center; font-size: 36px; font-weight: 700; letter-spacing: 0.06em; color: var(--ink); }
+      .s02-twist b { color: var(--gold); font-weight: 700; }
+
+      /* s03 */
+      .qchip { position: absolute; right: 120px; top: 128px; padding: 16px 28px; border-radius: 14px; background: var(--gold); color: #1c1612; font-size: 30px; font-weight: 700; letter-spacing: 0.06em; }
+      .lights { position: absolute; left: 120px; top: 280px; width: 1680px; display: flex; gap: 40px; }
+      .lightcard { flex: 1; height: 300px; border: 2px solid var(--line); border-radius: 18px; display: flex; align-items: center; padding: 0 48px; gap: 36px; background: rgba(246, 241, 232, 0.03); }
+      .lightcard .txt b { display: block; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 48px; letter-spacing: 0.06em; }
+      .lightcard .txt span { display: block; margin-top: 12px; font-size: 28px; color: var(--muted); letter-spacing: 0.08em; }
+      .lightcard.side { border-color: rgba(240, 193, 75, 0.55); }
+      .sizenote { position: absolute; left: 120px; top: 600px; width: 1680px; display: flex; justify-content: center; gap: 80px; font-size: 28px; letter-spacing: 0.06em; color: var(--muted); }
+.sizenote b { color: var(--ink); font-weight: 700; }
+.ratios { position: absolute; left: 120px; top: 662px; width: 1680px; display: flex; gap: 28px; }
+      .ratio { flex: 1; height: 150px; border-radius: 16px; background: #1c1814; border: 2px solid var(--line); padding: 18px 28px; }
+      .ratio .bars { height: 28px; display: flex; flex-direction: column; justify-content: space-between; }
+      .ratio .key, .ratio .fill { display: block; height: 10px; border-radius: 6px; transform-origin: 0 50%; }
+      .ratio .key { width: 100%; background: var(--gold); }
+      .ratio .fill { background: var(--cool); }
+      .ratio .w100 { width: 100%; }
+      .ratio .w33 { width: 33%; }
+      .ratio .w12 { width: 12%; }
+      .ratio .name { margin-top: 16px; display: flex; justify-content: space-between; align-items: baseline; }
+      .ratio .name b { font-size: 32px; font-weight: 700; letter-spacing: 0.08em; }
+      .ratio .name span { font-size: 26px; color: var(--muted); letter-spacing: 0.1em; }
+      .ratio.hot { border-color: rgba(240, 193, 75, 0.7); }
+      .ratio.hot .name span { color: var(--gold); }
+
+      /* s04 */
+      .dist { position: absolute; left: 120px; top: 280px; width: 1040px; height: 150px; display: flex; align-items: center; }
+      .who { width: 160px; text-align: center; font-size: 28px; font-weight: 700; letter-spacing: 0.12em; }
+      .who i { display: block; width: 72px; height: 72px; margin: 0 auto 10px; border-radius: 50%; background: var(--skin); border: 3px solid var(--ink); }
+      .who.cam i { background: transparent; border: 3px solid var(--gold); border-radius: 12px; position: relative; }
+.who.cam i::after { content: ""; position: absolute; left: 18px; top: 20px; width: 30px; height: 30px; border: 3px solid var(--gold); border-radius: 50%; }
+      .gap { flex: 1; text-align: center; }
+      .gap .line { height: 2px; background: var(--gold); margin: 0 10px 12px; transform-origin: 0 50%; }
+      .gap b { display: block; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 48px; color: var(--gold); }
+      .gap span { display: block; margin-top: 6px; font-size: 24px; letter-spacing: 0.08em; color: var(--muted); }
+      .heights { position: absolute; left: 120px; top: 470px; width: 1040px; }
+      .hrow { display: flex; align-items: center; gap: 24px; height: 86px; margin-bottom: 12px; border-left: 3px solid var(--line); padding-left: 28px; }
+      .hrow b { font-size: 36px; font-weight: 700; letter-spacing: 0.1em; width: 280px; }
+      .hrow span { font-size: 28px; color: var(--muted); letter-spacing: 0.08em; }
+      .hrow.lv { border-left-color: var(--gold); }
+      .hrow.lv b { color: var(--gold); }
+      .hrow.up b { color: var(--cool); }
+      .idcard { position: absolute; right: 120px; top: 280px; width: 520px; height: 520px; background: var(--paper); color: #1c1612; border-radius: 8px; padding: 28px; }
+      .idshot { height: 280px; background: #7f96b0; border-radius: 4px; position: relative; overflow: hidden; }
+      .idshot .blob { position: absolute; left: 150px; top: 36px; width: 150px; height: 180px; border-radius: 75px 75px 64px 64px; background: #e4c2ae; }
+      .idshot .blob::before { content: ""; position: absolute; left: -8px; right: -8px; top: -6px; height: 62px; background: #2a241e; border-radius: 70px 70px 24px 24px; }
+      .idshot .eye { position: absolute; top: 86px; width: 18px; height: 8px; background: #1c1612; border-radius: 50%; }
+      .idshot .eye.l { left: 36px; }
+      .idshot .eye.r { right: 36px; }
+      .idmeta { margin-top: 22px; }
+      .idmeta .k { font-size: 18px; letter-spacing: 0.28em; color: #6a5b4e; font-weight: 700; }
+      .idmeta p { margin-top: 8px; font-size: 26px; letter-spacing: 0.06em; }
+      .idmeta em { display: inline-block; margin-top: 16px; padding: 8px 18px; background: var(--coral); color: #fff; font-style: normal; font-weight: 700; font-size: 32px; letter-spacing: 0.14em; border-radius: 8px; }
+
+      /* s05 */
+      .s05-left { position: absolute; left: 120px; top: 250px; width: 900px; }
+      .beat { display: flex; align-items: center; gap: 20px; margin-bottom: 18px; font-size: 32px; font-weight: 700; letter-spacing: 0.04em; }
+      .beat i { width: 18px; height: 18px; border-radius: 50%; background: var(--gold); flex: none; }
+      .maskline { margin: 8px 0 26px; font-size: 30px; color: var(--muted); letter-spacing: 0.08em; }
+      .maskline b { color: var(--coral); font-weight: 700; }
+      .moments { margin-top: 10px; display: flex; gap: 18px; }
+      .moment { padding: 16px 22px; border: 2px solid rgba(240, 193, 75, 0.55); border-radius: 14px; }
+      .moment b { display: block; font-size: 30px; color: var(--gold); letter-spacing: 0.08em; }
+      .moment span { display: block; margin-top: 4px; font-size: 22px; color: var(--muted); letter-spacing: 0.06em; }
+      .s05-right { position: absolute; right: 120px; top: 250px; width: 680px; }
+      .panel { border-radius: 16px; border: 2px solid var(--line); padding: 22px 26px 26px; margin-bottom: 22px; background: rgba(246, 241, 232, 0.03); }
+      .panel .lab { font-size: 20px; letter-spacing: 0.22em; color: var(--dim); font-weight: 700; }
+      .panel .big { margin-top: 12px; font-size: 36px; font-weight: 700; letter-spacing: 0.06em; position: relative; display: inline-block; }
+      .strike { position: absolute; left: -6px; right: -6px; top: 52%; height: 4px; background: var(--coral); transform-origin: 0 50%; }
+      .panel.good { border-color: rgba(213, 226, 239, 0.45); }
+      .panel.good .big { color: var(--cool); }
+      .lie { position: absolute; left: 120px; top: 780px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 40px; letter-spacing: 0.06em; }
+      .lie em { font-style: normal; color: var(--gold); }
+
+      /* s06 */
+      .prints { position: absolute; left: 120px; top: 270px; width: 1680px; display: flex; gap: 40px; }
+      .print { flex: 1; height: 470px; background: #1c1814; border: 2px solid var(--line); border-radius: 8px; position: relative; overflow: hidden; }
+      .print .cap { position: absolute; left: 28px; bottom: 24px; right: 28px; display: flex; justify-content: space-between; align-items: baseline; }
+      .print .cap b { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 40px; }
+      .print .cap span { font-size: 24px; letter-spacing: 0.14em; color: var(--gold); }
+      .eyes { position: absolute; left: 80px; top: 70px; width: 660px; height: 250px; }
+      .bigeye { position: absolute; top: 40px; width: 210px; height: 120px; border-radius: 50%; background: #f6f1e8; }
+      .bigeye.l { left: 40px; }
+      .bigeye.r { right: 40px; }
+      .bigeye i { position: absolute; left: 58px; top: 28px; width: 64px; height: 64px; border-radius: 50%; background: #1c1612; }
+      .bigeye i b { position: absolute; left: 14px; top: 12px; width: 16px; height: 16px; border-radius: 50%; background: #ffe7a8; }
+      .room { position: absolute; left: 40px; right: 40px; top: 36px; height: 300px; background: #241e18; border-radius: 6px; }
+      .room .win { position: absolute; right: 36px; top: 36px; width: 120px; height: 180px; background: linear-gradient(#f7f1e4, #d5e2ef); }
+      .room .win::before, .room .win::after { content: ""; position: absolute; background: #3a3028; }
+      .room .win::before { left: 56px; top: 0; bottom: 0; width: 6px; }
+      .room .win::after { left: 0; right: 0; top: 86px; height: 6px; }
+      .fig { position: absolute; left: 70px; bottom: 0; width: 90px; }
+      .fig .hd { display: block; width: 54px; height: 64px; margin: 0 auto; border-radius: 27px 27px 22px 22px; background: var(--skin); }
+      .fig .bd { display: block; width: 90px; height: 110px; background: #3d4c5c; border-radius: 40px 40px 0 0; }
+.leadtag { position: absolute; left: 200px; top: 118px; font-size: 26px; letter-spacing: 0.12em; color: var(--gold); font-weight: 700; }
+      .s06-line { position: absolute; left: 120px; right: 120px; top: 770px; text-align: center; font-size: 32px; letter-spacing: 0.08em; color: var(--muted); }
+      .s06-line b { color: var(--ink); font-weight: 700; }
+
+      /* s07 */
+      .meter { position: absolute; left: 120px; top: 300px; width: 460px; }
+      .dial { position: relative; width: 360px; height: 190px; margin-top: 10px; }
+      .arc { position: absolute; left: 0; top: 0; width: 360px; height: 180px; border: 16px solid rgba(246, 241, 232, 0.18); border-bottom: none; border-radius: 180px 180px 0 0; }
+      .needle { position: absolute; left: 178px; top: 40px; width: 4px; height: 140px; background: var(--gold); transform-origin: 50% 100%; }
+      .meter .read { margin-top: 18px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 42px; color: var(--gold); }
+      .meter .sub { margin-top: 8px; font-size: 24px; color: var(--muted); letter-spacing: 0.08em; }
+      .pols { position: absolute; left: 640px; top: 300px; width: 560px; display: flex; gap: 28px; }
+      .pol { width: 250px; background: var(--paper); color: #1c1612; padding: 16px 16px 20px; border-radius: 4px; }
+      .pol .shot { height: 210px; background: #1c1814; position: relative; overflow: hidden; }
+      .pol .shot .hf { position: absolute; left: 70px; top: 28px; width: 110px; height: 140px; border-radius: 55px 55px 48px 48px; background: #d7a184; }
+      .pol .shot .hf::before { content: ""; position: absolute; left: -6px; right: -6px; top: -4px; height: 48px; border-radius: 50px 50px 18px 18px; background: #241c18; }
+      .pol.bad .shot .hf { background: #8d847c; }
+      .pol .ft { margin-top: 12px; font-size: 26px; font-weight: 700; letter-spacing: 0.08em; text-align: center; }
+      .pol.good .ft { color: #1c1612; }
+      .pol.bad .ft { color: var(--coral); }
+      .notes { position: absolute; right: 100px; top: 300px; width: 500px; }
+      .note { margin-bottom: 28px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+      .note b { display: block; font-size: 32px; font-weight: 700; letter-spacing: 0.06em; }
+      .note span { display: block; margin-top: 6px; font-size: 24px; color: var(--muted); letter-spacing: 0.06em; }
+      .skin { margin-top: 8px; display: flex; gap: 16px; align-items: center; }
+.patch { width: 160px; height: 88px; border-radius: 10px; background: #e7c2a6; position: relative; overflow: hidden; flex: none; }
+.pores { position: absolute; left: 0; top: 0; bottom: 0; width: 50%; background-color: #d7a184; background-image: radial-gradient(rgba(110, 58, 36, 0.55) 1.4px, transparent 1.8px); background-size: 9px 8px; }
+.pol .shot .hf::after { content: ""; position: absolute; left: 24px; right: 24px; top: 64px; height: 12px; background: radial-gradient(circle at 10px 6px, #1a120e 4px, transparent 4.5px), radial-gradient(circle at 48px 6px, #1a120e 4px, transparent 4.5px); }
+.pol.bad .shot .hf::after { opacity: 0.25; }
+
+      /* s08 */
+      .rules { position: absolute; left: 120px; top: 230px; display: flex; gap: 16px; }
+      .rule { padding: 12px 22px; border-radius: 999px; border: 2px solid rgba(240, 193, 75, 0.55); font-size: 28px; font-weight: 700; letter-spacing: 0.08em; color: var(--gold); }
+      .frames { position: absolute; left: 120px; top: 330px; width: 1680px; display: flex; gap: 36px; }
+      .ff { flex: 1; height: 390px; background: #1c1814; border: 14px solid #0c0a08; border-radius: 6px; padding: 36px 32px; position: relative; }
+      .ff .n { font-size: 18px; letter-spacing: 0.28em; color: var(--gold); font-weight: 700; }
+      .ff .t { margin-top: 28px; font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 48px; line-height: 1.3; }
+      .ff .d { margin-top: 16px; font-size: 26px; color: var(--muted); letter-spacing: 0.06em; }
+      .sink { position: absolute; left: 120px; right: 120px; top: 760px; text-align: center; font-size: 34px; font-weight: 700; letter-spacing: 0.06em; }
+      .sink b { color: var(--coral); font-weight: 700; }
+
+      /* s09 */
+      .sheet { position: absolute; left: 210px; top: 150px; width: 1500px; height: 700px; background: var(--paper); color: #1c1612; border-radius: 6px; padding: 72px 90px; }
+      .sheet .e { font-size: 32px; letter-spacing: 0.08em; margin-bottom: 10px; }
+      .sheet .e b { font-weight: 700; }
+      .sheet .line { width: 120px; height: 2px; background: #1c1612; margin: 28px 0; }
+      .sheet .big { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 84px; line-height: 1.2; letter-spacing: 0.04em; }
+      .sheet .big em { font-style: normal; color: #9c3428; }
+      .sheet .ask { margin-top: 28px; font-size: 30px; letter-spacing: 0.08em; color: #3a3128; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="206.356" data-width="1920" data-height="1080">
+      <div id="bg" class="clip bg" data-start="0" data-duration="206.356" data-track-index="0">
+        <div class="glow"></div>
+        <div class="dots"></div>
+        <div class="topbar"><b>PORTRAIT</b> · 人像里最贵的东西</div>
+        <div class="progress"><div class="progress-fill"></div></div>
+      </div>
+
+      <section id="s01" class="clip scene" data-start="0.000" data-duration="17.762" data-track-index="1">
+        <div class="inner">
+          <div class="s01-copy">
+            <div class="kicker" id="s01-kicker">开场</div>
+            <div class="h1" id="s01-title">技术全对<br /><em>人却不在</em></div>
+            <div class="s01-param" id="s01-param">问题不在参数</div>
+            <div class="s01-thesis" id="s01-thesis">最贵的东西，从来不在相机里</div>
+          </div>
+          <div class="checks">
+            <div class="check" id="ck1"><i></i><span>曝光准确</span></div>
+            <div class="check" id="ck2"><i></i><span>眼神有光</span></div>
+            <div class="check" id="ck3"><i></i><span>背景也虚化了</span></div>
+            <div class="check bad" id="ck4"><i></i><span>人还在吗</span></div>
+          </div>
+          <div class="frame-shot" id="shot">
+            <div class="bokeh a" id="bk1"></div>
+            <div class="bokeh b" id="bk2"></div>
+            <div class="bokeh c" id="bk3"></div>
+            <div class="portrait p-side" id="hero">
+              <div class="shoulder"></div>
+              <div class="neck"></div>
+              <div class="headface">
+                <div class="light"></div>
+                <div class="wash" id="wash"></div>
+                <div class="hair"></div>
+                <i class="eye l"><b></b></i>
+                <i class="eye r"><b></b></i>
+                <i class="nose"></i>
+                <i class="mouth"></i>
+              </div>
+            </div>
+            <div class="stamp" id="stamp">空</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s02" class="clip scene" data-start="17.762" data-duration="22.588" data-track-index="2">
+        <div class="inner">
+          <div class="head" id="s02-head">
+            <div class="kicker">关系</div>
+            <div class="h2">记下的不是五官，<em>是感受</em></div>
+          </div>
+          <div class="moods">
+            <div class="mood" id="m1">
+              <div class="portrait p-top tight"><div class="shoulder"></div><div class="neck"></div><div class="headface"><div class="light"></div><div class="hair"></div><i class="eye l"><b></b></i><i class="eye r"><b></b></i><i class="nose"></i><i class="mouth"></i></div></div>
+              <div class="lab">被审视</div>
+            </div>
+            <div class="mood" id="m2">
+              <div class="portrait p-flat tight"><div class="shoulder"></div><div class="neck"></div><div class="headface"><div class="light"></div><div class="hair"></div><i class="eye l"><b></b></i><i class="eye r"><b></b></i><i class="nose"></i><i class="mouth"></i></div></div>
+              <div class="lab">被催促</div>
+            </div>
+            <div class="mood" id="m3">
+              <div class="portrait p-side"><div class="shoulder"></div><div class="neck"></div><div class="headface"><div class="light"></div><div class="hair"></div><i class="eye l"><b></b></i><i class="eye r"><b></b></i><i class="nose"></i><i class="mouth"></i></div></div>
+              <div class="lab">被尊重</div>
+            </div>
+            <div class="mood on" id="m4">
+              <div class="portrait p-side soft"><div class="shoulder"></div><div class="neck"></div><div class="headface"><div class="light"></div><div class="hair"></div><i class="eye l"><b></b></i><i class="eye r"><b></b></i><i class="nose"></i><i class="mouth"></i></div></div>
+              <div class="lab">忘了镜头</div>
+            </div>
+          </div>
+          <div class="s02-twist" id="s02-twist">你越想<b>证明自己会拍</b>，对方就越会表演</div>
+        </div>
+      </section>
+
+      <section id="s03" class="clip scene" data-start="40.350" data-duration="26.212" data-track-index="3">
+        <div class="inner">
+          <div class="head" id="s03-head">
+            <div class="kicker">光线</div>
+            <div class="h2">光是一种<em>态度</em></div>
+          </div>
+          <div class="qchip" id="qchip">零点三秒内，会怎么看这个人</div>
+          <div class="lights">
+            <div class="lightcard" id="lc-front">
+              <div class="portrait p-front"><div class="shoulder"></div><div class="neck"></div><div class="headface"><div class="light"></div><div class="hair"></div><i class="eye l"><b></b></i><i class="eye r"><b></b></i><i class="nose"></i><i class="mouth"></i></div></div>
+              <div class="txt"><b>顺光</b><span>让人好看</span></div>
+            </div>
+            <div class="lightcard side" id="lc-side">
+              <div class="portrait p-side"><div class="shoulder"></div><div class="neck"></div><div class="headface"><div class="light"></div><div class="hair"></div><i class="eye l"><b></b></i><i class="eye r"><b></b></i><i class="nose"></i><i class="mouth"></i></div></div>
+              <div class="txt"><b>侧光</b><span>让人被理解</span></div>
+            </div>
+          </div>
+          <div class="sizenote">
+            <span id="note-big"><b>光源大而近</b>　柔，脸仍立体</span>
+            <span id="note-small"><b>光源小而远</b>　性格变硬</span>
+          </div>
+          <div class="ratios">
+            <div class="ratio" id="r1"><div class="bars"><i class="key"></i><i class="fill w100"></i></div><div class="name"><b>1 : 1</b><span>像商品</span></div></div>
+            <div class="ratio hot" id="r3"><div class="bars"><i class="key"></i><i class="fill w33"></i></div><div class="name"><b>3 : 1</b><span>像日常</span></div></div>
+            <div class="ratio" id="r8"><div class="bars"><i class="key"></i><i class="fill w12"></i></div><div class="name"><b>8 : 1</b><span>像戏剧</span></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s04" class="clip scene" data-start="66.562" data-duration="22.396" data-track-index="4">
+        <div class="inner">
+          <div class="head" id="s04-head">
+            <div class="kicker">距离</div>
+            <div class="h2">先决定站多近，<em>再选镜头</em></div>
+          </div>
+          <div class="dist" id="dist">
+            <div class="who"><i></i>被摄者</div>
+            <div class="gap">
+              <div class="line" id="dist-line"></div>
+              <b id="two-m">约两米</b>
+              <span id="dist-feel">近到能说话 · 远到不侵犯</span>
+            </div>
+            <div class="who cam"><i></i>你 · 85mm</div>
+          </div>
+          <div class="heights">
+            <div class="hrow" id="h-down"><b>俯拍</b><span>是削弱</span></div>
+            <div class="hrow lv" id="h-level"><b>平视</b><span>是平等</span></div>
+            <div class="hrow up" id="h-up"><b>微微仰</b><span>把尊严还给对方</span></div>
+          </div>
+          <div class="idcard" id="idcard">
+            <div class="idshot"><div class="blob"><i class="eye l"></i><i class="eye r"></i></div></div>
+            <div class="idmeta">
+              <div class="k">证件照</div>
+              <p>灯在正前方，人被固定在椅子上</p>
+              <em>像审讯</em>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s05" class="clip scene" data-start="88.958" data-duration="24.964" data-track-index="5">
+        <div class="inner">
+          <div class="head" id="s05-head">
+            <div class="kicker">表情</div>
+            <div class="h2">不要说<em>「笑一个」</em></div>
+          </div>
+          <div class="s05-left">
+            <div class="maskline" id="maskline">那句话调用的是<b>社交面具</b></div>
+            <div class="beat" id="bt1"><i></i>讲一件真正得意的事</div>
+            <div class="beat" id="bt2"><i></i>走到窗边</div>
+            <div class="beat" id="bt3"><i></i>手里拿着自己的杯子</div>
+            <div class="moments">
+              <div class="moment" id="mo1"><b>笑的前一秒</b><span>面具还没戴上</span></div>
+              <div class="moment" id="mo2"><b>话后的两秒</b><span>沉默里，脸还是真的</span></div>
+            </div>
+          </div>
+          <div class="s05-right">
+            <div class="panel" id="pan-bad">
+              <div class="lab">别摆成目录</div>
+              <div class="big">双手交叉托腮<div class="strike" id="sk"></div></div>
+            </div>
+            <div class="panel good" id="pan-good">
+              <div class="lab">给手一个工作</div>
+              <div class="big">手里有自己的杯子</div>
+            </div>
+          </div>
+          <div class="lie" id="lie">脸，比手<em>更会撒谎</em></div>
+        </div>
+      </section>
+
+      <section id="s06" class="clip scene" data-start="113.922" data-duration="23.092" data-track-index="6">
+        <div class="inner">
+          <div class="head" id="s06-head">
+            <div class="kicker">背景</div>
+            <div class="h2">背景是第二个<em>被摄者</em></div>
+          </div>
+          <div class="prints">
+            <div class="print" id="pr-eye">
+              <div class="eyes">
+                <div class="bigeye l"><i><b></b></i></div>
+                <div class="bigeye r"><i><b></b></i></div>
+              </div>
+              <div class="cap"><b>只留眼睛</b><span>拍的是心理</span></div>
+            </div>
+            <div class="print" id="pr-room">
+              <div class="room">
+                <div class="fig"><i class="hd"></i><i class="bd"></i></div>
+                <div class="leadtag" id="leadtag">视线留白 →</div>
+                <div class="win"></div>
+              </div>
+              <div class="cap"><b>放回环境</b><span>拍的是身份</span></div>
+            </div>
+          </div>
+          <div class="s06-line" id="s06-line">虚化只能<b>分开层次</b>，代替不了意义</div>
+        </div>
+      </section>
+
+      <section id="s07" class="clip scene" data-start="137.014" data-duration="22.012" data-track-index="7">
+        <div class="inner">
+          <div class="head" id="s07-head">
+            <div class="kicker">信任</div>
+            <div class="h2">测光表<em>测不到</em>的曝光</div>
+          </div>
+          <div class="meter" id="meter">
+            <div class="dial"><div class="arc"></div><div class="needle" id="needle"></div></div>
+            <div class="read">信任 · 无读数</div>
+            <div class="sub" id="shutter-note">先让快门声变成熟悉的声音</div>
+          </div>
+          <div class="pols">
+            <div class="pol good" id="pol-good"><div class="shot"><div class="hf"></div></div><div class="ft">好的，递过去</div></div>
+            <div class="pol bad" id="pol-bad"><div class="shot"><div class="hf"></div></div><div class="ft">难看的，留手里</div></div>
+          </div>
+          <div class="notes">
+            <div class="note" id="note-q"><b>问，比指令值钱</b><span>你问的问题，让脸自己动</span></div>
+            <div class="note" id="note-skin">
+              <b>磨掉的是活过的证据</b>
+              <div class="skin"><div class="patch"><div class="pores" id="pores"></div></div><span>左半留着纹理，右半被磨平</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s08" class="clip scene" data-start="159.026" data-duration="22.588" data-track-index="8">
+        <div class="inner">
+          <div class="head" id="s08-head">
+            <div class="kicker">下次就这么拍</div>
+            <div class="h2">一百张里，<em>只留三张</em></div>
+          </div>
+          <div class="rules">
+            <div class="rule" id="ru1">别再加灯</div>
+            <div class="rule" id="ru2">一扇窗，或一盏灯</div>
+            <div class="rule" id="ru3">先聊天，再按快门</div>
+          </div>
+          <div class="frames">
+            <div class="ff" id="ff1"><div class="n">01</div><div class="t">忘记了镜头</div><div class="d">脸还没来得及表演</div></div>
+            <div class="ff" id="ff2"><div class="n">02</div><div class="t">手正在做事</div><div class="d">不是目录里的姿势</div></div>
+            <div class="ff" id="ff3"><div class="n">03</div><div class="t">环境在说话</div><div class="d">世界在帮他被看见</div></div>
+          </div>
+          <div class="sink" id="sink">如果没有一张让你<b>心里一沉</b>，你还没拍到人</div>
+        </div>
+      </section>
+
+      <section id="s09" class="clip scene" data-start="181.614" data-duration="24.742" data-track-index="9">
+        <div class="inner">
+          <div class="sheet">
+            <div class="e" id="e1"><b>器材</b>　决定你能不能拍清</div>
+            <div class="e" id="e2"><b>光线</b>　决定你能不能塑形</div>
+            <div class="e" id="e3"><b>你</b>　决定对方交不交出真实的脸</div>
+            <div class="line" id="eline"></div>
+            <div class="big" id="e4">一次被允许的<em>看见</em></div>
+            <div class="ask" id="e5">举相机之前，先问：我有没有资格被信任</div>
+          </div>
+        </div>
+      </section>
+
+      <div id="cap-000" class="clip caption" data-start="0.748" data-duration="1.743" data-track-index="20"><span>你一定见过这种人像</span></div>
+      <div id="cap-001" class="clip caption" data-start="2.491" data-duration="1.118" data-track-index="20"><span>曝光准确</span></div>
+      <div id="cap-002" class="clip caption" data-start="3.609" data-duration="1.069" data-track-index="20"><span>眼神有光</span></div>
+      <div id="cap-003" class="clip caption" data-start="4.678" data-duration="1.717" data-track-index="20"><span>背景也虚化了</span></div>
+      <div id="cap-004" class="clip caption" data-start="6.395" data-duration="1.382" data-track-index="20"><span>可你多看三秒</span></div>
+      <div id="cap-005" class="clip caption" data-start="7.777" data-duration="1.298" data-track-index="20"><span>人是空的</span></div>
+      <div id="cap-006" class="clip caption" data-start="9.075" data-duration="2.200" data-track-index="20"><span>技术全对，人不在</span></div>
+      <div id="cap-007" class="clip caption" data-start="11.275" data-duration="1.815" data-track-index="20"><span>问题不在参数</span></div>
+      <div id="cap-008" class="clip caption" data-start="13.090" data-duration="1.647" data-track-index="20"><span>人像里最贵的东西</span></div>
+      <div id="cap-009" class="clip caption" data-start="14.737" data-duration="2.075" data-track-index="20"><span>从来不在相机里</span></div>
+      <div id="cap-010" class="clip caption" data-start="18.280" data-duration="1.226" data-track-index="20"><span>快门记下的</span></div>
+      <div id="cap-011" class="clip caption" data-start="19.506" data-duration="1.034" data-track-index="20"><span>不是五官</span></div>
+      <div id="cap-012" class="clip caption" data-start="20.540" data-duration="2.870" data-track-index="20"><span>是那个人在那一秒对你的感受</span></div>
+      <div id="cap-013" class="clip caption" data-start="23.410" data-duration="1.839" data-track-index="20"><span>被审视，被催促</span></div>
+      <div id="cap-014" class="clip caption" data-start="25.249" data-duration="0.878" data-track-index="20"><span>被尊重</span></div>
+      <div id="cap-015" class="clip caption" data-start="26.127" data-duration="1.574" data-track-index="20"><span>还是忽然忘了镜头</span></div>
+      <div id="cap-016" class="clip caption" data-start="27.701" data-duration="1.647" data-track-index="20"><span>全写在脸上</span></div>
+      <div id="cap-017" class="clip caption" data-start="29.348" data-duration="2.079" data-track-index="20"><span>你越想证明自己会拍</span></div>
+      <div id="cap-018" class="clip caption" data-start="31.427" data-duration="1.887" data-track-index="20"><span>对方就越会表演</span></div>
+      <div id="cap-019" class="clip caption" data-start="33.314" data-duration="1.142" data-track-index="20"><span>第一项技术</span></div>
+      <div id="cap-020" class="clip caption" data-start="34.456" data-duration="2.332" data-track-index="20"><span>是让对方愿意放松下来</span></div>
+      <div id="cap-021" class="clip caption" data-start="36.788" data-duration="0.757" data-track-index="20"><span>照片</span></div>
+      <div id="cap-022" class="clip caption" data-start="37.545" data-duration="2.175" data-track-index="20"><span>是一段关系的证据</span></div>
+      <div id="cap-023" class="clip caption" data-start="40.868" data-duration="1.178" data-track-index="20"><span>光不是口诀</span></div>
+      <div id="cap-024" class="clip caption" data-start="42.046" data-duration="1.476" data-track-index="20"><span>是一种态度</span></div>
+      <div id="cap-025" class="clip caption" data-start="43.522" data-duration="1.503" data-track-index="20"><span>顺光让人好看</span></div>
+      <div id="cap-026" class="clip caption" data-start="45.025" data-duration="1.911" data-track-index="20"><span>侧光让人被理解</span></div>
+      <div id="cap-027" class="clip caption" data-start="46.936" data-duration="2.043" data-track-index="20"><span>光源越大、离得越近</span></div>
+      <div id="cap-028" class="clip caption" data-start="48.979" data-duration="1.094" data-track-index="20"><span>皮肤越柔</span></div>
+      <div id="cap-029" class="clip caption" data-start="50.073" data-duration="1.154" data-track-index="20"><span>脸仍立体</span></div>
+      <div id="cap-030" class="clip caption" data-start="51.227" data-duration="1.851" data-track-index="20"><span>光源越小、越远</span></div>
+      <div id="cap-031" class="clip caption" data-start="53.078" data-duration="1.370" data-track-index="20"><span>性格越硬</span></div>
+      <div id="cap-032" class="clip caption" data-start="54.448" data-duration="1.995" data-track-index="20"><span>别问哪种光正确</span></div>
+      <div id="cap-033" class="clip caption" data-start="56.443" data-duration="0.926" data-track-index="20"><span>问自己</span></div>
+      <div id="cap-034" class="clip caption" data-start="57.369" data-duration="1.814" data-track-index="20"><span>观众在零点三秒内</span></div>
+      <div id="cap-035" class="clip caption" data-start="59.183" data-duration="1.599" data-track-index="20"><span>会怎么看这个人</span></div>
+      <div id="cap-036" class="clip caption" data-start="60.782" data-duration="1.851" data-track-index="20"><span>光比一比一像商品</span></div>
+      <div id="cap-037" class="clip caption" data-start="62.633" data-duration="1.322" data-track-index="20"><span>三比一像日常</span></div>
+      <div id="cap-038" class="clip caption" data-start="63.955" data-duration="1.977" data-track-index="20"><span>八比一像戏剧</span></div>
+      <div id="cap-039" class="clip caption" data-start="67.080" data-duration="1.611" data-track-index="20"><span>先决定你站多近</span></div>
+      <div id="cap-040" class="clip caption" data-start="68.691" data-duration="1.428" data-track-index="20"><span>再选镜头</span></div>
+      <div id="cap-041" class="clip caption" data-start="70.119" data-duration="2.416" data-track-index="20"><span>八十五毫米的秘密不是焦段</span></div>
+      <div id="cap-042" class="clip caption" data-start="72.535" data-duration="1.214" data-track-index="20"><span>是大约两米</span></div>
+      <div id="cap-043" class="clip caption" data-start="73.749" data-duration="1.118" data-track-index="20"><span>近到能说话</span></div>
+      <div id="cap-044" class="clip caption" data-start="74.867" data-duration="1.466" data-track-index="20"><span>远到不侵犯</span></div>
+      <div id="cap-045" class="clip caption" data-start="76.333" data-duration="1.659" data-track-index="20"><span>机位平视是平等</span></div>
+      <div id="cap-046" class="clip caption" data-start="77.992" data-duration="1.274" data-track-index="20"><span>俯拍是削弱</span></div>
+      <div id="cap-047" class="clip caption" data-start="79.266" data-duration="1.141" data-track-index="20"><span>微微仰一点</span></div>
+      <div id="cap-048" class="clip caption" data-start="80.407" data-duration="2.020" data-track-index="20"><span>是把尊严还给对方</span></div>
+      <div id="cap-049" class="clip caption" data-start="82.427" data-duration="1.899" data-track-index="20"><span>很多证件照像审讯</span></div>
+      <div id="cap-050" class="clip caption" data-start="84.326" data-duration="1.731" data-track-index="20"><span>只因为灯在正前方</span></div>
+      <div id="cap-051" class="clip caption" data-start="86.057" data-duration="2.271" data-track-index="20"><span>人被固定在椅子上</span></div>
+      <div id="cap-052" class="clip caption" data-start="89.476" data-duration="1.621" data-track-index="20"><span>不要说笑一个</span></div>
+      <div id="cap-053" class="clip caption" data-start="91.097" data-duration="2.644" data-track-index="20"><span>那句话调用的是社交面具</span></div>
+      <div id="cap-054" class="clip caption" data-start="93.741" data-duration="1.586" data-track-index="20"><span>给对方一件事做</span></div>
+      <div id="cap-055" class="clip caption" data-start="95.327" data-duration="1.815" data-track-index="20"><span>讲一件真正得意的事</span></div>
+      <div id="cap-056" class="clip caption" data-start="97.142" data-duration="1.094" data-track-index="20"><span>走到窗边</span></div>
+      <div id="cap-057" class="clip caption" data-start="98.236" data-duration="2.104" data-track-index="20"><span>手里拿着自己的杯子</span></div>
+      <div id="cap-058" class="clip caption" data-start="100.340" data-duration="1.201" data-track-index="20"><span>最好的表情</span></div>
+      <div id="cap-059" class="clip caption" data-start="101.541" data-duration="1.671" data-track-index="20"><span>在笑出来的前一秒</span></div>
+      <div id="cap-060" class="clip caption" data-start="103.212" data-duration="2.572" data-track-index="20"><span>也在话讲完之后的两秒沉默里</span></div>
+      <div id="cap-061" class="clip caption" data-start="105.784" data-duration="1.839" data-track-index="20"><span>面具还没戴回去</span></div>
+      <div id="cap-062" class="clip caption" data-start="107.623" data-duration="1.563" data-track-index="20"><span>手也别摆成目录</span></div>
+      <div id="cap-063" class="clip caption" data-start="109.186" data-duration="2.103" data-track-index="20"><span>给手一个工作。脸</span></div>
+      <div id="cap-064" class="clip caption" data-start="111.289" data-duration="2.003" data-track-index="20"><span>比手更会撒谎</span></div>
+      <div id="cap-065" class="clip caption" data-start="114.440" data-duration="1.935" data-track-index="20"><span>背景不是用来虚掉的</span></div>
+      <div id="cap-066" class="clip caption" data-start="116.375" data-duration="1.837" data-track-index="20"><span>它是第二个被摄者</span></div>
+      <div id="cap-067" class="clip caption" data-start="118.212" data-duration="1.767" data-track-index="20"><span>人和他所在的世界</span></div>
+      <div id="cap-068" class="clip caption" data-start="119.979" data-duration="1.971" data-track-index="20"><span>才是肖像的另一半</span></div>
+      <div id="cap-069" class="clip caption" data-start="121.950" data-duration="1.442" data-track-index="20"><span>裁切就是论点</span></div>
+      <div id="cap-070" class="clip caption" data-start="123.392" data-duration="1.058" data-track-index="20"><span>只留眼睛</span></div>
+      <div id="cap-071" class="clip caption" data-start="124.450" data-duration="1.298" data-track-index="20"><span>拍的是心理</span></div>
+      <div id="cap-072" class="clip caption" data-start="125.748" data-duration="1.358" data-track-index="20"><span>把人放回环境</span></div>
+      <div id="cap-073" class="clip caption" data-start="127.106" data-duration="1.479" data-track-index="20"><span>拍的是身份</span></div>
+      <div id="cap-074" class="clip caption" data-start="128.585" data-duration="1.959" data-track-index="20"><span>视线前方留出空白</span></div>
+      <div id="cap-075" class="clip caption" data-start="130.544" data-duration="2.031" data-track-index="20"><span>念头才有地方落下</span></div>
+      <div id="cap-076" class="clip caption" data-start="132.575" data-duration="1.875" data-track-index="20"><span>虚化只能分开层次</span></div>
+      <div id="cap-077" class="clip caption" data-start="134.450" data-duration="1.934" data-track-index="20"><span>代替不了意义</span></div>
+      <div id="cap-078" class="clip caption" data-start="137.532" data-duration="0.769" data-track-index="20"><span>信任</span></div>
+      <div id="cap-079" class="clip caption" data-start="138.301" data-duration="2.342" data-track-index="20"><span>是测光表测不到的曝光</span></div>
+      <div id="cap-080" class="clip caption" data-start="140.643" data-duration="1.034" data-track-index="20"><span>开拍之后</span></div>
+      <div id="cap-081" class="clip caption" data-start="141.677" data-duration="2.884" data-track-index="20"><span>先让快门声变成熟悉的声音</span></div>
+      <div id="cap-082" class="clip caption" data-start="144.561" data-duration="2.645" data-track-index="20"><span>早一点把一张好照片给对方看</span></div>
+      <div id="cap-083" class="clip caption" data-start="147.206" data-duration="1.178" data-track-index="20"><span>难看的那张</span></div>
+      <div id="cap-084" class="clip caption" data-start="148.384" data-duration="1.935" data-track-index="20"><span>永远留在自己手里</span></div>
+      <div id="cap-085" class="clip caption" data-start="150.319" data-duration="1.129" data-track-index="20"><span>你问的问题</span></div>
+      <div id="cap-086" class="clip caption" data-start="151.448" data-duration="2.008" data-track-index="20"><span>比你下的指令值钱</span></div>
+      <div id="cap-087" class="clip caption" data-start="153.456" data-duration="2.644" data-track-index="20"><span>磨皮磨掉的常常不是瑕疵</span></div>
+      <div id="cap-088" class="clip caption" data-start="156.100" data-duration="2.296" data-track-index="20"><span>是这个人活过的证据</span></div>
+      <div id="cap-089" class="clip caption" data-start="159.544" data-duration="1.825" data-track-index="20"><span>下次别再加灯</span></div>
+      <div id="cap-090" class="clip caption" data-start="161.369" data-duration="1.262" data-track-index="20"><span>只留一扇窗</span></div>
+      <div id="cap-091" class="clip caption" data-start="162.631" data-duration="1.286" data-track-index="20"><span>或一盏灯</span></div>
+      <div id="cap-092" class="clip caption" data-start="163.917" data-duration="1.875" data-track-index="20"><span>先站在能说话的距离</span></div>
+      <div id="cap-093" class="clip caption" data-start="165.792" data-duration="2.308" data-track-index="20"><span>先聊天，再按快门</span></div>
+      <div id="cap-094" class="clip caption" data-start="168.100" data-duration="2.416" data-track-index="20"><span>回家从一百张里只留三张</span></div>
+      <div id="cap-095" class="clip caption" data-start="170.516" data-duration="1.706" data-track-index="20"><span>一张他忘记了镜头</span></div>
+      <div id="cap-096" class="clip caption" data-start="172.222" data-duration="1.635" data-track-index="20"><span>一张手正在做事</span></div>
+      <div id="cap-097" class="clip caption" data-start="173.857" data-duration="2.248" data-track-index="20"><span>一张环境在帮他说话</span></div>
+      <div id="cap-098" class="clip caption" data-start="176.105" data-duration="3.125" data-track-index="20"><span>三张里如果没有一张让你心里一沉</span></div>
+      <div id="cap-099" class="clip caption" data-start="179.230" data-duration="1.754" data-track-index="20"><span>你还没拍到人</span></div>
+      <div id="cap-100" class="clip caption" data-start="182.262" data-duration="2.308" data-track-index="20"><span>器材决定你能不能拍清</span></div>
+      <div id="cap-101" class="clip caption" data-start="184.570" data-duration="2.534" data-track-index="20"><span>光线决定你能不能塑形</span></div>
+      <div id="cap-102" class="clip caption" data-start="187.104" data-duration="1.142" data-track-index="20"><span>而你这个人</span></div>
+      <div id="cap-103" class="clip caption" data-start="188.246" data-duration="3.329" data-track-index="20"><span>决定对方愿不愿意把真实的脸交给你</span></div>
+      <div id="cap-104" class="clip caption" data-start="191.575" data-duration="1.190" data-track-index="20"><span>优秀的人像</span></div>
+      <div id="cap-105" class="clip caption" data-start="192.765" data-duration="2.019" data-track-index="20"><span>不是一次完美的曝光</span></div>
+      <div id="cap-106" class="clip caption" data-start="194.784" data-duration="2.320" data-track-index="20"><span>它是一次被允许的看见</span></div>
+      <div id="cap-107" class="clip caption" data-start="197.104" data-duration="1.671" data-track-index="20"><span>下次举相机之前</span></div>
+      <div id="cap-108" class="clip caption" data-start="198.775" data-duration="1.105" data-track-index="20"><span>先问自己</span></div>
+      <div id="cap-109" class="clip caption" data-start="199.880" data-duration="1.310" data-track-index="20"><span>我有没有资格</span></div>
+      <div id="cap-110" class="clip caption" data-start="201.190" data-duration="1.816" data-track-index="20"><span>被这个人信任</span></div>
+      <audio id="narration" src="assets/narration.mp3" data-start="0" data-duration="206.356" data-track-index="30" data-volume="1"></audio>
+      <audio id="bgm" src="assets/bgm.mp3" data-start="0" data-duration="206.356" data-track-index="31" data-volume="0.11"></audio>
+    </div>
+    <script>
+      const T = {"s01": {"start": 0.0, "dur": 17.762, "end": 17.762, "vo": 0.65, "speech": 15.912, "cues": {"tech": 2.491, "eye": 3.609, "bokeh": 4.678, "empty": 7.777, "gone": 10.133, "param": 11.275, "cost": 13.595}}, "s02": {"start": 17.762, "dur": 22.588, "end": 40.35, "vo": 18.182, "speech": 21.288, "cues": {"notface": 19.506, "watch": 23.41, "rush": 24.36, "respect": 25.249, "forget": 26.716, "prove": 29.853, "relax": 35.165, "proof": 38.002}}, "s03": {"start": 40.35, "dur": 26.212, "end": 66.562, "vo": 40.77, "speech": 24.912, "cues": {"attitude": 42.178, "front": 43.522, "side": 45.025, "big": 46.936, "small": 51.227, "ask": 54.448, "sec": 57.909, "r1": 61.179, "r3": 62.633, "r8": 63.955}}, "s04": {"start": 66.562, "dur": 22.396, "end": 88.958, "vo": 66.982, "speech": 21.096, "cues": {"near": 67.789, "mm": 70.119, "two": 72.667, "talk": 73.749, "far": 74.867, "level": 76.657, "down": 77.992, "up": 79.266, "id": 82.823}}, "s05": {"start": 88.958, "dur": 24.964, "end": 113.922, "vo": 89.378, "speech": 23.664, "cues": {"smile": 90.161, "mask": 92.311, "task": 94.258, "proud": 96.229, "win": 97.142, "cup": 98.969, "before": 102.251, "silence": 104.486, "back": 106.145, "job": 109.534, "lie": 111.686}}, "s06": {"start": 113.922, "dur": 23.092, "end": 137.014, "vo": 114.342, "speech": 21.792, "cues": {"second": 116.652, "half": 120.808, "crop": 121.95, "eyes": 123.392, "place": 126.097, "blank": 129.45, "bokeh": 133.38}}, "s07": {"start": 137.014, "dur": 22.012, "end": 159.026, "vo": 137.434, "speech": 20.712, "cues": {"trust": 139.083, "shutter": 141.977, "good": 145.246, "bad": 147.206, "question": 150.319, "skin": 156.665}}, "s08": {"start": 159.026, "dur": 22.588, "end": 181.614, "vo": 159.446, "speech": 21.288, "cues": {"lampoff": 160.193, "window": 161.718, "lamp": 162.775, "chat": 165.792, "hundred": 168.689, "forget": 171.008, "hands": 172.547, "world": 174.855, "sink": 178.22}}, "s09": {"start": 181.614, "dur": 24.742, "end": 206.356, "vo": 182.164, "speech": 20.592, "cues": {"gear": 183.728, "light": 186.036, "you": 187.296, "real": 189.736, "perfect": 193.33, "see": 195.397, "ask": 198.775}}};
+      const TOTAL = Number(document.getElementById("root").dataset.duration);
+      const tl = gsap.timeline({ paused: true });
+      const C = (s, k) => T[s].cues[k];
+      function reveal(sel, at, from, opts) {
+        tl.fromTo(sel, Object.assign({ opacity: 0 }, from || { y: 28 }), Object.assign({ opacity: 1, x: 0, y: 0, scale: 1, rotation: 0, duration: 0.55, ease: "power3.out" }, opts || {}), at);
+      }
+      function sceneIn(id) {
+        tl.fromTo(`#${id} .inner`, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, T[id].start + 0.04);
+      }
+      function sceneOut(id) {
+        tl.to(`#${id} .inner`, { opacity: 0, y: -16, duration: 0.4, ease: "power2.in" }, T[id].end - 0.42);
+      }
+      function head(id) {
+        reveal(`#${id}-head .kicker`, T[id].start + 0.12, { x: -20 });
+        reveal(`#${id}-head .h2`, T[id].vo - 0.05, { y: 26 }, { duration: 0.7 });
+      }
+      tl.fromTo(".progress-fill", { scaleX: 0 }, { scaleX: 1, duration: TOTAL, ease: "none" }, 0);
+
+      sceneIn("s01");
+      reveal("#s01-kicker", T.s01.start + 0.15, { x: -16 });
+      reveal("#ck1", C("s01", "tech"), { x: -24 });
+      reveal("#ck2", C("s01", "eye"), { x: -24 });
+      reveal("#bk1, #bk2, #bk3", C("s01", "bokeh"), { scale: 0.6, y: 0 }, { duration: 0.5 });
+      reveal("#ck3", C("s01", "bokeh"), { x: -24 });
+      tl.fromTo("#wash", { opacity: 0 }, { opacity: 0.82, duration: 0.55 }, C("s01", "empty"));
+      tl.fromTo("#s01 .eye b", { opacity: 1 }, { opacity: 0, duration: 0.4 }, C("s01", "empty"));
+      reveal("#ck4", C("s01", "gone"), { x: -24 });
+      reveal("#stamp", C("s01", "gone"), { scale: 1.35, rotation: -16 }, { duration: 0.4, ease: "back.out(1.8)" });
+      reveal("#s01-title", C("s01", "gone") + 0.05, { y: 30 }, { duration: 0.7 });
+      reveal("#s01-param", C("s01", "param"), { y: 16 });
+      reveal("#s01-thesis", C("s01", "cost"), { y: 18 });
+      sceneOut("s01");
+
+      sceneIn("s02");
+      head("s02");
+      reveal("#m1", C("s02", "watch"), { y: 36 });
+      reveal("#m2", C("s02", "rush"), { y: 36 });
+      reveal("#m3", C("s02", "respect"), { y: 36 });
+      reveal("#m4", C("s02", "forget"), { y: 36 });
+      reveal("#s02-twist", C("s02", "prove"), { y: 20 });
+      sceneOut("s02");
+
+      sceneIn("s03");
+      head("s03");
+      reveal("#lc-front", C("s03", "front"), { y: 30 });
+      reveal("#note-big", C("s03", "big"), { x: 16 });
+      reveal("#lc-side", C("s03", "side"), { y: 30 });
+      reveal("#note-small", C("s03", "small"), { x: 16 });
+      reveal("#qchip", C("s03", "sec"), { y: -16 });
+      reveal("#r1", C("s03", "r1"), { y: 24 });
+      tl.fromTo("#r1 .fill", { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power2.out" }, C("s03", "r1") + 0.15);
+      reveal("#r3", C("s03", "r3"), { y: 24 });
+      tl.fromTo("#r3 .fill", { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power2.out" }, C("s03", "r3") + 0.15);
+      reveal("#r8", C("s03", "r8"), { y: 24 });
+      tl.fromTo("#r8 .fill", { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power2.out" }, C("s03", "r8") + 0.15);
+      sceneOut("s03");
+
+      sceneIn("s04");
+      head("s04");
+      reveal("#dist", C("s04", "near"), { y: 20 });
+      tl.fromTo("#dist-line", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power2.out" }, C("s04", "two"));
+      reveal("#two-m", C("s04", "two"), { y: 12 });
+      reveal("#dist-feel", C("s04", "talk"), { y: 10 });
+      reveal("#h-level", C("s04", "level"), { x: -20 });
+      reveal("#h-down", C("s04", "down"), { x: -20 });
+      reveal("#h-up", C("s04", "up"), { x: -20 });
+      reveal("#idcard", C("s04", "id"), { y: 28 });
+      sceneOut("s04");
+
+      sceneIn("s05");
+      head("s05");
+      reveal("#maskline", C("s05", "mask"), { y: 16 });
+      reveal("#bt1", C("s05", "proud"), { x: -20 });
+      reveal("#bt2", C("s05", "win"), { x: -20 });
+      reveal("#bt3", C("s05", "cup"), { x: -20 });
+      reveal("#mo1", C("s05", "before"), { y: 16 });
+      reveal("#mo2", C("s05", "silence"), { y: 16 });
+      reveal("#pan-bad", C("s05", "smile"), { x: 24 });
+      tl.fromTo("#sk", { scaleX: 0 }, { scaleX: 1, duration: 0.35, ease: "power2.out" }, C("s05", "job") - 0.15);
+      reveal("#pan-good", C("s05", "job"), { x: 24 });
+      reveal("#lie", C("s05", "lie"), { y: 16 });
+      sceneOut("s05");
+
+      sceneIn("s06");
+      head("s06");
+      reveal("#pr-eye", C("s06", "eyes"), { y: 28 });
+      reveal("#pr-room", C("s06", "place"), { y: 28 });
+      reveal("#leadtag", C("s06", "blank"), { x: 16 });
+      reveal("#s06-line", C("s06", "bokeh"), { y: 16 });
+      sceneOut("s06");
+
+      sceneIn("s07");
+      head("s07");
+      reveal("#meter", C("s07", "trust"), { y: 24 });
+      tl.fromTo("#needle", { rotation: -70 }, { rotation: -18, duration: 0.8, ease: "power2.out" }, C("s07", "trust") + 0.2);
+      reveal("#shutter-note", C("s07", "shutter"), { y: 10 });
+      reveal("#pol-good", C("s07", "good"), { y: 24 });
+      reveal("#pol-bad", C("s07", "bad"), { y: 24 });
+      reveal("#note-q", C("s07", "question"), { x: 20 });
+      reveal("#note-skin", C("s07", "skin"), { x: 20 });
+      sceneOut("s07");
+
+      sceneIn("s08");
+      head("s08");
+      reveal("#ru1", C("s08", "lampoff"), { y: 16 });
+      reveal("#ru2", C("s08", "window"), { y: 16 });
+      reveal("#ru3", C("s08", "chat"), { y: 16 });
+      reveal("#ff1", C("s08", "forget"), { y: 30 });
+      reveal("#ff2", C("s08", "hands"), { y: 30 });
+      reveal("#ff3", C("s08", "world"), { y: 30 });
+      reveal("#sink", C("s08", "sink"), { y: 16 });
+      sceneOut("s08");
+
+      sceneIn("s09");
+      reveal("#e1", C("s09", "gear"), { y: 16 });
+      reveal("#e2", C("s09", "light"), { y: 16 });
+      reveal("#e3", C("s09", "you"), { y: 16 });
+      tl.fromTo("#eline", { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power2.out" }, C("s09", "perfect") - 0.1);
+      reveal("#e4", C("s09", "see"), { y: 22 }, { duration: 0.8 });
+      reveal("#e5", C("s09", "ask"), { y: 14 });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
